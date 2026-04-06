@@ -22,11 +22,12 @@ Yazilim kursu final projesi. EtsTur/Hotels.com benzeri otel rezervasyon sistemi.
 
 \## Takim
 
-\- Alper - Grup A: Kimlik + Yonetim + Logger
+| Uye | Rol | Grup | Sorumluluk |
+|-----|-----|------|------------|
+| Alper | Takim Lideri | Grup A | Kimlik & Yetkilendirme, Admin Yonetimi, Logger Singleton -- DB, Backend, Frontend |
+| Hilal | Gelistirici | Grup B | Otel Listeleme, Arama, Gorsel & Olanak Yonetimi -- DB, Backend, Frontend |
+| Sevde | Gelistirici | Grup C | Oda & Rezervasyon Yonetimi, Degerlendirme Sistemi -- DB, Backend, Frontend |
 
-\- Hilal - Grup B: Otel Vitrin
-
-\- Sevde - Grup C: Islemler
 
 
 
