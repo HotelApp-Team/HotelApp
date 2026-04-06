@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelApp DB Kurgusu - Detaylı Rapor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #273549;
+            --border: #334155;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --blue: #3b82f6;
+            --blue-dim: #1d4ed8;
+            --purple: #7c3aed;
+            --green: #059669;
+            --yellow: #facc15;
+            --orange: #f97316;
+            --pink: #f472b6;
+            --red: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            z-index: 50;
+            padding: 24px 0;
+        }
+
+        .sidebar-title {
+            padding: 0 20px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-title span { color: var(--blue); }
+
+        .sidebar-section {
+            padding: 8px 20px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13.5px;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background: var(--surface2);
+            color: var(--text);
+            border-left-color: var(--blue);
+        }
+
+        .sidebar a .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .sidebar a .arrow {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 11px;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            padding: 40px 50px 80px;
+            max-width: 1100px;
+        }
+
+        /* HERO */
+        .hero {
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .hero h1 span { color: var(--blue); }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 15px;
+            max-width: 700px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 24px;
+            min-width: 130px;
+        }
+
+        .hero-stat .num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--blue);
+        }
+
+        .hero-stat .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* SECTION: FK Genel Açıklama */
+        .fk-intro {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin-bottom: 50px;
+        }
+
+        .fk-intro h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: var(--orange);
+        }
+
+        .fk-intro p {
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-size: 14.5px;
+        }
+
+        .fk-intro .example-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 2;
+        }
+
+        .fk-intro .example-box .highlight { color: var(--orange); font-weight: 600; }
+        .fk-intro .example-box .pk-hl { color: var(--yellow); font-weight: 600; }
+        .fk-intro .example-box .arrow-hl { color: var(--green); }
+
+        /* TABLE SECTION */
+        .table-section {
+            margin-bottom: 50px;
+            scroll-margin-top: 20px;
+        }
+
+        .table-header-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 6px;
+        }
+
+        .table-badge {
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-main { background: var(--blue-dim); color: #93c5fd; }
+        .badge-junction { background: #5b21b6; color: #c4b5fd; }
+        .badge-operation { background: #065f46; color: #6ee7b7; }
+
+        .table-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .table-section h2 .num {
+            color: var(--text-dim);
+            font-weight: 400;
+            font-size: 16px;
+            margin-right: 4px;
+        }
+
+        /* Why box */
+        .why-box {
+            background: var(--surface);
+            border-left: 4px solid var(--blue);
+            border-radius: 0 8px 8px 0;
+            padding: 18px 24px;
+            margin: 16px 0;
+        }
+
+        .why-box h4 {
+            font-size: 13px;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .why-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .usage-box {
+            background: var(--surface);
+            border-left: 4px solid var(--green);
+            border-radius: 0 8px 8px 0;
+            padding: 18px 24px;
+            margin: 16px 0 24px;
+        }
+
+        .usage-box h4 {
+            font-size: 13px;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .usage-box p, .usage-box li {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .usage-box ul {
+            padding-left: 20px;
+            margin-top: 6px;
+        }
+
+        .usage-box li { margin-bottom: 4px; }
+
+        /* Column table */
+        .col-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13.5px;
+        }
+
+        .col-table thead th {
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .col-table tbody tr {
+            border-bottom: 1px solid #1e293b;
+            transition: background 0.1s;
+        }
+
+        .col-table tbody tr:hover { background: var(--surface); }
+
+        .col-table td {
+            padding: 10px 14px;
+            vertical-align: top;
+        }
+
+        .col-table .col-name-cell {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .col-table .col-name-cell.pk { color: var(--yellow); }
+        .col-table .col-name-cell.fk { color: var(--orange); }
+
+        .col-table .col-type-cell {
+            font-family: 'Consolas', monospace;
+            color: var(--text-dim);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .col-table .col-badges {
+            white-space: nowrap;
+        }
+
+        .col-table .col-badges span {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+
+        .col-table .col-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* FK detail box */
+        .fk-detail {
+            background: linear-gradient(135deg, #1a1a2e, #1e293b);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 20px 0;
+        }
+
+        .fk-detail h4 {
+            color: var(--orange);
+            font-size: 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fk-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+        }
+
+        .fk-item:last-child { margin-bottom: 0; }
+
+        .fk-item .fk-title {
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--orange);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .fk-item .fk-arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .fk-item .fk-arrow .from { color: var(--pink); }
+        .fk-item .fk-arrow .arr { color: var(--green); }
+        .fk-item .fk-arrow .to { color: var(--yellow); }
+
+        .fk-item .fk-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .fk-item .fk-why {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 12.5px;
+            font-style: italic;
+        }
+
+        /* Divider */
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 50px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 20px; }
+        }
+
+        /* Scroll bar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <div class="sidebar-title"><span>HotelApp</span> DB Rapor</div>
+
+    <div class="sidebar-section">Genel</div>
+    <a href="#genel-bakış"><span class="dot" style="background:var(--blue)"></span> Genel Bakış<span class="arrow">→</span></a>
+    <a href="#fk-nedir"><span class="dot" style="background:var(--orange)"></span> FK Nedir?<span class="arrow">→</span></a>
+
+    <div class="sidebar-section" style="margin-top:12px;">Ana Tablolar</div>
+    <a href="#Hotels"><span class="dot" style="background:var(--blue-dim)"></span> Hotels<span class="arrow">→</span></a>
+    <a href="#RoomTypes"><span class="dot" style="background:var(--blue-dim)"></span> RoomTypes<span class="arrow">→</span></a>
+    <a href="#Users"><span class="dot" style="background:var(--blue-dim)"></span> Users<span class="arrow">→</span></a>
+    <a href="#Roles"><span class="dot" style="background:var(--blue-dim)"></span> Roles<span class="arrow">→</span></a>
+    <a href="#Amenities"><span class="dot" style="background:var(--blue-dim)"></span> Amenities<span class="arrow">→</span></a>
+
+    <div class="sidebar-section" style="margin-top:12px;">Ara Tablolar (N:N)</div>
+    <a href="#HotelRooms"><span class="dot" style="background:var(--purple)"></span> HotelRooms<span class="arrow">→</span></a>
+    <a href="#UserRoles"><span class="dot" style="background:var(--purple)"></span> UserRoles<span class="arrow">→</span></a>
+    <a href="#HotelAmenities"><span class="dot" style="background:var(--purple)"></span> HotelAmenities<span class="arrow">→</span></a>
+
+    <div class="sidebar-section" style="margin-top:12px;">İşlem Tabloları</div>
+    <a href="#Reservations"><span class="dot" style="background:var(--green)"></span> Reservations<span class="arrow">→</span></a>
+    <a href="#Reviews"><span class="dot" style="background:var(--green)"></span> Reviews<span class="arrow">→</span></a>
+    <a href="#HotelImages"><span class="dot" style="background:var(--green)"></span> HotelImages<span class="arrow">→</span></a>
+    <a href="#Logs"><span class="dot" style="background:var(--green)"></span> Logs<span class="arrow">→</span></a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+    <!-- HERO -->
+    <div class="hero" id="genel-bakış">
+        <h1><span>HotelApp</span> Veritabanı Kurgusu</h1>
+        <p>Otel rezervasyon sistemi için tasarlanan veritabanı semasinin detaylı analizi. Her tablonun neden oluşturuldugu, her kolonun amacı ve Foreign Key ilişkilerinin nasil çalıştığı bu raporda açıklanmaktadir.</p>
+        <div class="hero-stats">
+            <div class="hero-stat"><div class="num">12</div><div class="label">Tablo</div></div>
+            <div class="hero-stat"><div class="num">12</div><div class="label">Foreign Key</div></div>
+            <div class="hero-stat"><div class="num">2</div><div class="label">View</div></div>
+            <div class="hero-stat"><div class="num">2</div><div class="label">Stored Procedure</div></div>
+            <div class="hero-stat"><div class="num">1</div><div class="label">Trigger</div></div>
+            <div class="hero-stat"><div class="num">11</div><div class="label">Index</div></div>
+        </div>
+    </div>
+
+    <!-- FK GENEL ACIKLAMA -->
+    <div class="fk-intro" id="fk-nedir">
+        <h2>Foreign Key (FK) Nedir ve Neden Kullanılır?</h2>
+        <p>Foreign Key (yabanci anahtar), bir tablodaki kolonun baska bir tablodaki Primary Key'e (birincil anahtar) referans vermesidir. Bu bağlantı sayesinde iki tablo arasinda ilişki kurulur ve veri bütünlüğü (referential integrity) sağlanır.</p>
+        <p><strong>FK'nin 3 temel amacı vardir:</strong></p>
+        <p>1. <strong>Veri Bütünlüğü:</strong> Geçersiz veri girişini engeller. Örneğin, var olmayan bir otele rezervasyon yapılamaz. Eger HotelId = 999 olan bir otel yoksa, veritabanı bu kaydı reddeder.</p>
+        <p>2. <strong>İlişki Tanımlama:</strong> Tablolar arasi mantiksal bağlantı kurar. "Bu rezervasyon HANGI otelin HANGI odasına yapıldı?" sorusuna cevap verir.</p>
+        <p>3. <strong>Veri Tekrarını Önleme (Normalizasyon):</strong> Otel adini her rezervasyon satirinda tekrar yazmak yerine, sadece HotelId tutulur. Otel adi degisirse tek yerden güncellenir.</p>
+
+        <div class="example-box">
+            <strong>Örnek Senaryo:</strong><br><br>
+            <span class="pk-hl">Hotels tablosu:</span> Id = 1, Name = "Grand Palace Hotel"<br>
+            <span class="pk-hl">HotelRooms tablosu:</span> Id = 3, <span class="highlight">HotelId = 1</span>, RoomTypeId = 2, PricePerNight = 2500<br>
+            <span class="pk-hl">Reservations tablosu:</span> Id = 10, UserId = 5, <span class="highlight">HotelRoomId = 3</span>, CheckIn = 2026-04-01<br><br>
+            <span class="arrow-hl">→</span> Reservations.HotelRoomId = 3 <span class="arrow-hl">→</span> HotelRooms.Id = 3 <span class="arrow-hl">→</span> HotelRooms.HotelId = 1 <span class="arrow-hl">→</span> Hotels.Id = 1<br>
+            <span class="arrow-hl">→</span> Böylece rezervasyondan otele kadar tum zincir takip edilebilir.
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 1. HOTELS -->
+    <!-- ==================== -->
+    <div class="table-section" id="Hotels">
+        <div class="table-header-bar">
+            <span class="table-badge badge-main">Ana Tablo</span>
+        </div>
+        <h2><span class="num">01.</span> Hotels</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Sistemin merkezinde oteller var. Kullanıcılar otel arayacak, inceleyecek ve rezervasyon yapacak. Her otelin adi, adresi, sehri, yıldız derecesi, iletisim bilgileri gibi temel verilerinin saklanmasi gerekiyor. Bu tablo tum sistemin ana referans noktasidir; diger tabloların cogu (HotelRooms, Reviews, HotelImages, HotelAmenities) bu tabloya FK ile bağlanır.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Otel listeleme ve arama (sehre, yıldıza, puana gore filtreleme)</li>
+                <li>Otel detay sayfasinda bilgilerin gösterimi</li>
+                <li>Admin panelinde otel ekleme, düzenleme, silme (CRUD)</li>
+                <li>Harita üzerinde konum gösterimi (latitude/longitude)</li>
+                <li>Aktif/pasif otel yönetimi</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Her otelin benzersiz kimlik numarası. IDENTITY sayesinde otomatik artar (1, 2, 3...). Diger tablolar bu Id'ye FK ile bağlanarak "hangi otel" sorusuna cevap verir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Name</td>
+                    <td class="col-type-cell">NVARCHAR(200)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin adi. Kullanıcıların arama sonuçlarında ve detay sayfasinda gorecegi isim. NOT NULL çünkü isimsiz otel olamaz. NVARCHAR Türkçe karakterleri destekler (s, c, o, u, g, i).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Description</td>
+                    <td class="col-type-cell">NVARCHAR(2000)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Otelin tanitim metni. Detay sayfasinda gösterilecek uzun açıklama. NULL olabilir çünkü henuz açıklama girilmemiş olabilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Address</td>
+                    <td class="col-type-cell">NVARCHAR(500)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin acik adresi. Kullanıcının oteli bulabilmesi için gerekli. NOT NULL çünkü adresi olmayan otel listelenemez.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">City</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin bulundugu sehir. Kullanıcılar en cok sehre gore arama yapar ("İstanbul otelleri"). Bu yuzden ayri bir kolon ve üzerinde INDEX var. NOT NULL çünkü sehirsiz arama yapılamaz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Country</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin bulundugu ulke. Varsayilan değer "Turkiye". İleriye dönük ulke bazli genişleme için ayri kolon tutuldu.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">StarRating</td>
+                    <td class="col-type-cell">TINYINT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin resmi yıldız derecesi (1-5 arasi). CHECK constraint ile sınırlandırılmış, 0 veya 6 yıldız girilemez. TINYINT çünkü 1 byte yeterli (0-255 arasi), INT kullanmak gereksiz alan israfı olurdu.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Phone</td>
+                    <td class="col-type-cell">NVARCHAR(20)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin telefon numarasi. Artik zorunlu alandir ve iletisim icin her otelde bulunmalidir. NVARCHAR cunku telefon numaralari "+" ve "-" gibi karakterler icerebilir, aritmetik islem yapilmaz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Email</td>
+                    <td class="col-type-cell">NVARCHAR(200)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Otelin iletisim e-posta adresi. Opsiyonel alan, her otelin e-postasi olmayabilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Latitude</td>
+                    <td class="col-type-cell">DECIMAL(9,6)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Otelin enlem koordinati. Harita üzerinde konum göstermek için. 9 basamak, 6'si virgulden sonra: -90.000000 ile 90.000000 arasi değer alir. Opsiyonel çünkü her otel için koordinat bilinmeyebilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Longitude</td>
+                    <td class="col-type-cell">DECIMAL(9,6)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Otelin boylam koordinati. Latitude ile birlikte kullanılır. -180.000000 ile 180.000000 arasi.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">AvgRating</td>
+                    <td class="col-type-cell">DECIMAL(3,1)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Otelin ortalama kullanıcı puani. Trigger (trg_UpdateHotelRating) tarafından otomatik hesaplanır ve güncellenir. Denormalizasyon örneği: her seferinde AVG() hesaplamak yerine hazir değer tutulur, performans için.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IsActive</td>
+                    <td class="col-type-cell">BIT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin aktif olup olmadığı. 1 = aktif (gösterilir), 0 = pasif (gosterilmez). Soft delete yaklaşımı: otel silinmez, pasife alinir. Böylece eski rezervasyon verileri korunur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CreatedAt</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Otelin sisteme eklendigi tarih/saat. DEFAULT GETDATE() ile otomatik atanır. Audit (denetim) ve sıralama için kullanılır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">UpdatedAt</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Son güncelleme tarihi. NULL olabilir çünkü henuz güncellenmemiş olabilir. Her update işleminde uygulama tarafından set edilir.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key İlişkileri</h4>
+            <p style="color:var(--text-dim); font-size:13px;">Hotels tablosu ana tablo olduğu için kendisi FK ALMAZ, diger tablolar Hotels'e FK ile bağlanır. Hotels.Id diger tablolardaki HotelId kolonlarinin referans noktasidir.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 2. ROOMTYPES -->
+    <!-- ==================== -->
+    <div class="table-section" id="RoomTypes">
+        <div class="table-header-bar">
+            <span class="table-badge badge-main">Ana Tablo</span>
+        </div>
+        <h2><span class="num">02.</span> RoomTypes</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Oda tipleri (Single, Double, Suite, Family...) birden fazla otelde ortaktir. Her otelin içinde ayni oda tipi isimleri tekrar tekrar yazilsaydi veri tekrarı (data redundancy) oluşurdu. Ayri bir RoomTypes tablosu ile oda tipleri bir kez tanımlanır, otellere ara tablo (HotelRooms) üzerinden atanır. Bu normalizasyonun temel örneklerinden biridir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Oda tipi tanımları (isim, açıklama, kapasite) tek merkezde tutulur</li>
+                <li>Yeni oda tipi eklendiginde tum oteller için kullanılabilir hale gelir</li>
+                <li>Arama filtresinde "Suite odaları goster" gibi oda tipine gore filtreleme</li>
+                <li>Rezervasyon yaparken kullanıcıya oda seçeneklerinin gösterilmesi</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Oda tipinin benzersiz kimlik numarası. HotelRooms tablosu bu Id'ye FK ile bağlanır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Name</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span><span class="badge-uq">UQ</span></td>
+                    <td class="col-desc">Oda tipinin adi (Single, Double, Suite, Family, Deluxe, Triple). UNIQUE constraint ile ayni isimde iki oda tipi oluşturulamaz. Böylece "Double" iki kez eklenmesi engellenir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Description</td>
+                    <td class="col-type-cell">NVARCHAR(500)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Oda tipinin genel açıklamasi. Örneğin "Cift kisilik standart oda, duble yatak dahil." Kullanıcıya oda seçimi sırasında yardımcı bilgi sunar.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">MaxGuests</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Bu oda tipinin maksimum misafir kapasitesi. Rezervasyon sırasında sp_MakeReservation bu değeri kontrol eder: 3 kisi Family odasına (MaxGuests=4) girebilir ama Single odasına (MaxGuests=1) giremez. CHECK constraint ile 0'dan büyük olmasi zorunlu.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key İlişkileri</h4>
+            <p style="color:var(--text-dim); font-size:13px;">RoomTypes ana tablo olduğu için kendisi FK almaz. HotelRooms.RoomTypeId bu tabloya referans verir.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 3. USERS -->
+    <!-- ==================== -->
+    <div class="table-section" id="Users">
+        <div class="table-header-bar">
+            <span class="table-badge badge-main">Ana Tablo</span>
+        </div>
+        <h2><span class="num">03.</span> Users</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Sisteme kayit olan, giriş yapan, rezervasyon ve yorum yapan kullanıcıların bilgilerinin saklanmasi gerekiyor. Kim rezervasyon yapti, kim yorum birakti, kimin admin yetkisi var - bunlarin hepsi Users tablosu üzerinden takip edilir. Authentication (kimlik doğrulama) ve Authorization (yetkilendirme) sisteminin temelini oluşturur.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Kullanıcı kayit (register) ve giriş (login) işlemleri</li>
+                <li>Profil bilgilerinin gösterimi ve düzenlenmesi</li>
+                <li>Rezervasyon geçmişinin kullanıcıya bağlanması</li>
+                <li>Yorum ve puanlamalarin kullanıcıya bağlanması</li>
+                <li>Admin yetkisi kontrolü (UserRoles tablosu ile birlikte)</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Kullanıcının benzersiz kimlik numarası. Reservations, Reviews ve UserRoles tabloları bu Id'ye FK ile bağlanır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">FirstName</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Kullanıcının adi. Profilinde ve rezervasyon onay bilgilerinde gösterilir. Ad ve soyad ayri kolonlarda tutulur çünkü ayri ayri sıralamak veya aramak gerekebilir (SOLID - Single Responsibility benzeri düşünce).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">LastName</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Kullanıcının soyadi. Ad ile birlikte tam ismi oluşturur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Email</td>
+                    <td class="col-type-cell">NVARCHAR(200)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span><span class="badge-uq">UQ</span></td>
+                    <td class="col-desc">Kullanıcının e-posta adresi. Giriş yapmak için kullanılır (kullanıcı adi yerine email). UNIQUE constraint ile ayni email iki kez kayit olamaz. Uzerinde INDEX var çünkü her login işleminde email ile sorgu yapılır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">PasswordHash</td>
+                    <td class="col-type-cell">NVARCHAR(500)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Sifrenin hash'lenmis hali. Gercek sifre ASLA veritabanında duz metin olarak saklanmaz (güvenlik: OWASP top 10). Örneğin "Admin123!" yerine "a7f8b3c2e1..." gibi tek yonlu hash değeri tutulur. Giriş sırasında kullanıcının girdiği sifre hash'lenir ve bu değerle karşılaştırılır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Phone</td>
+                    <td class="col-type-cell">NVARCHAR(20)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Kullanicinin telefon numarasi. Artik zorunlu alandir. Rezervasyon iletisimi, kullanici dogrulamasi ve acil durum iletisimi icin gereklidir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IsActive</td>
+                    <td class="col-type-cell">BIT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Hesabin aktif olup olmadığı. Kullanıcı hesabini silmek yerine pasife alinir (soft delete). Eski rezervasyonlar ve yorumlar korunur ama kullanıcı giriş yapamaz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IsEmailVerified</td>
+                    <td class="col-type-cell">BIT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">E-posta adresi dogrulanmis mi? Varsayilan: 0 (false). Kayit sonrasi gonderilen dogrulama maili onaylaninca 1 (true) olur. Dogrulanmamis hesapla giris yapilamaz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">EmailVerificationToken</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Email dogrulama icin uretilen benzersiz token (GUID). Kayit sirasinda olusturulur, dogrulama mailindeki linke eklenir. Dogrulama tamamlaninca NULL yapilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">VerificationTokenExpiry</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Dogrulama token'inin son gecerlilik tarihi. Varsayilan: kayit zamani + 24 saat. Suresi gecmis token ile dogrulama yapilamaz, yeniden gonderilmesi gerekir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">FailedLoginAttempts</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Basarisiz giris deneme sayisi. Varsayilan: 0. Her yanlis sifrede 1 artar. 5'e ulasinca hesap gecici olarak kilitlenir. Basarili giriste sifirlanir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">LockoutEndTime</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Hesap kilitleme bitis zamani. 5 basarisiz denemede su anki zaman + 1 dakika olarak atanir. Bu tarih gecene kadar giris yapilamaz. NULL ise hesap kilitli degildir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CreatedAt</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Hesabin olusturulma tarihi. Admin panelinde "en yeni üyeler" gibi sıralamalarda ve denetim amacli kullanılır.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key İlişkileri</h4>
+            <p style="color:var(--text-dim); font-size:13px;">Users ana tablo olduğu için kendisi FK almaz. Reservations.UserId, Reviews.UserId ve UserRoles.UserId bu tabloya referans verir.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 4. ROLES -->
+    <!-- ==================== -->
+    <div class="table-section" id="Roles">
+        <div class="table-header-bar">
+            <span class="table-badge badge-main">Ana Tablo</span>
+        </div>
+        <h2><span class="num">04.</span> Roles</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Sistemde farkli yetki seviyelerine sahip kullanıcılar var: normal kullanıcılar otel arayıp rezervasyon yaparken, adminler otel/oda ekleyip silebilir. Rollerin ayri tabloda tutulmasi esneklik sağlar; ileride "Moderator", "HotelManager" gibi yeni roller eklemek için sadece bu tabloya bir satir eklemek yeterlidir, kod değiştirmeye gerek kalmaz (Open-Closed Principle).</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Rol tanımlarıni merkezi olarak yönetme</li>
+                <li>Authorization kontrolü: "Bu kullanıcının Admin rolu var mi?"</li>
+                <li>Yeni roller ekleyerek sistemi genişletme</li>
+                <li>API endpoint'lerinde [Authorize(Roles = "Admin")] gibi kontrollerle erişim sınırlandırma</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Rolun benzersiz kimlik numarası. UserRoles tablosu bu Id'ye FK ile bağlanır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Name</td>
+                    <td class="col-type-cell">NVARCHAR(50)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span><span class="badge-uq">UQ</span></td>
+                    <td class="col-desc">Rolun adi (Admin, User). UNIQUE constraint ile ayni isimde iki rol oluşturulamaz. Kod tarafinda bu isimle yetki kontrolü yapılır.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 5. AMENITIES -->
+    <!-- ==================== -->
+    <div class="table-section" id="Amenities">
+        <div class="table-header-bar">
+            <span class="table-badge badge-main">Ana Tablo</span>
+        </div>
+        <h2><span class="num">05.</span> Amenities</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Otellerin sundugu özellikler (WiFi, Havuz, Spa, Otopark...) birden fazla otelde ortaktir. Her otelin içine "WiFi: var, Havuz: var" gibi kolonlar eklemek hem esnek değildir hem de yeni özellik eklemeyi zorlastirir. Bunun yerine özellikler ayri tabloda tutulur ve HotelAmenities ara tablosu ile otellere atanır. Böylece yeni özellik eklemek için sadece bu tabloya bir satir eklemek yeterlidir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Otel özellik tanımları (isim + ikon) merkezi yönetim</li>
+                <li>Otel detay sayfasinda özelliklerin ikonlarla listelenmesi</li>
+                <li>Arama filtresinde "havuzlu oteller" gibi özelliğe gore filtreleme</li>
+                <li>Yeni özellik eklemek için veritabanı sema değişikliği gerektirmez</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Özelliğin benzersiz kimlik numarası.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Name</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span><span class="badge-uq">UQ</span></td>
+                    <td class="col-desc">Özelliğin adi (WiFi, Havuz, Spa, Otopark...). UNIQUE ile tekrarlanamaz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Icon</td>
+                    <td class="col-type-cell">NVARCHAR(50)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">CSS ikon sinifi (örneğin "fa-wifi" Font Awesome için). Frontend'de özelliğin yanında gösterilecek ikon. NULL olabilir, ikon atanmamışsa varsayılan ikon gösterilebilir.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 6. HOTELROOMS (Ara Tablo) -->
+    <!-- ==================== -->
+    <div class="table-section" id="HotelRooms">
+        <div class="table-header-bar">
+            <span class="table-badge badge-junction">Ara Tablo (N:N)</span>
+        </div>
+        <h2><span class="num">06.</span> HotelRooms</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Bir otelde birden fazla oda tipi bulunabilir (Single, Double, Suite) ve ayni oda tipi birden fazla otelde olabilir. Bu çoka-çok (N:N / many-to-many) ilişkidir. İlişkisel veritabanlarında N:N ilişki doğrudan kurulamaz, bunun için ara tablo gerekir. HotelRooms bu ara tabloyu oluşturur ve üstüne ek bilgiler ekler: fiyat ve oda sayısı OTELE OZEL olduğu için bu tabloda tutulur. Ayni "Double" oda tipi İstanbul'da 2500 TL, Ankara'da 900 TL olabilir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Hotel ve RoomType arasindaki N:N ilişkiyi kurar</li>
+                <li>Her otelin her oda tipi için farkli fiyat ve oda sayısı belirlemesini sağlar</li>
+                <li>Müsaitlik hesaplamasınin temelini oluşturur (TotalRooms - ReservedCount)</li>
+                <li>Rezervasyonlar bu tabloya bağlanır (doğrudan Hotels veya RoomTypes'a değil)</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Otel-oda eşleşmesinin benzersiz kimlik numarası. Reservations tablosu bu Id'ye FK ile bağlanır. Composite PK (HotelId + RoomTypeId) yerine ayri Id kullanildi çünkü Reservations tablosu tek bir FK ile bu kayda refere edebilsin.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">HotelId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Hangi otele ait olduğunu belirten referans. Hotels.Id'ye bağlı. Bu sayede "Bu oda eşleşmesi hangi otelin?" sorusuna cevap verilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">RoomTypeId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Hangi oda tipine ait olduğunu belirten referans. RoomTypes.Id'ye bağlı. HotelId + RoomTypeId ciftine UNIQUE constraint konulmus: ayni otele ayni oda tipini iki kez ekleyemezsin.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">PricePerNight</td>
+                    <td class="col-type-cell">DECIMAL(10,2)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Bu oteldeki bu oda tipinin gecelik fiyatı (TL). Otele özeldir: İstanbul Double 2500 TL, Ankara Double 900 TL. CHECK constraint ile 0'dan büyük olmasi zorunlu. DECIMAL(10,2) ile 99.999.999,99 TL'ye kadar desteklenir ve kuruş hassasiyeti korunur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">TotalRooms</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Bu otelde bu tipten toplam kac oda var. Müsaitlik hesaplamasında kullanılır: TotalRooms - ReservedCount = AvailableRooms. CHECK ile 0'dan büyük olmali.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IsActive</td>
+                    <td class="col-type-cell">BIT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Bu oda eşleşmesinin aktif olup olmadığı. Örneğin bir otel geçici olarak Suite odalarıni kapatabilir ama silemez (eski rezervasyonlar korunur).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_HotelRooms_Hotel</div>
+                <div class="fk-arrow">
+                    <span class="from">HotelRooms.HotelId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Hotels.Id</span>
+                </div>
+                <div class="fk-desc">HotelRooms tablosundaki HotelId kolonu, Hotels tablosundaki Id kolonuna referans verir. Bu, her oda eşleşmesinin mutlaka var olan bir otele ait olmasini garanti eder. Örneğin HotelId = 99 yazılırsa ama Hotels tablosunda Id = 99 olan bir kayit yoksa, veritabanı bu INSERT işlemini reddeder.</div>
+                <div class="fk-why">Neden bağlandı: Oda bilgisi otele aittir, otelsiz oda bilgisi anlamsızdır. FK olmadan "hayalet otel" referanslari oluşabilirdi.</div>
+            </div>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_HotelRooms_RoomType</div>
+                <div class="fk-arrow">
+                    <span class="from">HotelRooms.RoomTypeId</span>
+                    <span class="arr">→</span>
+                    <span class="to">RoomTypes.Id</span>
+                </div>
+                <div class="fk-desc">HotelRooms tablosundaki RoomTypeId kolonu, RoomTypes tablosundaki Id kolonuna referans verir. Her oda eşleşmesinin geçerli bir oda tipine ait olmasini garanti eder.</div>
+                <div class="fk-why">Neden bağlandı: Oda tipi tanımsız bir eşleme oluşmasın. "RoomTypeId = 50" ama RoomTypes'ta boyle bir tip yoksa, hata fırlatılır.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 7. USERROLES (Ara Tablo) -->
+    <!-- ==================== -->
+    <div class="table-section" id="UserRoles">
+        <div class="table-header-bar">
+            <span class="table-badge badge-junction">Ara Tablo (N:N)</span>
+        </div>
+        <h2><span class="num">07.</span> UserRoles</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Bir kullanıcının birden fazla rolu olabilir (hem Admin hem User) ve bir rol birden fazla kullanıcıya atanabilir. Bu N:N ilişkidir. Users tablosuna "RoleId" koymak yetersiz olurdu çünkü bir kullanıcının tek rolu olabilirdi. UserRoles ara tablosu ile istenen sayida rol atanabilir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Kullanıcılara rol atama ve cikarma</li>
+                <li>Giriş sırasında kullanıcının rollerini sorgulama</li>
+                <li>API'de rol bazli erişim kontrolü (Admin endpoint'lerine sadece Admin rolu olanlarin erişmesi)</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk fk">UserId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span><span class="badge-fk">FK</span></td>
+                    <td class="col-desc">Kullanıcı referansı. Users.Id'ye bağlı. Composite Primary Key'in birinci parçası. PK + FK ayni anda: bu kolon hem ilişkiyi kurar hem benzersizlik sağlar.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell pk fk">RoleId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span><span class="badge-fk">FK</span></td>
+                    <td class="col-desc">Rol referansı. Roles.Id'ye bağlı. UserId + RoleId bileşimiyle Composite PK oluşturulur: ayni kullanıcıya ayni rol iki kez atanamaz.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_UserRoles_User</div>
+                <div class="fk-arrow">
+                    <span class="from">UserRoles.UserId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Users.Id</span>
+                </div>
+                <div class="fk-desc">Rol atamasinin hangi kullanıcıya ait olduğunu belirler. Var olmayan bir kullanıcıya rol atanamaz.</div>
+                <div class="fk-why">Neden bağlandı: "Hayalet kullanıcı" rolleri oluşmasın. Kullanıcı silindiğinde (veya silinmeye çalışıldığında) bu ilişki kontrol edilir.</div>
+            </div>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_UserRoles_Role</div>
+                <div class="fk-arrow">
+                    <span class="from">UserRoles.RoleId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Roles.Id</span>
+                </div>
+                <div class="fk-desc">Atamanin hangi role ait olduğunu belirler. Tanımsız bir rol atanamaz.</div>
+                <div class="fk-why">Neden bağlandı: RoleId = 99 yazılırsa ama Roles'ta boyle bir rol yoksa, veritabanı hata verir. Veri tutarlılığı korunur.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 8. HOTELAMENITIES (Ara Tablo) -->
+    <!-- ==================== -->
+    <div class="table-section" id="HotelAmenities">
+        <div class="table-header-bar">
+            <span class="table-badge badge-junction">Ara Tablo (N:N)</span>
+        </div>
+        <h2><span class="num">08.</span> HotelAmenities</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Bir otel birden fazla özelliğe sahip olabilir (WiFi + Havuz + Spa) ve bir özellik birden fazla otelde bulunabilir. Klasik N:N ilişki. Hotels tablosuna "HasWifi, HasPool, HasSpa" gibi Boolean kolonlar eklemek ilk basta kolay görünür ama yeni özellik eklendikçe tablo şişmesi (table bloat) oluşur ve ALTER TABLE gerektirir. Ara tablo yaklaşımı ile sistem esnek kalir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Bir otele özellik atama ve cikarma (sadece satir ekle/sil)</li>
+                <li>"Havuzlu oteller" gibi özelliğe gore filtreleme sorguları</li>
+                <li>Otel detay sayfasinda özelliklerin ikonlarla listelenmesi</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk fk">HotelId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span><span class="badge-fk">FK</span></td>
+                    <td class="col-desc">Otel referansı. Hotels.Id'ye bağlı. Composite PK'nin birinci parçası.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell pk fk">AmenityId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span><span class="badge-fk">FK</span></td>
+                    <td class="col-desc">Ozellik referansı. Amenities.Id'ye bağlı. HotelId + AmenityId Composite PK: ayni özellik ayni otele iki kez atanamaz.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_HotelAmenities_Hotel</div>
+                <div class="fk-arrow">
+                    <span class="from">HotelAmenities.HotelId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Hotels.Id</span>
+                </div>
+                <div class="fk-desc">Ozellik atamasinin hangi otele ait olduğunu belirler.</div>
+                <div class="fk-why">Neden bağlandı: Var olmayan bir otele özellik atanamaz.</div>
+            </div>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_HotelAmenities_Amenity</div>
+                <div class="fk-arrow">
+                    <span class="from">HotelAmenities.AmenityId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Amenities.Id</span>
+                </div>
+                <div class="fk-desc">Atamanin hangi özelliğe ait olduğunu belirler.</div>
+                <div class="fk-why">Neden bağlandı: Tanımsız bir özellik otele eklenemez. Amenities tablosundaki kayitlarla sınırlı kalir.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 9. RESERVATIONS -->
+    <!-- ==================== -->
+    <div class="table-section" id="Reservations">
+        <div class="table-header-bar">
+            <span class="table-badge badge-operation">İşlem Tablosu</span>
+        </div>
+        <h2><span class="num">09.</span> Reservations</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Tum sistemin varlık sebebi: kullanıcıların otel odalarına rezervasyon yapması. Hangi kullanıcı, hangi otelin hangi odasıni, hangi tarihler arasi, kac kisi için, ne kadara rezerve etti - bu bilgilerin kayit altina alinmasi gerekiyor. Ayrica müsaitlik hesaplaması bu tablodaki kayıtlara bakarak yapılır: belirli tarihlerde kac oda rezerve edilmis, kac oda bos kalmis.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Yeni rezervasyon oluşturma (sp_MakeReservation ile kontrol)</li>
+                <li>Kullanıcının rezervasyon geçmişini gösterme</li>
+                <li>Müsaitlik hesaplaması (sp_SearchAvailableRooms bu tabloyu sorgular)</li>
+                <li>Rezervasyon durumu takibi (Pending → Confirmed → Completed / Cancelled)</li>
+                <li>Admin panelinde tum rezervasyonlarin yönetimi</li>
+                <li>Gelir raporları için TotalPrice verisi</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Rezervasyonun benzersiz numarası. Kullanıcıya "Rezervasyon No: 1042" gibi gösterilebilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">UserId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Rezervasyonu yapan kullanıcı. Users.Id'ye bağlı. "Bu rezervasyon kimin?" sorusuna cevap verir. NOT NULL çünkü anonim rezervasyon yoktur, giriş yapmis kullanıcı gerekir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">HotelRoomId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Rezerve edilen oda eşleşmesi. HotelRooms.Id'ye bağlı. Doğrudan Hotels veya RoomTypes'a değil HotelRooms'a bağlanır çünkü fiyat ve oda sayısı bilgisi HotelRooms'ta tutuluyor. Tek FK ile hem oteli hem oda tipini biliyoruz.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CheckInDate</td>
+                    <td class="col-type-cell">DATE</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Giriş tarihi. Müsaitlik hesaplamasında kullanılır. DATE tipi kullanildi (DATETIME2 değil) çünkü saat bilgisi otel girişinde genelde önemli değildir (standart check-in saati vardir).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CheckOutDate</td>
+                    <td class="col-type-cell">DATE</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Çıkış tarihi. CHECK constraint ile CheckOutDate > CheckInDate zorunlu: çıkış tarihi giriş tarihinden SONRA olmalidir. Gece sayısı = CheckOutDate - CheckInDate farkindan hesaplanır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">GuestCount</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Misafir sayısı. sp_MakeReservation bu değeri RoomTypes.MaxGuests ile karşılaştırır. 3 kisi Single odaya (MaxGuests=1) giremez. CHECK ile 0'dan büyük olmali.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">TotalPrice</td>
+                    <td class="col-type-cell">DECIMAL(10,2)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Toplam rezervasyon tutari. Hesaplama: GeceSayisi * PricePerNight. sp_MakeReservation tarafından otomatik hesaplanır. Ayri kolon olarak tutulur çünkü fiyatlar değişebilir, bu değer rezervasyon anındaki fiyatı korur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">PaymentMethod</td>
+                    <td class="col-type-cell">NVARCHAR(50)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Odeme yontemi bilgisi. Ornegin Credit Card, Bank Transfer veya benzeri bir deger tutulur. Rezervasyon kaydinin finansal akisla birlikte izlenebilmesi icin zorunlu alandir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Status</td>
+                    <td class="col-type-cell">NVARCHAR(20)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Rezervasyonun durumu. 4 geçerli değer: Pending (beklemede), Confirmed (onaylandı), Cancelled (iptal), Completed (tamamlandı). CHECK constraint ile sadece bu değerler kabul edilir. Müsaitlik hesaplamasında sadece Pending ve Confirmed olanlar sayılır.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CreatedAt</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Rezervasyonun olusturulma tarihi/saati. Denetim ve sıralama için.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_Reservations_User</div>
+                <div class="fk-arrow">
+                    <span class="from">Reservations.UserId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Users.Id</span>
+                </div>
+                <div class="fk-desc">Rezervasyonun hangi kullanıcıya ait olduğunu belirler. JOIN ile kullanıcının adini, emailini ve diger bilgilerini rezervasyonla birleştiririz.</div>
+                <div class="fk-why">Neden bağlandı: Var olmayan bir kullanıcı adina rezervasyon oluşturulamaz. Kullanıcı bilgisi rezervasyon satirinda tekrar yazılmaz, sadece Id tutulur (normalizasyon).</div>
+            </div>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_Reservations_HotelRoom</div>
+                <div class="fk-arrow">
+                    <span class="from">Reservations.HotelRoomId</span>
+                    <span class="arr">→</span>
+                    <span class="to">HotelRooms.Id</span>
+                </div>
+                <div class="fk-desc">Rezervasyonun hangi otelin hangi oda tipine yapıldığıni belirler. HotelRooms üzerinden hem otele (Hotels) hem oda tipine (RoomTypes) ulaşılır. Böylece tek FK ile tum zincir takip edilir: Reservation → HotelRoom → Hotel + RoomType.</div>
+                <div class="fk-why">Neden HotelRooms'a bağlandı (Hotels'e değil): Fiyat bilgisi HotelRooms'ta tutuluyor. Doğrudan Hotels'e bağlansaydık hangi oda tipinin rezerve edildigini ve o anki fiyatıni bilemezdik. HotelRooms ara tablosu hem oteli hem oda tipini hem fiyatı içerir.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 10. REVIEWS -->
+    <!-- ==================== -->
+    <div class="table-section" id="Reviews">
+        <div class="table-header-bar">
+            <span class="table-badge badge-operation">İşlem Tablosu</span>
+        </div>
+        <h2><span class="num">10.</span> Reviews</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Kullanıcıların otelleri puanlamasi ve yorum yapması, otel seçiminde en etkili faktorlerden biridir. Her otelin ortalama puani ve kullanıcı yorumlari gösterilmesi gerekiyor. Bu veriler ayri tabloda tutulur çünkü bir otelin birden fazla yorumu olabilir (1:N ilişki). Hotels tablosuna yorum kolonlari eklemek mumkun değildir çünkü sayısı belirsizdir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Otel detay sayfasinda yorumlarin listelenmesi</li>
+                <li>Ortalama puan hesaplaması (trigger ile otomatik Hotels.AvgRating güncellenir)</li>
+                <li>Arama sonuçlarında puana gore sıralama</li>
+                <li>Kullanıcının kendi yorum geçmişini gormesi</li>
+                <li>Admin panelinde uygunsuz yorumlarin yönetimi</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Yorumun benzersiz kimlik numarası.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">UserId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Yorumu yapan kullanıcı. Users.Id'ye bağlı. NOT NULL çünkü anonim yorum yapılmasına izin verilmiyor.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">HotelId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Yorumun hangi otele yapıldığı. Hotels.Id'ye bağlı. UNIQUE constraint (UserId + HotelId) ile bir kullanıcı ayni otele sadece 1 yorum yapabilir. Birden fazla yorum yapmak isterse mevcut yorumunu güncellemesi gerekir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Rating</td>
+                    <td class="col-type-cell">TINYINT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Kullanıcının verdigi puan (1-5 arasi). CHECK constraint ile sınırlı. Bu değerler ortalanarak Hotels.AvgRating hesaplanır. TINYINT yeterli, 1 byte ile 1-5 arasi değer tutulur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Comment</td>
+                    <td class="col-type-cell">NVARCHAR(1000)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Kullanıcının yazılı yorumu. NULL olabilir: kullanıcı sadece puan verip yorum yazmayabilir. 1000 karakter limiti cok uzun ve konudan sapan yorumlari önler.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">CreatedAt</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Yorumun yazılma tarihi. "En yeni yorumlar" sıralamasi ve ne zaman yapıldığınin gösterimi için.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_Reviews_User</div>
+                <div class="fk-arrow">
+                    <span class="from">Reviews.UserId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Users.Id</span>
+                </div>
+                <div class="fk-desc">Yorumun kime ait olduğunu belirler. JOIN ile yorumun yanında kullanıcının adi gösterilir.</div>
+                <div class="fk-why">Neden bağlandı: Var olmayan kullanıcının yorum yapması engellenir. Kullanıcı adi yorum satirinda değil Users tablosunda tutulur (normalizasyon).</div>
+            </div>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_Reviews_Hotel</div>
+                <div class="fk-arrow">
+                    <span class="from">Reviews.HotelId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Hotels.Id</span>
+                </div>
+                <div class="fk-desc">Yorumun hangi otele ait olduğunu belirler. Otel detay sayfasinda WHERE HotelId = X ile o otele ait tum yorumlar çekilir. trigger ile bu otelin AvgRating'i otomatik güncellenir.</div>
+                <div class="fk-why">Neden bağlandı: Var olmayan bir otele yorum yapılamaz. UserId + HotelId birleşimine UNIQUE constraint konarak ayni kullanıcının ayni otele ikinci yorum yapması engellenir.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 11. HOTELIMAGES -->
+    <!-- ==================== -->
+    <div class="table-section" id="HotelImages">
+        <div class="table-header-bar">
+            <span class="table-badge badge-operation">İşlem Tablosu</span>
+        </div>
+        <h2><span class="num">11.</span> HotelImages</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya İhtiyaç Duyuldu?</h4>
+            <p>Bir otelin birden fazla görseli olur (lobi, oda, havuz, restoran fotoğraflari). Hotels tablosuna "Image1, Image2, Image3" gibi kolonlar eklemek hem sınırlı hem de esnek değildir. Ayri tablo ile istenen sayida görsel eklenebilir, sıralanabilir ve bir tanesi ana görsel olarak işaretlenebilir.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanım Amacı</h4>
+            <ul>
+                <li>Otel detay sayfasinda görsel galerisi</li>
+                <li>Arama sonuçlarında ana görselin (IsMain=1) gösterimi</li>
+                <li>Admin panelinde görsel yükleme, silme, sira değiştirme</li>
+                <li>Görsel sıralamasinin (DisplayOrder) kontrolü</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kısıtlar</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Görselin benzersiz kimlik numarası.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">HotelId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Görselin hangi otele ait olduğu. Hotels.Id'ye bağlı. Bir otel silinmeye çalışıldığında bu FK devreye girer ve bağlı görseller varsa işlemi engeller veya kaskad siler (tasarim tercihine bağlı).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">ImageUrl</td>
+                    <td class="col-type-cell">NVARCHAR(500)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Görselin dosya yolu veya URL'si. Görsel dosyasinin kendisi veritabanında değil dosya sisteminde veya CDN'de tutulur; burada sadece adresi saklanır. NOT NULL çünkü URL'siz görsel kaydınin anlamı yoktur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IsMain</td>
+                    <td class="col-type-cell">BIT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Bu görsel otelin ana (vitrin) görseli mi? 1 = evet, 0 = hayir. Arama sonuçlarında ve listeleme kartlarinda IsMain=1 olan görsel gösterilir. Idealde her otelde yalnız 1 tane IsMain=1 olmali (uygulama katmaninda kontrol edilir).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">DisplayOrder</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Görselin sıralamadaki yeri. Galeri görünümünde görsellerin hangi sirada gösterileceğini belirler. Varsayilan 0. ORDER BY DisplayOrder ile sıralanır.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_HotelImages_Hotel</div>
+                <div class="fk-arrow">
+                    <span class="from">HotelImages.HotelId</span>
+                    <span class="arr">→</span>
+                    <span class="to">Hotels.Id</span>
+                </div>
+                <div class="fk-desc">Her görselin mutlaka var olan bir otele ait olmasini garanti eder. WHERE HotelId = X ile bir otelin tum görselleri çekilir.</div>
+                <div class="fk-why">Neden bağlandı: Sahipsiz görsel kayıtlarıni önler. Var olmayan bir otele görsel eklenemez. Otel silindiğinde ilişkili görseller de ele alinir.</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ==================== -->
+    <!-- 12. LOGS -->
+    <!-- ==================== -->
+    <div class="table-section" id="Logs">
+        <div class="table-header-bar">
+            <span class="table-badge badge-operation">Islem Tablosu</span>
+        </div>
+        <h2><span class="num">12.</span> Logs</h2>
+
+        <div class="why-box">
+            <h4>Neden Bu Tabloya Ihtiyac Duyuldu?</h4>
+            <p>Sistemde gerceklesen kritik islemlerin kayit altina alinmasi gerekiyor: kim ne zaman giris yapti, hangi admin hangi oteli sildi, hangi kullanici rezervasyon iptal etti, hangi hata olustu. Bu tablo Singleton design pattern ile calisan LoggerService tarafindan otomatik olarak doldurulur. Ayrica OWASP guvenlik standartlarina gore uygulama loglarinin tutulmasi zorunludur. Logs tablosu diger islem tablolarindan farkli olarak dogrudan kullanici islemi ile degil, sistem tarafindan otomatik olusturulur.</p>
+        </div>
+
+        <div class="usage-box">
+            <h4>Kullanim Amaci</h4>
+            <ul>
+                <li>Guvenlik denetimi: basarisiz giris denemeleri, yetkisiz erisim kayitlari</li>
+                <li>Hata takibi: yakalanmamis exception'larin stack trace ile kaydedilmesi</li>
+                <li>Admin panelinde log goruntuleme ve filtreleme (seviye, tarih, kullanici)</li>
+                <li>Kullanici aktivite takibi: kim ne zaman ne yapti</li>
+                <li>Sistem sagligi izleme: hata yogunlugu, performans sorunlari tespiti</li>
+            </ul>
+        </div>
+
+        <table class="col-table">
+            <thead>
+                <tr><th>Kolon</th><th>Tip</th><th>Kisitlar</th><th>Aciklama</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name-cell pk">Id</td>
+                    <td class="col-type-cell">INT IDENTITY</td>
+                    <td class="col-badges"><span class="badge-pk">PK</span></td>
+                    <td class="col-desc">Log kaydinin benzersiz kimlik numarasi. IDENTITY ile otomatik artar. Diger tablolardaki PK pattern'i ile ayni.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Timestamp</td>
+                    <td class="col-type-cell">DATETIME2</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Olayin gerceklestigi tarih ve saat. DEFAULT GETDATE() ile otomatik atanir. IX_Logs_Timestamp (DESC) index'i ile en yeni loglar hizlica sorgulanir. Hotels.CreatedAt, Reservations.CreatedAt ile ayni tip.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Level</td>
+                    <td class="col-type-cell">NVARCHAR(20)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Log seviyesi: 'Info' (normal islem), 'Warning' (dikkat gerektiren durum, orn: basarisiz giris), 'Error' (sistem hatasi). Reservations.Status pattern'i ile benzer yaklasim. IX_Logs_Level index'i ile seviyeye gore filtreleme hizlandirilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Message</td>
+                    <td class="col-type-cell">NVARCHAR(2000)</td>
+                    <td class="col-badges"><span class="badge-nn">NN</span></td>
+                    <td class="col-desc">Olayin aciklamasi. Orn: "Kullanici basariyla giris yapti", "Otel 'Grand Palace' silindi", "Rezervasyon #42 iptal edildi". Hotels.Description ile ayni uzunluk (2000 karakter).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell fk">UserId</td>
+                    <td class="col-type-cell">INT</td>
+                    <td class="col-badges"><span class="badge-fk">FK</span></td>
+                    <td class="col-desc">Islemi yapan kullanicinin ID'si. NULL olabilir cunku bazi loglar anonim islemlerden gelir (orn: basarisiz login denemesi, anonim hata). FK ile Users.Id'ye baglanir. ON DELETE SET NULL: kullanici silinirse log kaydi korunur ama UserId NULL olur. IX_Logs_UserId index'i ile kullaniciya gore filtreleme.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">UserEmail</td>
+                    <td class="col-type-cell">NVARCHAR(200)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Islemi yapan kullanicinin e-postasi. Denormalizasyon ornegi: Users tablosuna JOIN yapmadan log listesinde kullanici bilgisi gosterilir. AvgRating mantigi ile benzer yaklasim (performans icin hazir deger tutma). Users.Email ile ayni uzunluk (200 karakter).</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Controller</td>
+                    <td class="col-type-cell">NVARCHAR(100)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Istegin islendigi controller adi. Orn: "AuthController", "HotelsController", "AdminController". Admin panelinde controller bazli filtreleme icin kullanilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">Action</td>
+                    <td class="col-type-cell">NVARCHAR(200)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Istegin islendigi endpoint. Orn: "POST /api/auth/login", "DELETE /api/hotels/5". HTTP metodu + URL bilgisi birlikte tutulur.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">IpAddress</td>
+                    <td class="col-type-cell">NVARCHAR(45)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Istegin geldigi istemci IP adresi. NVARCHAR(45) cunku IPv6 adresleri 39 karakter, mapped IPv4 45 karaktere kadar olabilir. Guvenlik denetimi icin onemli: ayni IP'den cok sayida basarisiz giris denemesi tespit edilebilir.</td>
+                </tr>
+                <tr>
+                    <td class="col-name-cell">ExceptionDetail</td>
+                    <td class="col-type-cell">NVARCHAR(4000)</td>
+                    <td class="col-badges"></td>
+                    <td class="col-desc">Hata detayi ve stack trace. Sadece Level='Error' olan kayitlarda dolu olur, diger seviyelerde NULL kalir. 4000 karakter cogu stack trace icin yeterlidir. Admin panelinde hata detayi goruntulemek icin kullanilir.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="fk-detail">
+            <h4>Foreign Key Detaylari</h4>
+
+            <div class="fk-item">
+                <div class="fk-title">FK_Logs_Users</div>
+                <div class="fk-arrow">
+                    <span class="from">Logs.UserId</span>
+                    <span class="arr">-></span>
+                    <span class="to">Users.Id</span>
+                </div>
+                <div class="fk-desc">Log kaydini islemi yapan kullaniciya baglar. Diger tablolardaki FK'lerden farkli olarak NULL olabilir (anonim islemler) ve ON DELETE SET NULL kullanir. Boylece kullanici silinse bile log kayitlari korunur (audit trail bozulmaz).</div>
+                <div class="fk-why">Neden baglandir: "Bu islemi kim yapti?" sorusuna cevap verir. Admin panelinde kullaniciya gore log filtreleme saglar. ON DELETE SET NULL secildi cunku log kayitlarinin kaliciligi kullanici hesabindan daha onemlidir (guvenlik denetimi icin).</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Smooth scroll for sidebar links
+document.querySelectorAll('.sidebar a').forEach(a => {
+    a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+
+// Highlight active section in sidebar on scroll
+const sections = document.querySelectorAll('.table-section, .hero, .fk-intro');
+const sidebarLinks = document.querySelectorAll('.sidebar a');
+
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+        const top = s.getBoundingClientRect().top;
+        if (top < 150) current = s.id;
+    });
+    sidebarLinks.forEach(a => {
+        a.style.background = '';
+        a.style.color = '';
+        a.style.borderLeftColor = 'transparent';
+        if (a.getAttribute('href') === '#' + current) {
+            a.style.background = 'var(--surface2)';
+            a.style.color = 'var(--text)';
+            a.style.borderLeftColor = 'var(--blue)';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

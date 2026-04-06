@@ -1,0 +1,4438 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelApp API Endpoint Raporu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #273549;
+            --border: #334155;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --dim: #64748b;
+            --blue: #3b82f6;
+            --blue-dim: #1d4ed8;
+            --purple: #a78bfa;
+            --green: #34d399;
+            --yellow: #fbbf24;
+            --orange: #fb923c;
+            --pink: #f472b6;
+            --red: #ef4444;
+            --cyan: #22d3ee;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            z-index: 50;
+            padding: 24px 0;
+        }
+
+        .sidebar-title {
+            padding: 0 20px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-title span {
+            color: var(--blue);
+        }
+
+        .sidebar-section {
+            padding: 8px 20px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--dim);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .sidebar a:hover {
+            background: var(--surface2);
+            color: var(--text);
+            border-left-color: var(--blue);
+        }
+
+        .sidebar a .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .sidebar a .arrow {
+            margin-left: auto;
+            color: var(--dim);
+            font-size: 11px;
+        }
+
+        .sidebar .ep-count {
+            margin-left: auto;
+            font-size: 10px;
+            background: var(--surface2);
+            color: var(--dim);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            padding: 40px 50px 80px;
+            max-width: auto;
+        }
+
+        /* HERO */
+        .hero {
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .hero h1 span {
+            color: var(--blue);
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 15px;
+            max-width: 700px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 24px;
+            min-width: 130px;
+        }
+
+        .hero-stat .num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--blue);
+        }
+
+        .hero-stat .label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* SECTIONS */
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            scroll-margin-top: 20px;
+        }
+
+        h2 .num {
+            color: var(--dim);
+            font-weight: 400;
+            font-size: 16px;
+            margin-right: 4px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 50px 0;
+        }
+
+        p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        p strong {
+            color: var(--text);
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            border-left: 4px solid var(--blue);
+        }
+
+        .info-box.green {
+            border-left-color: var(--green);
+        }
+
+        .info-box.yellow {
+            border-left-color: var(--yellow);
+        }
+
+        .info-box.orange {
+            border-left-color: var(--orange);
+        }
+
+        .info-box.purple {
+            border-left-color: var(--purple);
+        }
+
+        .info-box.cyan {
+            border-left-color: var(--cyan);
+        }
+
+        .info-box.red {
+            border-left-color: var(--red);
+        }
+
+        .info-box h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--blue);
+        }
+
+        .info-box.green h4 {
+            color: var(--green);
+        }
+
+        .info-box.yellow h4 {
+            color: var(--yellow);
+        }
+
+        .info-box.orange h4 {
+            color: var(--orange);
+        }
+
+        .info-box.purple h4 {
+            color: var(--purple);
+        }
+
+        .info-box.cyan h4 {
+            color: var(--cyan);
+        }
+
+        .info-box.red h4 {
+            color: var(--red);
+        }
+
+        .info-box p {
+            margin-bottom: 6px;
+        }
+
+        .info-box ul {
+            padding-left: 18px;
+            margin-top: 4px;
+        }
+
+        .info-box li {
+            color: var(--muted);
+            font-size: 13.5px;
+            margin-bottom: 3px;
+        }
+
+        /* CODE BLOCK */
+        .code-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.8;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+
+        .code-block .key {
+            color: var(--cyan);
+        }
+
+        .code-block .str {
+            color: var(--green);
+        }
+
+        .code-block .comment {
+            color: var(--dim);
+            font-style: italic;
+        }
+
+        /* CONTROLLER SECTION */
+        .controller-section {
+            margin-bottom: 50px;
+            scroll-margin-top: 20px;
+        }
+
+        .controller-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 6px;
+        }
+
+        .controller-badge {
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cbadge-auth {
+            background: #7c2d12;
+            color: #fed7aa;
+        }
+
+        .cbadge-hotel {
+            background: #065f46;
+            color: #6ee7b7;
+        }
+
+        .cbadge-room {
+            background: #5b21b6;
+            color: #c4b5fd;
+        }
+
+        .cbadge-reservation {
+            background: #155e75;
+            color: #67e8f9;
+        }
+
+        .cbadge-review {
+            background: #831843;
+            color: #fbcfe8;
+        }
+
+        .cbadge-amenity {
+            background: #854d0e;
+            color: #fde68a;
+        }
+
+        .cbadge-admin {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .controller-base {
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--dim);
+            margin-bottom: 20px;
+        }
+
+        /* ENDPOINT CARD */
+        .ep-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 20px 0;
+            transition: border-color 0.15s;
+        }
+
+        .ep-card:hover {
+            border-color: var(--blue);
+        }
+
+        .ep-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .ep-id {
+            font-size: 11px;
+            color: var(--dim);
+            font-weight: 700;
+            min-width: 32px;
+        }
+
+        /* METHOD BADGES */
+        .method {
+            display: inline-block;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .method-get {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--green);
+        }
+
+        .method-post {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--blue);
+        }
+
+        .method-put {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--yellow);
+        }
+
+        .method-delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+
+        .ep-url {
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: var(--cyan);
+        }
+
+        /* AUTH BADGES */
+        .auth {
+            display: inline-block;
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-left: auto;
+        }
+
+        .auth-anon {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--dim);
+        }
+
+        .auth-user {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--green);
+        }
+
+        .auth-admin {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+
+        .ep-desc {
+            color: var(--muted);
+            font-size: 14px;
+            margin: 10px 0 16px;
+            padding-left: 44px;
+        }
+
+        /* PARAM / RESPONSE TABLES */
+        .ep-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--dim);
+            margin: 16px 0 8px;
+            padding-left: 4px;
+        }
+
+        .ep-section-title.req {
+            color: var(--orange);
+        }
+
+        .ep-section-title.res {
+            color: var(--green);
+        }
+
+        .ep-section-title.status {
+            color: var(--blue);
+        }
+
+        .ep-section-title.rules {
+            color: var(--cyan);
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin: 8px 0 16px;
+        }
+
+        .param-table thead th {
+            background: var(--surface2);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .param-table tbody tr {
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .param-table tbody tr:hover {
+            background: var(--bg);
+        }
+
+        .param-table td {
+            padding: 8px 12px;
+            vertical-align: top;
+        }
+
+        .param-table .fname {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .param-table .ftype {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--dim);
+            white-space: nowrap;
+        }
+
+        .param-table .floc {
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .loc-path {
+            color: var(--purple);
+        }
+
+        .loc-query {
+            color: var(--cyan);
+        }
+
+        .loc-body {
+            color: var(--orange);
+        }
+
+        .loc-header {
+            color: var(--yellow);
+        }
+
+        .param-table .fdesc {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .required-yes {
+            color: var(--yellow);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .required-no {
+            color: var(--dim);
+            font-size: 10px;
+        }
+
+        /* STATUS CODES */
+        .status-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0 16px;
+        }
+
+        .status-code {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .s2xx {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--green);
+        }
+
+        .s4xx {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--yellow);
+        }
+
+        .s5xx {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+        }
+
+        /* RULES */
+        .rules-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 8px 0;
+        }
+
+        .rules-box ul {
+            padding-left: 16px;
+            margin: 0;
+        }
+
+        .rules-box li {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 4px;
+            line-height: 1.6;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dim);
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .ep-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .auth {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-title"><span>HotelApp</span> API Endpoints</div>
+
+        <div class="sidebar-section">Genel</div>
+        <a href="#genel"><span class="dot" style="background:var(--blue)"></span> Genel Bilgiler<span
+                class="arrow">-></span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Kimlik Dogrulama</div>
+        <a href="#auth"><span class="dot" style="background:var(--orange)"></span> AuthController<span
+                class="ep-count">5</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Otel Islemleri</div>
+        <a href="#hotels"><span class="dot" style="background:var(--green)"></span> HotelsController<span
+                class="ep-count">7</span></a>
+        <a href="#hotelrooms"><span class="dot" style="background:var(--green)"></span> HotelRoomsController<span
+                class="ep-count">5</span></a>
+        <a href="#hotelimages"><span class="dot" style="background:var(--green)"></span> Hotel Gorselleri<span
+                class="ep-count">4</span></a>
+        <a href="#hotelamenities"><span class="dot" style="background:var(--green)"></span> Hotel Olanaklari<span
+                class="ep-count">2</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Oda & Arama</div>
+        <a href="#roomtypes"><span class="dot" style="background:var(--purple)"></span> RoomTypesController<span
+                class="ep-count">3</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Rezervasyon</div>
+        <a href="#reservations"><span class="dot" style="background:var(--cyan)"></span> ReservationsController<span
+                class="ep-count">5</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Yorum</div>
+        <a href="#reviews"><span class="dot" style="background:var(--pink)"></span> ReviewsController<span
+                class="ep-count">4</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Olanaklar</div>
+        <a href="#amenities"><span class="dot" style="background:var(--yellow)"></span> AmenitiesController<span
+                class="ep-count">2</span></a>
+
+        <div class="sidebar-section" style="margin-top:12px;">Yonetim</div>
+        <a href="#admin"><span class="dot" style="background:var(--red)"></span> AdminController<span
+                class="ep-count">8</span></a>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <!-- HERO -->
+        <div class="hero" id="genel">
+            <h1><span>HotelApp</span> API Endpoint Raporu</h1>
+            <p>Otel rezervasyon sistemi REST API endpoint listesi. Her endpoint icin HTTP metodu, URL, istek/yanit
+                yapisi, yetkilendirme ve is kurallari detayli olarak belirtilmistir.</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="num">8</div>
+                    <div class="label">Controller</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">45</div>
+                    <div class="label">Endpoint</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">15</div>
+                    <div class="label">DTO</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">3</div>
+                    <div class="label">Auth Seviyesi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GENEL BILGILER -->
+        <div class="info-box">
+            <h4>Genel Bilgiler</h4>
+            <p><strong>Base URL:</strong> <code>https://localhost:7XXX/api/</code></p>
+            <p><strong>Authentication:</strong> JWT Bearer Token. Giris yapildiktan sonra alinan token, korunakli
+                endpoint'lere erisim icin <code>Authorization: Bearer &lt;token&gt;</code> header'i ile gonderilir.</p>
+            <p><strong>Content-Type:</strong> Tum istek ve yanitlar <code>application/json</code> formatindadir.</p>
+            <p><strong>Sayfalama:</strong> Liste endpoint'leri <code>?page=1&pageSize=10</code> query parametrelerini
+                destekler. Varsayilan: page=1, pageSize=10, maksimum pageSize=50.</p>
+        </div>
+
+        <div class="info-box orange" style="margin-bottom:16px;">
+            <h4>Yetkilendirme Seviyeleri</h4>
+            <p><span class="auth auth-anon">Anonymous</span> Giris yapmadan herkes erisebilir.</p>
+            <p><span class="auth auth-user">[Authorize]</span> Sadece giris yapmis kullanicilar erisebilir.</p>
+            <p><span class="auth auth-admin">[Admin]</span> Sadece Admin rolundeki kullanicilar erisebilir.</p>
+        </div>
+
+        <div class="info-box cyan">
+            <h4>Standart Hata Yanit Formati</h4>
+            <div class="code-block">
+                {<br>
+                &nbsp;&nbsp;<span class="key">"message"</span>: <span class="str">"Hata aciklamasi"</span>,<br>
+                &nbsp;&nbsp;<span class="key">"errors"</span>: [<span class="str">"Detayli hata 1"</span>, <span
+                    class="str">"Detayli hata 2"</span>]<br>
+                }
+            </div>
+        </div>
+
+        <div class="info-box green">
+            <h4>Sayfalamali Yanit Formati</h4>
+            <div class="code-block">
+                {<br>
+                &nbsp;&nbsp;<span class="key">"items"</span>: [ ... ],<br>
+                &nbsp;&nbsp;<span class="key">"totalCount"</span>: <span class="str">150</span>,<br>
+                &nbsp;&nbsp;<span class="key">"page"</span>: <span class="str">1</span>,<br>
+                &nbsp;&nbsp;<span class="key">"pageSize"</span>: <span class="str">10</span>,<br>
+                &nbsp;&nbsp;<span class="key">"totalPages"</span>: <span class="str">15</span><br>
+                }
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ============================== -->
+        <!-- 1. AUTH CONTROLLER -->
+        <!-- ============================== -->
+        <div class="controller-section" id="auth">
+            <div class="controller-header">
+                <span class="controller-badge cbadge-auth">Kimlik Dogrulama</span>
+            </div>
+            <h2><span class="num">01.</span> AuthController</h2>
+            <div class="controller-base">Base URL: /api/auth</div>
+
+            <!-- E01 -->
+            <div class="ep-card">
+                <div class="ep-header">
+                    <span class="ep-id">E01</span>
+                    <span class="method method-post">POST</span>
+                    <span class="ep-url">/api/auth/register</span>
+                    <span class="auth auth-anon">Anonymous</span>
+                </div>
+                <div class="ep-desc">Yeni kullanici kaydi olusturur. Basarili kayit sonrasi JWT token dondurur.</div>
+
+                <div class="ep-section-title req">Istek (UserRegisterDto)</div>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Alan</th>
+                            <th>Tip</th>
+                            <th>Konum</th>
+                            <th>Zorunlu</th>
+                            <th>Aciklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fname">FirstName</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Kullanicinin adi. Maks 100 karakter.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">LastName</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Kullanicinin soyadi. Maks 100 karakter.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Email</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">E-posta adresi. Email formati zorunlu. Benzersiz olmali.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Password</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Sifre. Minimum 6 karakter.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Phone</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Telefon numarasi. Maks 20 karakter. Zorunludur.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ep-section-title res">Yanit (LoginResponseDto)</div>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Alan</th>
+                            <th>Tip</th>
+                            <th>Aciklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fname">Token</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">JWT Bearer token. Sonraki isteklerde Authorization header'inda kullanilir.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fname">User</td>
+                            <td class="ftype">UserDto</td>
+                            <td class="fdesc">Kullanici bilgileri (Id, FirstName, LastName, Email, Phone, Roles).</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ep-section-title status">HTTP Durum Kodlari</div>
+                <div class="status-list">
+                    <span class="status-code s2xx">200 OK</span>
+                    <span class="status-code s4xx">400 Validation Hatasi</span>
+                    <span class="status-code s4xx">409 Email Zaten Kayitli</span>
+                </div>
+
+                <div class="ep-section-title rules">Is Kurallari</div>
+                <div class="rules-box">
+                    <ul>
+                        <li>Email benzersiz olmali. Ayni email ile ikinci kayit 409 dondurur.</li>
+                        <li>Sifre BCrypt ile hash'lenerek PasswordHash alanina kaydedilir. Duz metin olarak ASLA
+                            saklanmaz.</li>
+                        <li>Varsayilan olarak "User" rolu atanir (UserRoles tablosuna eklenir).</li>
+                        <li>IsActive=true olarak olusturulur. CreatedAt otomatik atanir.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- E02 -->
+            <div class="ep-card">
+                <div class="ep-header">
+                    <span class="ep-id">E02</span>
+                    <span class="method method-post">POST</span>
+                    <span class="ep-url">/api/auth/login</span>
+                    <span class="auth auth-anon">Anonymous</span>
+                </div>
+                <div class="ep-desc">Kullanici giris yapar ve JWT token dondurur.</div>
+
+                <div class="ep-section-title req">Istek (UserLoginDto)</div>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Alan</th>
+                            <th>Tip</th>
+                            <th>Konum</th>
+                            <th>Zorunlu</th>
+                            <th>Aciklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fname">Email</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Kayitli e-posta adresi.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Password</td>
+                            <td class="ftype">string</td>
+                            <td class="floc loc-body">Body</td>
+                            <td><span class="required-yes">Evet</span></td>
+                            <td class="fdesc">Kullanici sifresi.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ep-section-title res">Yanit (LoginResponseDto)</div>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Alan</th>
+                            <th>Tip</th>
+                            <th>Aciklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fname">Token</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">JWT Bearer token. Icinde UserId ve Roller claim olarak yer alir.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">User</td>
+                            <td class="ftype">UserDto</td>
+                            <td class="fdesc">Kullanici bilgileri (Id, FirstName, LastName, Email, Phone, Roles).</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ep-section-title status">HTTP Durum Kodlari</div>
+                <div class="status-list">
+                    <span class="status-code s2xx">200 OK</span>
+                    <span class="status-code s4xx">401 Yanlis Email/Sifre</span>
+                    <span class="status-code s4xx">403 Hesap Devre Disi</span>
+                </div>
+
+                <div class="ep-section-title rules">Is Kurallari</div>
+                <div class="rules-box">
+                    <ul>
+                        <li>IsActive=false olan kullanicilar giris yapamaz (403 doner).</li>
+                        <li>Girilen sifre BCrypt ile hash'lenip PasswordHash ile karsilastirilir.</li>
+                        <li>Token suresi appsettings.json'daki JWT ayarlarindan alinir.</li>
+                        <li>Token payload: UserId, Email, Roles claim'leri icerir.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- E03 -->
+            <div class="ep-card">
+                <div class="ep-header">
+                    <span class="ep-id">E03</span>
+                    <span class="method method-get">GET</span>
+                    <span class="ep-url">/api/auth/profile</span>
+                    <span class="auth auth-user">[Authorize]</span>
+                </div>
+                <div class="ep-desc">Giris yapmis kullanicinin profil bilgilerini getirir.</div>
+
+                <div class="ep-section-title res">Yanit (UserDto)</div>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Alan</th>
+                            <th>Tip</th>
+                            <th>Aciklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fname">Id</td>
+                            <td class="ftype">int</td>
+                            <td class="fdesc">Kullanici ID.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">FirstName</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">Ad.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">LastName</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">Soyad.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Email</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">E-posta adresi.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Phone</td>
+                            <td class="ftype">string</td>
+                            <td class="fdesc">Telefon numarasi.</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">Roles</td>
+                            <td class="ftype">string[]</td>
+                            <td class="fdesc">Kullanicinin rolleri (orn: ["User"] veya ["Admin"]).</td>
+                        </tr>
+                        <tr>
+                            <td class="fname">CreatedAt</td>
+                            <td class="ftype">datetime</td>
+                            <td class="fdesc">Hesap olusturma tarihi.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ep-section-title status">HTTP Durum Kodlari</div>
+                <div class="status-list">
+                    <span class="status-code s2xx">200 OK</span>
+                    <span class="status-code s4xx">401 Unauthorized</span>
+                </div>
+
+                <div class="ep-section-title rules">Is Kurallari</div>
+                <div class="rules-box">
+                    <ul>
+                        <li>JWT token'daki UserId claim'i ile kullanici sorgulanir.</li>
+                        <li>PasswordHash yanita DAHIL EDILMEZ (guvenlik).</li>
+                    </ul>
+                </div>
+            </div>
+
+        <!-- E42 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E42</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/auth/verify-email?token={token}</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Email dogrulama linkindeki token'i dogrular, hesabi aktiflestirir ve otomatik giris
+                icin JWT token dondurur.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">token</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Kayit sirasinda uretilen email dogrulama token'i (GUID).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (LoginResponseDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Token</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">JWT Bearer token. Otomatik giris icin kullanilir.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">User</td>
+                        <td class="ftype">UserDto</td>
+                        <td class="fdesc">Kullanici bilgileri.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Gecersiz/Suresi Dolmus Token</span>
+                <span class="status-code s4xx">404 Token Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Token DB'deki EmailVerificationToken ile eslestirilir.</li>
+                    <li>VerificationTokenExpiry kontrolu: suresi gecmisse 400 doner.</li>
+                    <li>Basarili dogrulamada: IsEmailVerified=true, EmailVerificationToken=NULL.</li>
+                    <li>JWT token uretilir ve dondurulur (kullanici otomatik giris yapar).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E43 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E43</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/auth/resend-verification</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Dogrulama mailini tekrar gonderir. Suresi gecmis veya kaybolmus dogrulama linkleri icin
+                kullanilir.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Email</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Kayitli e-posta adresi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Email Zaten Dogrulanmis</span>
+                <span class="status-code s4xx">404 Email Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Zaten dogrulanmis hesap icin 400 doner.</li>
+                    <li>Yeni EmailVerificationToken ve VerificationTokenExpiry (now + 24 saat) uretilir.</li>
+                    <li>Yeni dogrulama maili gonderilir.</li>
+                    <li>Rate limiting: ayni email icin 2 dakikada 1'den fazla gonderim engellenir.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 2. HOTELS CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="hotels">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-hotel">Otel Islemleri</span>
+        </div>
+        <h2><span class="num">02.</span> HotelsController</h2>
+        <div class="controller-base">Base URL: /api/hotels</div>
+
+        <!-- E04 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E04</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Tum otelleri listeler. Filtreleme, sayfalama ve siralama destekler.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">city</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sehre gore filtrele (orn: "Istanbul").</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">country</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Ulkeye gore filtrele.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">minStarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Minimum yildiz derecesi (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">maxStarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Maksimum yildiz derecesi (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">minRating</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Minimum kullanici puani (orn: 4.0).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">search</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Otel adinda arama (LIKE %search%).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">sortBy</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"name", "starRating", "avgRating", "city". Varsayilan: "name".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">sortDir</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"asc" veya "desc". Varsayilan: "asc".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi. Varsayilan: 1.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit. Varsayilan: 10, maks: 50.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (Sayfalamali HotelDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">items[]</td>
+                        <td class="ftype">HotelDto[]</td>
+                        <td class="fdesc">Otel listesi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].Name</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].City</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Sehir.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].Country</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Ulke.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].StarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Yildiz derecesi (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].AvgRating</td>
+                        <td class="ftype">decimal?</td>
+                        <td class="fdesc">Ortalama kullanici puani.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].MainImageUrl</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Ana gorsel URL'si (IsMain=true).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">totalCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam kayit sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Mevcut sayfa.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">totalPages</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam sayfa sayisi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece IsActive=true olan oteller listelenir (Admin haric).</li>
+                    <li>vw_HotelSummary view'i kullanilabilir.</li>
+                    <li>Sayfalama zorunlu. pageSize > 50 ise 50'ye cekilir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E05 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E05</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/{id}</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Belirli bir otelin detay bilgilerini tum iliskili verileriyle getirir.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (HotelDto - Detay)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Otel tanitim metni.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Address</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Acik adres.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">City</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Sehir.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Country</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Ulke.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">StarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Yildiz derecesi (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Phone</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Telefon.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Email</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">E-posta.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Latitude</td>
+                        <td class="ftype">decimal?</td>
+                        <td class="fdesc">Enlem koordinati.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Longitude</td>
+                        <td class="ftype">decimal?</td>
+                        <td class="fdesc">Boylam koordinati.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">AvgRating</td>
+                        <td class="ftype">decimal?</td>
+                        <td class="fdesc">Ortalama kullanici puani.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Images</td>
+                        <td class="ftype">HotelImageDto[]</td>
+                        <td class="fdesc">Otel gorselleri (Id, ImageUrl, IsMain, DisplayOrder).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Amenities</td>
+                        <td class="ftype">AmenityDto[]</td>
+                        <td class="fdesc">Otel olanaklari (Id, Name, Icon).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Rooms</td>
+                        <td class="ftype">HotelRoomDto[]</td>
+                        <td class="fdesc">Oda tipleri ve fiyatlar (RoomTypeName, MaxGuests, PricePerNight, TotalRooms).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CreatedAt</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Eklenme tarihi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>IsActive=false olan oteller sadece Admin tarafindan gorulebilir.</li>
+                    <li>Include ile Images, HotelAmenities->Amenity, HotelRooms->RoomType yuklenir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E06 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E06</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/cities</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Sistemdeki benzersiz sehir listesini dondurur. Frontend'de arama filtresi icin
+                kullanilir.</div>
+
+            <div class="ep-section-title res">Yanit</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ftype">string[]</td>
+                        <td class="fdesc">Benzersiz sehir adlari listesi, alfabetik siralanmis. Orn: ["Ankara",
+                            "Antalya", "Istanbul"]</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece aktif otellerin (IsActive=true) sehirleri listelenir.</li>
+                    <li>DISTINCT sorgusu ile benzersiz sehirler alinir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E07 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E07</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/search</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Sehir, tarih araligi ve misafir sayisina gore musait otelleri arar.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">city</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Aranacak sehir.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">checkIn</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Giris tarihi (yyyy-MM-dd).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">checkOut</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Cikis tarihi (yyyy-MM-dd).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">guests</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Misafir sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">minStarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Minimum yildiz filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (Sayfalamali HotelDto[] + Musait Oda Bilgisi)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">items[].Hotel</td>
+                        <td class="ftype">HotelDto</td>
+                        <td class="fdesc">Otel bilgileri.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">items[].AvailableRooms</td>
+                        <td class="ftype">AvailableRoomDto[]</td>
+                        <td class="fdesc">Musait oda tipleri, fiyatlar ve musait adet.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">totalCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam sonuc sayisi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Gecersiz Tarih</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>sp_SearchAvailableRooms stored procedure'u kullanilir.</li>
+                    <li>checkIn >= bugun olmali. checkOut > checkIn olmali.</li>
+                    <li>Sadece en az 1 musait odasi olan oteller doner.</li>
+                    <li>Musaitlik: TotalRooms - o tarih araligindaki aktif rezervasyon sayisi > 0.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E08 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E08</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/hotels</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Yeni otel ekler.</div>
+
+            <div class="ep-section-title req">Istek (HotelCreateDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel adi. Maks 200 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Tanitim metni. Maks 2000 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Address</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Acik adres. Maks 500 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">City</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Sehir. Maks 100 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Country</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Ulke. Maks 100 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">StarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Yildiz derecesi (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Phone</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Telefon. Maks 20 karakter. Zorunludur.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Email</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">E-posta. Email formati.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Latitude</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Enlem (-90 ile 90 arasi).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Longitude</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Boylam (-180 ile 180 arasi).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (HotelDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ftype">HotelDto</td>
+                        <td class="fdesc">Olusturulan otelin tam bilgileri (Id dahil).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece Admin rolundeki kullanicilar otel ekleyebilir.</li>
+                    <li>AvgRating=0, IsActive=true, CreatedAt=DateTime.UtcNow otomatik atanir.</li>
+                    <li>StarRating 1-5 arasi olmali (CHECK constraint).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E09 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E09</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/hotels/{id}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Mevcut otelin bilgilerini gunceller.</div>
+
+            <div class="ep-section-title req">Istek (HotelUpdateDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Tanitim metni.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Address</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Acik adres.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">City</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Sehir.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Country</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Ulke.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">StarRating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Yildiz derecesi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Phone</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Telefon. Zorunludur.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Email</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">E-posta.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Latitude</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Enlem.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Longitude</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Boylam.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsActive</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Aktif/pasif durumu.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>UpdatedAt=DateTime.UtcNow otomatik guncellenir.</li>
+                    <li>Otel devre disi birakildiginda (IsActive=false) mevcut aktif rezervasyonlar etkilenmez.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E10 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E10</span>
+                <span class="method method-delete">DELETE</span>
+                <span class="ep-url">/api/hotels/{id}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Oteli siler (soft delete: IsActive=false yapar).</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Silinecek otel ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">204 No Content</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+                <span class="status-code s4xx">409 Conflict</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Hard delete yerine soft delete: IsActive=false yapilir.</li>
+                    <li>Gelecek tarihli aktif (Status=Confirmed) rezervasyonlari olan oteller silinemez (409 doner).
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 3. HOTEL ROOMS CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="hotelrooms">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-room">Otel Odalari</span>
+        </div>
+        <h2><span class="num">03.</span> HotelRoomsController</h2>
+        <div class="controller-base">Base URL: /api/hotels/{hotelId}/rooms</div>
+
+        <!-- E11 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E11</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/{hotelId}/rooms</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Bir otelin tum oda tiplerini ve fiyat bilgilerini listeler.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (HotelRoomDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">HotelRoom ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Oda tipi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Oda tipi adi (orn: "Suite").</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeDescription</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Oda tipi aciklamasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">MaxGuests</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Maksimum misafir kapasitesi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PricePerNight</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Gecelik fiyat.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalRooms</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam oda sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsActive</td>
+                        <td class="ftype">bool</td>
+                        <td class="fdesc">Aktif durumu.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece IsActive=true odalar listelenir.</li>
+                    <li>Include ile RoomType bilgisi yuklenir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E12 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E12</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/hotels/{hotelId}/rooms</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Otele yeni bir oda tipi ekler (fiyat ve adet belirler).</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Eklenecek oda tipi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PricePerNight</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Gecelik fiyat. 0'dan buyuk olmali.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalRooms</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Toplam oda sayisi. 0'dan buyuk olmali.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Otel/OdaTipi Bulunamadi</span>
+                <span class="status-code s4xx">409 Kombinasyon Zaten Var</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Ayni otelde ayni RoomTypeId ile 2 kayit olamaz (409 doner).</li>
+                    <li>IsActive=true varsayilan olarak atanir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E13 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E13</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/hotels/{hotelId}/rooms/{roomId}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Oda fiyatini, oda sayisini veya aktiflik durumunu gunceller.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">roomId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">HotelRoom ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PricePerNight</td>
+                        <td class="ftype">decimal</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Yeni gecelik fiyat.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalRooms</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Yeni toplam oda sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsActive</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Aktif/pasif durumu.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>TotalRooms, aktif rezervasyonu olan oda sayisindan az olamaz.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E14 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E14</span>
+                <span class="method method-delete">DELETE</span>
+                <span class="ep-url">/api/hotels/{hotelId}/rooms/{roomId}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Otel-oda tipi eslesmesini siler.</div>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">204 No Content</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">409 Aktif Rezervasyon Var</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Gelecek tarihli aktif (Status=Confirmed) rezervasyonu olan oda silinemez (409 doner).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E15 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E15</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/hotels/{hotelId}/rooms/search</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Belirli bir otelde belirli tarih araliginda musait odalari arar.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckInDate</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Giris tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckOutDate</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Cikis tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestCount</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Misafir sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PaymentMethod</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Odeme yontemi. Ornek: CreditCard, BankTransfer.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (AvailableRoomDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">RoomTypeId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Oda tipi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Oda tipi adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">MaxGuests</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Maksimum kapasite.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PricePerNight</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Gecelik fiyat.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">AvailableCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Musait oda adedi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalPrice</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Toplam fiyat (gece sayisi x gecelik fiyat).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Gecersiz Tarih</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>sp_SearchAvailableRooms stored procedure'u kullanilir.</li>
+                    <li>GuestCount <= MaxGuests kontrolu yapilir.</li>
+                    <li>checkIn >= bugun, checkOut > checkIn olmali.</li>
+                    <li>Musaitlik: TotalRooms - cakisan_rezervasyon_sayisi > 0.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 4. HOTEL IMAGES (HotelsController icerisinde) -->
+    <!-- ============================== -->
+    <div class="controller-section" id="hotelimages">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-hotel">Otel Gorselleri</span>
+        </div>
+        <h2><span class="num">04.</span> Hotel Gorselleri</h2>
+        <div class="controller-base">Base URL: /api/hotels/{hotelId}/images</div>
+
+        <!-- E16 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E16</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/{hotelId}/images</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Bir otelin tum gorsellerini listeler.</div>
+
+            <div class="ep-section-title res">Yanit (HotelImageDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Gorsel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">ImageUrl</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Gorsel URL'si.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsMain</td>
+                        <td class="ftype">bool</td>
+                        <td class="fdesc">Ana gorsel mi?</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">DisplayOrder</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Gosterim sirasi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>DisplayOrder'a gore siralanir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E17 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E17</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/hotels/{hotelId}/images</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Otele yeni gorsel ekler.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">ImageUrl</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Gorsel URL'si. Maks 500 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsMain</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Ana gorsel mi? Varsayilan: false.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">DisplayOrder</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Gosterim sirasi. Varsayilan: 0.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>IsMain=true gonderilirse, ayni otelin diger gorsellerinin IsMain degeri false yapilir (sadece 1
+                        ana gorsel).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E18 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E18</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/hotels/{hotelId}/images/{imageId}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Gorsel bilgilerini gunceller (sira, ana gorsel durumu).</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">imageId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Gorsel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsMain</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Ana gorsel mi?</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">DisplayOrder</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Gosterim sirasi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+        </div>
+
+        <!-- E19 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E19</span>
+                <span class="method method-delete">DELETE</span>
+                <span class="ep-url">/api/hotels/{hotelId}/images/{imageId}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Gorseli siler.</div>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">204 No Content</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Ana gorsel (IsMain=true) silinirse, DisplayOrder'a gore siradaki gorsel otomatik ana gorsel
+                        yapilabilir.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 5. ROOM TYPES CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="roomtypes">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-room">Oda Tipleri</span>
+        </div>
+        <h2><span class="num">05.</span> RoomTypesController</h2>
+        <div class="controller-base">Base URL: /api/roomtypes</div>
+
+        <!-- E20 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E20</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/roomtypes</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Tum oda tiplerini listeler.</div>
+
+            <div class="ep-section-title res">Yanit (RoomTypeDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Oda tipi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Oda tipi adi (Single, Double, Suite...).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Aciklama.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">MaxGuests</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Maksimum misafir kapasitesi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+            </div>
+        </div>
+
+        <!-- E21 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E21</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/roomtypes</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Yeni oda tipi ekler.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Oda tipi adi. Benzersiz olmali. Maks 100 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Aciklama. Maks 500 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">MaxGuests</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Maksimum misafir. 0'dan buyuk olmali.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">409 Isim Zaten Var</span>
+            </div>
+        </div>
+
+        <!-- E22 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E22</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/roomtypes/{id}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Oda tipi bilgilerini gunceller.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Oda tipi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Oda tipi adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Description</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Aciklama.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">MaxGuests</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Maksimum misafir.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 6. RESERVATIONS CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="reservations">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-reservation">Rezervasyon</span>
+        </div>
+        <h2><span class="num">06.</span> ReservationsController</h2>
+        <div class="controller-base">Base URL: /api/reservations</div>
+
+        <!-- E23 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E23</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/reservations</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Yeni rezervasyon olusturur.</div>
+
+            <div class="ep-section-title req">Istek (ReservationCreateDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">HotelRoomId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Rezerve edilecek otel-oda eslesmesi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckInDate</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Giris tarihi (yyyy-MM-dd).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckOutDate</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Cikis tarihi (yyyy-MM-dd).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestCount</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Misafir sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PaymentMethod</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Odeme yontemi. Ornek: CreditCard, BankTransfer.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (ReservationDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Kullanici ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Kullanici adi soyadi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelRoomId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel-oda eslesmesi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Oda tipi adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckInDate</td>
+                        <td class="ftype">date</td>
+                        <td class="fdesc">Giris tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckOutDate</td>
+                        <td class="ftype">date</td>
+                        <td class="fdesc">Cikis tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Misafir sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalPrice</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Toplam tutar.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PaymentMethod</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Odeme yontemi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Status</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Durum: "Confirmed", "Cancelled", "Completed".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CreatedAt</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Olusturulma tarihi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation / Gecmis Tarih / Kapasite Asimi</span>
+                <span class="status-code s4xx">404 Oda Bulunamadi</span>
+                <span class="status-code s4xx">409 Musait Oda Yok</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>sp_MakeReservation stored procedure kullanilir.</li>
+                    <li>UserId JWT token'dan alinir (kullanici kendisi icin rezervasyon yapar).</li>
+                    <li>TotalPrice = gece sayisi x PricePerNight otomatik hesaplanir.</li>
+                    <li>PaymentMethod zorunludur ve rezervasyonla birlikte kaydedilir.</li>
+                    <li>Musaitlik: TotalRooms - o tarih araligindaki aktif rezervasyon sayisi > 0.</li>
+                    <li>GuestCount <= MaxGuests olmali.</li>
+                    <li>Status="Confirmed" olarak baslar.</li>
+                    <li>checkIn >= bugun, checkOut > checkIn olmali.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E24 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E24</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/reservations/my</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Giris yapmis kullanicinin tum rezervasyonlarini listeler.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">status</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"Confirmed", "Cancelled" veya "Completed" filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">sortBy</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"checkIn" veya "createdAt". Varsayilan: "createdAt".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (Sayfalamali ReservationDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ftype">PagedResult&lt;ReservationDto&gt;</td>
+                        <td class="fdesc">Kullanicinin rezervasyonlari, otel ve oda bilgileriyle birlikte.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece kendi rezervasyonlarini gorur. UserId JWT'den alinir.</li>
+                    <li>vw_ReservationDetails view'i kullanilabilir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E25 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E25</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/reservations/{id}</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Belirli bir rezervasyonun detayini getirir.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">403 Baskasinin Rezervasyonu</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Kullanici sadece kendi rezervasyonunu gorebilir.</li>
+                    <li>Admin rolundeki kullanicilar herkesin rezervasyonunu gorebilir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E26 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E26</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/reservations/{id}/cancel</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Rezervasyonu iptal eder.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Zaten Iptal/Tamamlanmis</span>
+                <span class="status-code s4xx">403 Baskasinin Rezervasyonu</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Kullanici sadece kendi rezervasyonunu iptal edebilir. Admin herkesin iptal edebilir.</li>
+                    <li>Status="Cancelled" olarak guncellenir.</li>
+                    <li>Gecmis tarihli (CheckInDate &lt; bugun) rezervasyon iptal edilemez.</li>
+                    <li>Zaten "Cancelled" veya "Completed" olan rezervasyon tekrar iptal edilemez.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E27 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E27</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/reservations/{id}/invoice</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Rezervasyonun fatura/ozet bilgisini dondurur.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">ReservationId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Misafir adi soyadi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestEmail</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Misafir e-postasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelAddress</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoomTypeName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Oda tipi adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckInDate</td>
+                        <td class="ftype">date</td>
+                        <td class="fdesc">Giris tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CheckOutDate</td>
+                        <td class="ftype">date</td>
+                        <td class="fdesc">Cikis tarihi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">NightCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Gece sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">PricePerNight</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Gecelik fiyat.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalPrice</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Toplam tutar.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">GuestCount</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Misafir sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Status</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Rezervasyon durumu.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CreatedAt</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Rezervasyon tarihi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">403 Baskasinin Rezervasyonu</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Sadece kendi rezervasyonunun faturasini gorebilir (Admin haric).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 7. REVIEWS CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="reviews">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-review">Yorum & Puan</span>
+        </div>
+        <h2><span class="num">07.</span> ReviewsController</h2>
+        <div class="controller-base">Base URL: /api/reviews</div>
+
+        <!-- E28 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E28</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/reviews</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Bir otele yorum ve puan ekler.</div>
+
+            <div class="ep-section-title req">Istek (ReviewCreateDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">HotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Yorum yapilacak otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Rating</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Puan (1-5 arasi).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Comment</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Yorum metni. Maks 1000 karakter.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (ReviewDto)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Yorum ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Kullanici ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Kullanici adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">HotelName</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Otel adi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Rating</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Puan (1-5).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Comment</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Yorum metni.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">CreatedAt</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Yorum tarihi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+                <span class="status-code s4xx">409 Zaten Yorum Yapmis</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Kullanici ayni otele sadece 1 yorum yazabilir (409 doner).</li>
+                    <li>trg_UpdateHotelRating trigger'i otomatik olarak Hotels.AvgRating'i gunceller.</li>
+                    <li>Rating 1-5 arasi olmali (CHECK constraint).</li>
+                    <li>Opsiyonel kural: Sadece o otelde tamamlanmis rezervasyonu olan kullanicilar yorum yapabilir.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E29 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E29</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/hotels/{hotelId}/reviews</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Bir otelin tum yorumlarini listeler.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">sortBy</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"rating" veya "createdAt". Varsayilan: "createdAt".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">sortDir</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"asc" veya "desc". Varsayilan: "desc".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Otel Bulunamadi</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Varsayilan siralama: en yeni yorumlar once (createdAt desc).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E30 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E30</span>
+                <span class="method method-delete">DELETE</span>
+                <span class="ep-url">/api/reviews/{id}</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Kullanicinin kendi yorumunu siler.</div>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">204 No Content</span>
+                <span class="status-code s4xx">404 Not Found</span>
+                <span class="status-code s4xx">403 Baskasinin Yorumu</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Kullanici sadece kendi yorumunu silebilir. Admin herkesin silebilir.</li>
+                    <li>trg_UpdateHotelRating trigger'i AvgRating'i yeniden hesaplar.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E31 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E31</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/reviews/my</span>
+                <span class="auth auth-user">[Authorize]</span>
+            </div>
+            <div class="ep-desc">Kullanicinin kendi yorumlarini listeler.</div>
+
+            <div class="ep-section-title res">Yanit (ReviewDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ftype">ReviewDto[]</td>
+                        <td class="fdesc">Kullanicinin tum yorumlari, otel bilgileriyle birlikte.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 8. AMENITIES CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="amenities">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-amenity">Olanaklar</span>
+        </div>
+        <h2><span class="num">08.</span> AmenitiesController</h2>
+        <div class="controller-base">Base URL: /api/amenities</div>
+
+        <!-- E32 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E32</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/amenities</span>
+                <span class="auth auth-anon">Anonymous</span>
+            </div>
+            <div class="ep-desc">Tum olanaklari (Wi-Fi, Havuz, Spa vb.) listeler.</div>
+
+            <div class="ep-section-title res">Yanit (AmenityDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Olanak ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Olanak adi (orn: "Wi-Fi", "Havuz").</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Icon</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Icon sinifi veya emoji.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+            </div>
+        </div>
+
+        <!-- E33 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E33</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/amenities</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Yeni olanak tanimlar.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Name</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Olanak adi. Benzersiz olmali. Maks 100 karakter.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Icon</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">CSS icon class veya emoji. Maks 50 karakter.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">201 Created</span>
+                <span class="status-code s4xx">400 Validation Hatasi</span>
+                <span class="status-code s4xx">409 Isim Zaten Var</span>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- HOTEL AMENITIES (atama/kaldirma) -->
+    <!-- ============================== -->
+    <div class="controller-section" id="hotelamenities">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-amenity">Otel Olanaklari</span>
+        </div>
+        <h2><span class="num">09.</span> Hotel Olanak Atama</h2>
+        <div class="controller-base">Base URL: /api/hotels/{hotelId}/amenities</div>
+
+        <!-- E34 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E34</span>
+                <span class="method method-post">POST</span>
+                <span class="ep-url">/api/hotels/{hotelId}/amenities</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Otele olanak atar.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Otel ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">AmenityIds</td>
+                        <td class="ftype">int[]</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Atanacak olanak ID'leri. Toplu atama destekler.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">404 Otel/Olanak Bulunamadi</span>
+                <span class="status-code s4xx">409 Zaten Atanmis</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>HotelAmenities junction tablosuna kayit ekler.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E35 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E35</span>
+                <span class="method method-delete">DELETE</span>
+                <span class="ep-url">/api/hotels/{hotelId}/amenities/{amenityId}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Otelden olanak kaldirir.</div>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">204 No Content</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>HotelAmenities tablosundan kaydi siler.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ============================== -->
+    <!-- 10. ADMIN CONTROLLER -->
+    <!-- ============================== -->
+    <div class="controller-section" id="admin">
+        <div class="controller-header">
+            <span class="controller-badge cbadge-admin">Admin Paneli</span>
+        </div>
+        <h2><span class="num">10.</span> AdminController</h2>
+        <div class="controller-base">Base URL: /api/admin &nbsp;&nbsp;|&nbsp;&nbsp; Tum endpoint'ler
+            [Authorize(Roles="Admin")]</div>
+
+        <!-- E36 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E36</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/admin/dashboard</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Admin paneli icin genel istatistikleri dondurur.</div>
+
+            <div class="ep-section-title res">Yanit</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">TotalHotels</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam otel sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalUsers</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam kullanici sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalReservations</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Toplam rezervasyon sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">ActiveReservations</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Aktif (Confirmed) rezervasyon sayisi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">TotalRevenue</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Toplam gelir (tum tamamlanan rezervasyonlarin toplami).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">AverageRating</td>
+                        <td class="ftype">decimal</td>
+                        <td class="fdesc">Tum otellerin ortalama puani.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RecentReservations</td>
+                        <td class="ftype">ReservationDto[]</td>
+                        <td class="fdesc">Son 10 rezervasyon.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+        </div>
+
+        <!-- E37 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E37</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/admin/users</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Tum kullanicilari listeler.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">search</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Email veya isim ile arama.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">isActive</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Aktif/pasif filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (Sayfalamali UserDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ftype">PagedResult&lt;UserDto&gt;</td>
+                        <td class="fdesc">Kullanici listesi, roller dahil. PasswordHash HARIC.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+        </div>
+
+        <!-- E38 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E38</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/admin/users/{id}/status</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Kullanici hesabini aktif/pasif yapar.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Kullanici ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IsActive</td>
+                        <td class="ftype">bool</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">true=aktif, false=pasif.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Kendi Hesabini Devre Disi Birakamaz</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Admin kendi hesabini devre disi birakamaz (400 doner).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E39 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E39</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/admin/users/{id}/role</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Kullaniciya rol atar veya rolunu degistirir.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Kullanici ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">RoleName</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">"User" veya "Admin".</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Gecersiz Rol</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>UserRoles tablosu guncellenir. Mevcut rol silinip yeni rol atanir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E40 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E40</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/admin/reservations</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Tum rezervasyonlari listeler (admin gorunumu).</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">status</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"Confirmed", "Cancelled", "Completed" filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">hotelId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Otele gore filtrele.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">userId</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Kullaniciya gore filtrele.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">dateFrom</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Baslangic tarihi filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">dateTo</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Bitis tarihi filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+        </div>
+
+        <!-- E41 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E41</span>
+                <span class="method method-put">PUT</span>
+                <span class="ep-url">/api/admin/reservations/{id}/status</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Rezervasyon durumunu degistirir.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Rezervasyon ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Status</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-body">Body</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">"Confirmed", "Cancelled" veya "Completed".</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">400 Gecersiz Durum Gecisi</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Durum gecis kurallari: Confirmed -> Cancelled veya Completed.</li>
+                    <li>Cancelled -> degistirilemez.</li>
+                    <li>Completed -> degistirilemez.</li>
+                    <li>Gecersiz gecis denemesi 400 dondurur.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E44 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E44</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/admin/logs</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Sistem loglarini listeler. Seviye, tarih araligi ve arama ile filtrelenebilir. Singleton Logger pattern ile kaydedilen tum loglari goruntulemeye yarar.</div>
+
+            <div class="ep-section-title req">Istek Parametreleri</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">level</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">"Info", "Warning" veya "Error" filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">dateFrom</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Baslangic tarihi filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">dateTo</td>
+                        <td class="ftype">date</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Bitis tarihi filtresi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">search</td>
+                        <td class="ftype">string</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Mesaj, controller veya email icinde arama.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">page</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa numarasi (varsayilan: 1).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">pageSize</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-query">Query</td>
+                        <td><span class="required-no">Hayir</span></td>
+                        <td class="fdesc">Sayfa basi kayit (varsayilan: 20).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (Sayfalamali LogDto[])</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Log kaydi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Timestamp</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Olay zamani.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Level</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">"Info", "Warning" veya "Error".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Message</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Olay aciklamasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserEmail</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Islemi yapan kullanicinin emaili (anonim icin null).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Controller</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Hangi controller (orn: AuthController).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Action</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Hangi endpoint (orn: POST /api/auth/login).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IpAddress</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Istemci IP adresi.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>Loglar Singleton LogRepository uzerinden okunur.</li>
+                    <li>Sayfalama desteklidir (PagedResult&lt;LogDto&gt;).</li>
+                    <li>ExceptionDetail bu endpoint'te donmez (ozet listeleme).</li>
+                    <li>Varsayilan siralama: Timestamp DESC (en yeni log en ustte).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- E45 -->
+        <div class="ep-card">
+            <div class="ep-header">
+                <span class="ep-id">E45</span>
+                <span class="method method-get">GET</span>
+                <span class="ep-url">/api/admin/logs/{id}</span>
+                <span class="auth auth-admin">[Admin]</span>
+            </div>
+            <div class="ep-desc">Tek bir log kaydinin detayini dondurur. Error seviyesindeki loglar icin ExceptionDetail bilgisi dahil edilir.</div>
+
+            <div class="ep-section-title req">Istek</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Konum</th>
+                        <th>Zorunlu</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">id</td>
+                        <td class="ftype">int</td>
+                        <td class="floc loc-path">Path</td>
+                        <td><span class="required-yes">Evet</span></td>
+                        <td class="fdesc">Log kaydi ID.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title res">Yanit (LogDto - Detayli)</div>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Alan</th>
+                        <th>Tip</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fname">Id</td>
+                        <td class="ftype">int</td>
+                        <td class="fdesc">Log kaydi ID.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Timestamp</td>
+                        <td class="ftype">datetime</td>
+                        <td class="fdesc">Olay zamani.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Level</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">"Info", "Warning" veya "Error".</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Message</td>
+                        <td class="ftype">string</td>
+                        <td class="fdesc">Olay aciklamasi.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserId</td>
+                        <td class="ftype">int?</td>
+                        <td class="fdesc">Islemi yapan kullanici ID (anonim icin null).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">UserEmail</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Kullanici emaili (denormalize, hizli okuma icin).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Controller</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Hangi controller.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">Action</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Hangi endpoint.</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">IpAddress</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Istemci IP adresi (IPv6 destekli).</td>
+                    </tr>
+                    <tr>
+                        <td class="fname">ExceptionDetail</td>
+                        <td class="ftype">string?</td>
+                        <td class="fdesc">Hata detayi ve stack trace (sadece Error seviyesi icin dolu).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ep-section-title status">HTTP Durum Kodlari</div>
+            <div class="status-list">
+                <span class="status-code s2xx">200 OK</span>
+                <span class="status-code s4xx">401 Unauthorized</span>
+                <span class="status-code s4xx">403 Forbidden</span>
+                <span class="status-code s4xx">404 Not Found</span>
+            </div>
+
+            <div class="ep-section-title rules">Is Kurallari</div>
+            <div class="rules-box">
+                <ul>
+                    <li>E44'ten farkli olarak ExceptionDetail alani dahil edilir.</li>
+                    <li>Error seviyesindeki loglarda stack trace goruntulenebilir.</li>
+                    <li>Bulunmayan ID icin 404 doner.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- SCROLL SPY -->
+    <script>
+        document.querySelectorAll('.sidebar a').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        const sections = document.querySelectorAll('[id]');
+        const links = document.querySelectorAll('.sidebar a');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(s => {
+                if (s.getBoundingClientRect().top < 150) current = s.id;
+            });
+            links.forEach(a => {
+                const isActive = a.getAttribute('href') === '#' + current;
+                a.style.background = isActive ? 'var(--surface2)' : '';
+                a.style.color = isActive ? 'var(--text)' : '';
+                a.style.borderLeftColor = isActive ? 'var(--blue)' : 'transparent';
+            });
+        });
+    </script>
+
+</body>
+
+</html>

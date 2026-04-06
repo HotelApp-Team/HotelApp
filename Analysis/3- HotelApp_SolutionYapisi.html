@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelApp Solution Yapısı - Onion Architecture</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #273549;
+            --border: #334155;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --dim: #64748b;
+            --blue: #3b82f6;
+            --purple: #a78bfa;
+            --green: #34d399;
+            --yellow: #fbbf24;
+            --orange: #fb923c;
+            --pink: #f472b6;
+            --red: #ef4444;
+            --cyan: #22d3ee;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+            background: var(--surface); border-right: 1px solid var(--border);
+            overflow-y: auto; z-index: 50; padding: 24px 0;
+        }
+
+        .sidebar-title {
+            padding: 0 20px 20px; font-size: 18px; font-weight: 700;
+            border-bottom: 1px solid var(--border); margin-bottom: 12px;
+        }
+        .sidebar-title span { color: var(--blue); }
+
+        .sidebar-section {
+            padding: 8px 20px 4px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim);
+        }
+
+        .sidebar a {
+            display: flex; align-items: center; gap: 10px; padding: 8px 20px;
+            color: var(--muted); text-decoration: none; font-size: 13px;
+            border-left: 3px solid transparent; transition: all 0.15s;
+        }
+        .sidebar a:hover { background: var(--surface2); color: var(--text); border-left-color: var(--blue); }
+        .sidebar a .dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+        .main { margin-left: 280px; padding: 40px 50px 80px; max-width: 1100px; }
+
+        h1 { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+        h1 span { color: var(--blue); }
+        .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 40px; }
+
+        h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; scroll-margin-top: 20px; }
+        h2 .num { color: var(--dim); font-weight: 400; font-size: 16px; margin-right: 4px; }
+
+        h3 { font-size: 16px; font-weight: 600; color: var(--cyan); margin: 20px 0 10px; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+        p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+        p strong { color: var(--text); }
+
+        /* Onion Diagram */
+        .onion-container {
+            display: flex; justify-content: center; margin: 30px 0;
+        }
+        .onion-ring {
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; font-weight: 700;
+        }
+        .onion-4 {
+            width: 460px; height: 460px; background: rgba(59,130,246,0.08);
+            border: 2px solid rgba(59,130,246,0.3);
+        }
+        .onion-3 {
+            width: 340px; height: 340px; background: rgba(167,139,250,0.08);
+            border: 2px solid rgba(167,139,250,0.3);
+        }
+        .onion-2 {
+            width: 220px; height: 220px; background: rgba(52,211,153,0.08);
+            border: 2px solid rgba(52,211,153,0.3);
+        }
+        .onion-1 {
+            width: 120px; height: 120px; background: rgba(251,191,36,0.1);
+            border: 2px solid rgba(251,191,36,0.3);
+        }
+        .onion-label {
+            font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .onion-4 > .onion-label { color: var(--blue); position: relative; top: -10px; }
+        .onion-3 > .onion-label { color: var(--purple); position: relative; top: -8px; }
+        .onion-2 > .onion-label { color: var(--green); position: relative; top: -6px; }
+        .onion-1 .onion-label { color: var(--yellow); }
+        .onion-1 .onion-name { color: var(--yellow); font-size: 14px; margin-top: 4px; }
+
+        /* Info boxes */
+        .info-box {
+            background: var(--surface); border-radius: 10px; padding: 20px 24px;
+            margin: 16px 0; border-left: 4px solid var(--blue);
+        }
+        .info-box.purple { border-left-color: var(--purple); }
+        .info-box.green { border-left-color: var(--green); }
+        .info-box.yellow { border-left-color: var(--yellow); }
+        .info-box.orange { border-left-color: var(--orange); }
+        .info-box.pink { border-left-color: var(--pink); }
+        .info-box.cyan { border-left-color: var(--cyan); }
+        .info-box h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .info-box.purple h4 { color: var(--purple); }
+        .info-box.green h4 { color: var(--green); }
+        .info-box.yellow h4 { color: var(--yellow); }
+        .info-box.orange h4 { color: var(--orange); }
+        .info-box.pink h4 { color: var(--pink); }
+        .info-box.cyan h4 { color: var(--cyan); }
+        .info-box h4 { color: var(--blue); }
+
+        /* File tree */
+        .tree {
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 20px 24px; font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px; line-height: 2; margin: 16px 0;
+        }
+        .tree .folder { color: var(--yellow); font-weight: 700; }
+        .tree .file { color: var(--muted); }
+        .tree .file-entity { color: var(--green); }
+        .tree .file-interface { color: var(--cyan); }
+        .tree .file-dto { color: var(--purple); }
+        .tree .file-service { color: var(--orange); }
+        .tree .file-repo { color: var(--pink); }
+        .tree .file-controller { color: var(--blue); }
+        .tree .file-config { color: var(--dim); }
+        .tree .comment { color: var(--dim); font-style: italic; font-size: 11px; }
+        .tree .indent { margin-left: 20px; }
+        .tree .indent2 { margin-left: 40px; }
+        .tree .indent3 { margin-left: 60px; }
+
+        /* Comparison table */
+        .cmp-table {
+            width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0;
+        }
+        .cmp-table th {
+            background: var(--surface2); color: var(--muted); font-size: 11px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border);
+        }
+        .cmp-table td {
+            padding: 10px 14px; border-bottom: 1px solid #1e293b; vertical-align: top;
+        }
+        .cmp-table tr:hover { background: var(--surface); }
+        .cmp-table .layer { font-weight: 700; white-space: nowrap; }
+        .cmp-table .layer-domain { color: var(--yellow); }
+        .cmp-table .layer-app { color: var(--green); }
+        .cmp-table .layer-infra { color: var(--purple); }
+        .cmp-table .layer-pres { color: var(--blue); }
+
+        /* Ref arrow */
+        .ref-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+        }
+        .ref-arrow {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            font-family: 'Consolas', monospace; font-size: 13px; margin: 8px 0;
+        }
+        .ref-arrow .proj { padding: 4px 12px; border-radius: 6px; font-weight: 700; }
+        .ref-arrow .proj-domain { background: rgba(251,191,36,0.15); color: var(--yellow); }
+        .ref-arrow .proj-app { background: rgba(52,211,153,0.15); color: var(--green); }
+        .ref-arrow .proj-infra { background: rgba(167,139,250,0.15); color: var(--purple); }
+        .ref-arrow .proj-pres { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .ref-arrow .arr { color: var(--dim); font-size: 16px; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; font-size: 9px; padding: 2px 8px; border-radius: 3px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: middle;
+        }
+        .badge-ref { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .badge-new { background: rgba(52,211,153,0.15); color: var(--green); }
+        .badge-pattern { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+        /* Scroll */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="sidebar">
+    <div class="sidebar-title"><span>HotelApp</span> Solution</div>
+
+    <div class="sidebar-section">Genel</div>
+    <a href="#onion"><span class="dot" style="background:var(--yellow)"></span> Onion Architecture</a>
+    <a href="#referans"><span class="dot" style="background:var(--dim)"></span> StudentDemo Karşılaştırma</a>
+    <a href="#referanslar"><span class="dot" style="background:var(--dim)"></span> Proje Referansları</a>
+
+    <div class="sidebar-section" style="margin-top:12px">Katmanlar</div>
+    <a href="#domain"><span class="dot" style="background:var(--yellow)"></span> Domain (Core)</a>
+
+    <a href="#infrastructure"><span class="dot" style="background:var(--purple)"></span> Infrastructure (Data)</a>
+    <a href="#presentation"><span class="dot" style="background:var(--blue)"></span> Presentation (API)</a>
+
+    <div class="sidebar-section" style="margin-top:12px">Ek Bilgiler</div>
+    <a href="#nuget"><span class="dot" style="background:var(--orange)"></span> NuGet Paketleri</a>
+    <a href="#dosya-agaci"><span class="dot" style="background:var(--cyan)"></span> Tam Dosya Ağacı</a>
+</nav>
+
+<div class="main">
+
+    <h1><span>HotelApp</span> Solution Yapısı</h1>
+    <p class="subtitle">Onion Architecture ile katmanlı yapı planı. Referans: StudentDemo projesi.</p>
+
+    <!-- ======================== -->
+    <!-- ONION ARCHITECTURE -->
+    <!-- ======================== -->
+    <div id="onion">
+        <h2><span class="num">01.</span> Onion Architecture Nedir?</h2>
+
+        <p>Onion Architecture, uygulamayı iç içe katmanlardan oluşan bir soğan gibi düşünür. <strong>En içteki katman (Domain) hiçbir şeye bağımlı değildir</strong>, dış katmanlar iç katmanlara bağımlıdır ama iç katmanlar dış katmanları bilmez. Bu sayede veritabanı teknolojisi değişse bile iş mantığı (business logic) etkilenmez.</p>
+
+        <div class="onion-container">
+            <div class="onion-ring onion-4">
+                <span class="onion-label">Presentation (API)</span>
+                <div class="onion-ring onion-3">
+                    <span class="onion-label">Infrastructure (Data)</span>
+                    <div class="onion-ring onion-1">
+                        <span class="onion-label">Domain</span>
+                        <span class="onion-name">Core</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p><strong>Bağımlılık kuralı:</strong> Oklar her zaman dıştan içe doğru gider. Presentation → Infrastructure → Domain. Domain hiçbir katmana bağımlı değildir.</p>
+
+        <div class="info-box yellow">
+            <h4>Neden Onion Architecture?</h4>
+            <p>1. <strong>Bağımsızlık:</strong> Veritabanı değişse (SQL Server → PostgreSQL) sadece Infrastructure katmanı değişir, diğerleri aynı kalır.</p>
+            <p>2. <strong>Test edilebilirlik:</strong> Interface'ler sayesinde mock nesnelerle test yazılabilir.</p>
+            <p>3. <strong>Bakım kolaylığı:</strong> Her katmanın tek sorumluluğu var (SOLID - Single Responsibility).</p>
+            <p>4. <strong>Takım çalışması:</strong> Farklı kişiler farklı katmanlarda çalışabilir, çakışma az olur.</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- REFERANS KARSILASTIRMA -->
+    <!-- ======================== -->
+    <div id="referans">
+        <h2><span class="num">02.</span> StudentDemo ile Karşılaştırma</h2>
+
+        <p>StudentDemo projesindeki yapıyı HotelApp'e uyarlıyoruz. Aynı pattern, daha fazla entity:</p>
+
+        <table class="cmp-table">
+            <thead>
+                <tr><th>Katman</th><th>StudentDemo</th><th>HotelApp</th><th>Fark</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="layer layer-domain">Domain</td>
+                    <td>2 entity (Author, Book)<br>2 DTO (AuthorDto, BookDto)<br>4 interface (IRepository, IUnitOfWork, IAuthorRepo, IBookRepo)<br>4 service interface+impl</td>
+                    <td>7 entity + 4 ara tablo entity<br>12+ DTO<br>9 interface<br>12+ service interface+impl</td>
+                    <td>Aynı pattern, daha fazla dosya</td>
+                </tr>
+                <tr>
+                    <td class="layer layer-infra">Infrastructure</td>
+                    <td>AppDbContext<br>Repository (abstract)<br>AuthorRepository, BookRepository<br>UnitOfWork<br>Migrations</td>
+                    <td>HotelAppDbContext (Scaffold)<br>Repository (abstract)<br>7 entity repository<br>UnitOfWork<br>Migrations yok (DB First)</td>
+                    <td>Scaffold ile entity üretimi, Migration yerine SQL script</td>
+                </tr>
+                <tr>
+                    <td class="layer layer-pres">Presentation</td>
+                    <td>AuthorsController<br>BooksController<br>Program.cs</td>
+                    <td>7+ Controller<br>Program.cs<br>Middleware</td>
+                    <td>Daha fazla endpoint, Auth middleware eklenir</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- PROJE REFERANSLARI -->
+    <!-- ======================== -->
+    <div id="referanslar">
+        <h2><span class="num">03.</span> Proje Referansları (Bağımlılık Yönü)</h2>
+
+        <p>Hangi proje hangisine referans veriyor? Bu yapı Onion kuralını uygular:</p>
+
+        <div class="ref-box">
+            <p style="color:var(--dim); font-size:12px; margin-bottom:12px;">Okun yönü: "bağımlıdır" anlamına gelir</p>
+
+            <div class="ref-arrow">
+                <span class="proj proj-pres">HotelApp.API</span>
+                <span class="arr">→</span>
+                <span class="proj proj-infra">HotelApp.Infrastructure</span>
+                <span class="arr">→</span>
+                <span class="proj proj-domain">HotelApp.Domain</span>
+            </div>
+
+            <p style="margin-top:16px;"><strong>HotelApp.Domain:</strong> Hiçbir projeye referans vermez. En bağımsız katman.</p>
+            <p><strong>HotelApp.Infrastructure:</strong> Domain'e referans verir. EF Core paketleri burada.</p>
+            <p><strong>HotelApp.API:</strong> Tüm katmanlara referans verir. Dependency Injection burada yapılandırılır (Program.cs).</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- 1. DOMAIN KATMANI -->
+    <!-- ======================== -->
+    <div id="domain">
+        <h2><span class="num">04.</span> Domain Katmanı (HotelApp.Domain)</h2>
+
+        <div class="info-box yellow">
+            <h4>Bu Katmanın Görevi</h4>
+            <p>Uygulamanın çekirdeği. Entity'ler (veritabanı tablolarının C# karşılıkları), interface'ler ve DTO'lar burada tanımlanır. <strong>Hiçbir dış kütüphaneye bağımlı değildir</strong> - saf C# sınıfları. StudentDemo'da Core olarak adlandırılmış, biz de aynı mantığı kullanıyoruz.</p>
+        </div>
+
+        <h3>Entities (Varlıklar)</h3>
+        <p>Veritabanındaki her tablonun C# sınıf karşılığı. Scaffold komutuyla otomatik üretilir, gerekirse partial class ile genişletilir.</p>
+
+        <div class="tree">
+            <span class="folder">Entities/</span><br>
+            <div class="indent">
+                <span class="file-entity">Hotel.cs</span> <span class="comment">← Hotels tablosu. Id, Name, City, StarRating, AvgRating...</span><br>
+                <span class="file-entity">RoomType.cs</span> <span class="comment">← RoomTypes tablosu. Id, Name, MaxGuests</span><br>
+                <span class="file-entity">HotelRoom.cs</span> <span class="comment">← HotelRooms ara tablosu. HotelId, RoomTypeId, PricePerNight, TotalRooms</span><br>
+                <span class="file-entity">User.cs</span> <span class="comment">← Users tablosu. Id, FirstName, Email, PasswordHash</span><br>
+                <span class="file-entity">Role.cs</span> <span class="comment">← Roles tablosu. Id, Name</span><br>
+                <span class="file-entity">UserRole.cs</span> <span class="comment">← UserRoles ara tablosu. UserId, RoleId</span><br>
+                <span class="file-entity">Reservation.cs</span> <span class="comment">← Reservations tablosu. CheckIn, CheckOut, Status, TotalPrice</span><br>
+                <span class="file-entity">Review.cs</span> <span class="comment">← Reviews tablosu. Rating, Comment</span><br>
+                <span class="file-entity">HotelImage.cs</span> <span class="comment">← HotelImages tablosu. ImageUrl, IsMain</span><br>
+                <span class="file-entity">Amenity.cs</span> <span class="comment">← Amenities tablosu. Name, Icon</span><br>
+                <span class="file-entity">HotelAmenity.cs</span> <span class="comment">← HotelAmenities ara tablosu. HotelId, AmenityId</span><br>
+                <span class="file-entity">LogEntry.cs</span> <span class="comment">← Logs tablosu. Id, Timestamp, Level, Message, UserId, Controller, Action</span> <span class="badge badge-new">Logger Singleton</span><br>
+            </div>
+        </div>
+
+        <p><strong>Scaffold komutu ile üretim:</strong> Bu entity'ler SQL Server'daki tablolardan <code>dotnet ef dbcontext scaffold</code> komutuyla otomatik üretilir. Üretilen dosyalar bu klasöre taşınır. <strong>LogEntry.cs</strong> Singleton Logger pattern için manuel oluşturulur.</p>
+
+        <h3>DTOs (Data Transfer Objects)</h3>
+        <p>API'den dışarıya veri gönderirken ve dışarıdan veri alırken kullanılan sınıflar. Entity'nin tamamını dışarıya açmak güvenlik riski oluşturur (örneğin PasswordHash görünmemeli). DTO'lar sadece gerekli alanları içerir.</p>
+
+        <div class="tree">
+            <span class="folder">DTOs/</span><br>
+            <div class="indent">
+                <span class="comment">── Hotel ──</span><br>
+                <span class="file-dto">HotelDto.cs</span> <span class="comment">← Otel listeleme/detay için (Id, Name, City, StarRating, AvgRating)</span><br>
+                <span class="file-dto">HotelCreateDto.cs</span> <span class="comment">← Yeni otel eklerken alınacak alanlar</span><br>
+                <span class="file-dto">HotelUpdateDto.cs</span> <span class="comment">← Otel güncellerken alınacak alanlar</span><br>
+                <br>
+                <span class="comment">── Room ──</span><br>
+                <span class="file-dto">RoomTypeDto.cs</span> <span class="comment">← Oda tipi bilgisi</span><br>
+                <span class="file-dto">HotelRoomDto.cs</span> <span class="comment">← Otel-oda eşleşmesi + fiyat bilgisi</span><br>
+                <span class="file-dto">AvailableRoomDto.cs</span> <span class="comment">← Müsait oda arama sonucu</span><br>
+                <br>
+                <span class="comment">── User ──</span><br>
+                <span class="file-dto">UserDto.cs</span> <span class="comment">← Kullanıcı bilgisi (PasswordHash HARİÇ)</span><br>
+                <span class="file-dto">UserRegisterDto.cs</span> <span class="comment">← Kayıt formu alanları</span><br>
+                <span class="file-dto">UserLoginDto.cs</span> <span class="comment">← Giriş formu (Email + Password)</span><br>
+                <span class="file-dto">LoginResponseDto.cs</span> <span class="comment">← Giriş sonucu (Token + kullanıcı bilgisi)</span><br>
+                <br>
+                <span class="comment">── Reservation ──</span><br>
+                <span class="file-dto">ReservationDto.cs</span> <span class="comment">← Rezervasyon detayı</span><br>
+                <span class="file-dto">ReservationCreateDto.cs</span> <span class="comment">← Yeni rezervasyon oluşturma alanları</span><br>
+                <br>
+                <span class="comment">── Review ──</span><br>
+                <span class="file-dto">ReviewDto.cs</span> <span class="comment">← Yorum bilgisi</span><br>
+                <span class="file-dto">ReviewCreateDto.cs</span> <span class="comment">← Yeni yorum oluşturma alanları</span><br>
+                <br>
+                <span class="comment">── Log ──</span><br>
+                <span class="file-dto">LogDto.cs</span> <span class="comment">← Admin log görüntüleme (Id, Timestamp, Level, Message, UserEmail, Controller, Action)</span> <span class="badge badge-new">Logger Singleton</span><br>
+            </div>
+        </div>
+
+        <h3>Interfaces (Arayüzler)</h3>
+        <p>Repository ve Service sözleşmeleri. "Ne yapılacağını" tanımlar, "nasıl yapılacağını" tanımlamaz. StudentDemo'daki IRepository, IUnitOfWork pattern'inin aynısı:</p>
+
+        <div class="tree">
+            <span class="folder">Interfaces/</span><br>
+            <div class="indent">
+                <span class="file-interface">IRepository&lt;T&gt;.cs</span> <span class="comment">← Generic CRUD: GetAll, GetById, Find, Add, Update, Delete, Exists</span><br>
+                <span class="badge badge-ref">StudentDemo ile aynı</span><br><br>
+                <span class="file-interface">IUnitOfWork.cs</span> <span class="comment">← Tüm repository'lere erişim + SaveChanges + Transaction</span><br>
+                <span class="badge badge-ref">StudentDemo ile aynı pattern, daha fazla repository property</span><br><br>
+                <span class="file-interface">IHotelRepository.cs</span> <span class="comment">← Hotel'e özel sorgular (şehre göre, yıldıza göre)</span><br>
+                <span class="file-interface">IRoomTypeRepository.cs</span><br>
+                <span class="file-interface">IHotelRoomRepository.cs</span> <span class="comment">← Müsait oda arama sorgusu</span><br>
+                <span class="file-interface">IUserRepository.cs</span> <span class="comment">← Email ile kullanıcı bulma</span><br>
+                <span class="file-interface">IReservationRepository.cs</span> <span class="comment">← Tarih çakışması kontrolü</span><br>
+                <span class="file-interface">IReviewRepository.cs</span> <span class="comment">← Otele göre yorumlar</span><br>
+                <span class="file-interface">IAmenityRepository.cs</span><br>
+            </div>
+        </div>
+
+        <h3>Services (Servis Interface'leri)</h3>
+        <p>İş mantığı sözleşmeleri. Controller doğrudan repository çağırmaz, service üzerinden gider. StudentDemo'daki IBookService/IAuthorService pattern'i:</p>
+
+        <div class="tree">
+            <span class="folder">Services/</span><br>
+            <div class="indent">
+                <span class="file-service">IHotelService.cs</span> <span class="comment">← GetAllHotels, GetHotelById, SearchByCity, Create, Update, Delete</span><br>
+                <span class="file-service">HotelService.cs</span> <span class="comment">← IHotelService implementasyonu</span><br><br>
+                <span class="file-service">IRoomService.cs</span> <span class="comment">← GetRoomTypes, GetAvailableRooms, AddRoomToHotel</span><br>
+                <span class="file-service">RoomService.cs</span><br><br>
+                <span class="file-service">IUserService.cs</span> <span class="comment">← Register, Login, GetProfile</span><br>
+                <span class="file-service">UserService.cs</span><br><br>
+                <span class="file-service">IReservationService.cs</span> <span class="comment">← MakeReservation, CancelReservation, GetUserReservations</span><br>
+                <span class="file-service">ReservationService.cs</span><br><br>
+                <span class="file-service">IReviewService.cs</span> <span class="comment">← AddReview, GetHotelReviews</span><br>
+                <span class="file-service">ReviewService.cs</span><br><br>
+                <span class="file-service">IAmenityService.cs</span> <span class="comment">← GetAll, AssignToHotel, RemoveFromHotel</span><br>
+                <span class="file-service">AmenityService.cs</span><br><br>
+                <span class="file-interface">ILoggerService.cs</span> <span class="comment">← LogInfo, LogWarning, LogError, GetLogsAsync, GetLogCountAsync</span> <span class="badge badge-new">Logger Singleton</span><br>
+                <span class="comment indent">← Interface Domain'de, implementasyon Infrastructure'da (Singleton pattern)</span><br>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+
+    <!-- ======================== -->
+    <!-- 3. INFRASTRUCTURE KATMANI -->
+    <!-- ======================== -->
+    <div id="infrastructure">
+        <h2><span class="num">05.</span> Infrastructure Katmanı (HotelApp.Infrastructure)</h2>
+
+        <div class="info-box purple">
+            <h4>Bu Katmanın Görevi</h4>
+            <p>Veritabanı erişiminin gerçekleştiği katman. EF Core DbContext, Repository implementasyonları ve UnitOfWork burada bulunur. Domain katmanındaki interface'lerin somut (concrete) implementasyonlarını içerir. StudentDemo'daki Data katmanının karşılığı.</p>
+        </div>
+
+        <h3>Context</h3>
+        <p>Scaffold komutuyla üretilen DbContext sınıfı. Tüm entity'lerin DbSet tanımlarını ve tablo yapılandırmalarını (OnModelCreating) içerir.</p>
+
+        <div class="tree">
+            <span class="folder">Context/</span><br>
+            <div class="indent">
+                <span class="file-repo">HotelAppDbContext.cs</span> <span class="comment">← Scaffold ile üretilir. 12 DbSet, ilişki yapılandırmaları (Logs dahil)</span><br>
+                <span class="badge badge-pattern">DB First - Scaffold</span><br>
+            </div>
+        </div>
+
+        <p><strong>Scaffold komutu:</strong></p>
+        <div class="tree">
+            <span class="file-config">dotnet ef dbcontext scaffold "Server=.;Database=HotelAppDb;Trusted_Connection=True;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Models --context HotelAppDbContext --context-dir Context</span>
+        </div>
+        <p>Bu komut çalıştırıldığında Entity sınıfları ve DbContext otomatik üretilir. Entity'ler Domain/Entities klasörüne, DbContext Infrastructure/Context klasörüne taşınır.</p>
+
+        <h3>Repositories (Repository Implementasyonları)</h3>
+        <p>Domain katmanındaki interface'lerin somut implementasyonları. StudentDemo'daki abstract Repository sınıfı ve entity-specific repository pattern'inin aynısı:</p>
+
+        <div class="tree">
+            <span class="folder">Repositories/</span><br>
+            <div class="indent">
+                <span class="file-repo">Repository&lt;T&gt;.cs</span> <span class="comment">← Abstract generic repository (GetAll, GetById, Add, Update, Delete)</span><br>
+                <span class="badge badge-ref">StudentDemo Repository.cs ile aynı</span><br><br>
+                <span class="file-repo">HotelRepository.cs</span> <span class="comment">← : Repository&lt;Hotel&gt;, IHotelRepository</span><br>
+                <span class="comment indent">← GetByCityAsync(), GetByStarRatingAsync(), SearchAsync()</span><br>
+                <span class="file-repo">RoomTypeRepository.cs</span> <span class="comment">← : Repository&lt;RoomType&gt;, IRoomTypeRepository</span><br>
+                <span class="file-repo">HotelRoomRepository.cs</span> <span class="comment">← : Repository&lt;HotelRoom&gt;, IHotelRoomRepository</span><br>
+                <span class="comment indent">← GetAvailableRoomsAsync() - müsaitlik hesaplaması</span><br>
+                <span class="file-repo">UserRepository.cs</span> <span class="comment">← : Repository&lt;User&gt;, IUserRepository</span><br>
+                <span class="comment indent">← GetByEmailAsync() - giriş için email ile arama</span><br>
+                <span class="file-repo">ReservationRepository.cs</span> <span class="comment">← : Repository&lt;Reservation&gt;, IReservationRepository</span><br>
+                <span class="comment indent">← HasConflictAsync() - tarih çakışması kontrolü</span><br>
+                <span class="file-repo">ReviewRepository.cs</span> <span class="comment">← : Repository&lt;Review&gt;, IReviewRepository</span><br>
+                <span class="comment indent">← GetByHotelIdAsync() - otele göre yorumlar</span><br>
+                <span class="file-repo">AmenityRepository.cs</span> <span class="comment">← : Repository&lt;Amenity&gt;, IAmenityRepository</span><br><br>
+                <span class="file-repo">LogRepository.cs</span> <span class="comment">← : ILoggerService (Singleton implementasyonu)</span><br>
+                <span class="badge badge-pattern">Singleton Pattern</span><br>
+                <span class="comment indent">← Private constructor + Lazy&lt;LogRepository&gt; (thread-safe)</span><br>
+                <span class="comment indent">← Initialize(connectionString) ile Program.cs'den başlatılır</span><br>
+                <span class="comment indent">← Her log yazımında kısa ömürlü DbContext oluşturur</span><br>
+            </div>
+        </div>
+
+        <h3>UnitOfWork</h3>
+        <div class="tree">
+            <span class="file-repo">UnitOfWork.cs</span> <span class="comment">← IUnitOfWork implementasyonu. Tüm repository'lere tek noktadan erişim + transaction yönetimi</span><br>
+            <span class="badge badge-ref">StudentDemo UnitOfWork.cs ile aynı pattern</span>
+        </div>
+
+        <p>StudentDemo'dan fark: IUnitOfWork içinde Books ve Authors yerine Hotels, Rooms, Users, Reservations, Reviews, Amenities property'leri olacak.</p>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- 4. PRESENTATION KATMANI -->
+    <!-- ======================== -->
+    <div id="presentation">
+        <h2><span class="num">06.</span> Presentation Katmanı (HotelApp.API)</h2>
+
+        <div class="info-box">
+            <h4>Bu Katmanın Görevi</h4>
+            <p>Dış dünyayla iletişim kuran katman. HTTP isteklerini karşılayan Controller'lar, Dependency Injection yapılandırması (Program.cs), Authentication/Authorization middleware ve Swagger API dökümantasyonu burada bulunur.</p>
+        </div>
+
+        <h3>Controllers</h3>
+        <div class="tree">
+            <span class="folder">Controllers/</span><br>
+            <div class="indent">
+                <span class="file-controller">HotelsController.cs</span> <span class="comment">← GET /api/hotels, GET /api/hotels/{id}, POST, PUT, DELETE</span><br>
+                <span class="file-controller">RoomTypesController.cs</span> <span class="comment">← GET /api/roomtypes</span><br>
+                <span class="file-controller">HotelRoomsController.cs</span> <span class="comment">← GET /api/hotels/{id}/rooms, POST müsait oda arama</span><br>
+                <span class="file-controller">AuthController.cs</span> <span class="comment">← POST /api/auth/register, POST /api/auth/login</span><br>
+                <span class="file-controller">ReservationsController.cs</span> <span class="comment">← POST /api/reservations, GET /api/reservations/my</span><br>
+                <span class="file-controller">ReviewsController.cs</span> <span class="comment">← POST /api/reviews, GET /api/hotels/{id}/reviews</span><br>
+                <span class="file-controller">AmenitiesController.cs</span> <span class="comment">← GET /api/amenities</span><br>
+                <span class="file-controller">AdminController.cs</span> <span class="comment">← Admin-only işlemler (istatistik, yönetim)</span><br>
+            </div>
+        </div>
+
+        <h3>Middleware</h3>
+        <div class="tree">
+            <span class="folder">Middleware/</span><br>
+            <div class="indent">
+                <span class="file-service">ExceptionLoggingMiddleware.cs</span> <span class="comment">← Global hata yakalama ve loglama</span> <span class="badge badge-new">Logger Singleton</span><br>
+                <span class="comment indent">← Tüm yakalanmamış exception'ları yakalar</span><br>
+                <span class="comment indent">← LogError ile hata detayını (stack trace) kaydeder</span><br>
+                <span class="comment indent">← İstemciye 500 Internal Server Error döner</span><br>
+            </div>
+        </div>
+
+        <h3>Program.cs</h3>
+        <p>Uygulamanın giriş noktası. Tüm servislerin Dependency Injection ile kaydedildiği yer:</p>
+
+        <div class="tree">
+            <span class="file-config">Program.cs</span><br>
+            <div class="indent">
+                <span class="comment">← DbContext kaydı (SQL Server connection string)</span><br>
+                <span class="comment">← Repository DI: builder.Services.AddScoped&lt;IHotelRepository, HotelRepository&gt;()</span><br>
+                <span class="comment">← Service DI: builder.Services.AddScoped&lt;IHotelService, HotelService&gt;()</span><br>
+                <span class="comment">← UnitOfWork DI: builder.Services.AddScoped&lt;IUnitOfWork, UnitOfWork&gt;()</span><br>
+                <span class="comment">← <strong style="color:var(--yellow)">Logger Singleton başlatma: LogRepository.Initialize(connectionString)</strong></span><br>
+                <span class="comment">← <strong style="color:var(--yellow)">Logger DI: builder.Services.AddSingleton&lt;ILoggerService&gt;(LogRepository.Instance)</strong></span><br>
+                <span class="comment">← JWT Authentication yapılandırması</span><br>
+                <span class="comment">← CORS ayarları (frontend ile iletişim için)</span><br>
+                <span class="comment">← <strong style="color:var(--yellow)">app.UseMiddleware&lt;ExceptionLoggingMiddleware&gt;()</strong></span><br>
+                <span class="comment">← Swagger yapılandırması</span><br>
+            </div>
+        </div>
+
+        <h3>Diğer Dosyalar</h3>
+        <div class="tree">
+            <span class="file-config">appsettings.json</span> <span class="comment">← ConnectionString, JWT ayarları</span><br>
+            <span class="file-config">appsettings.Development.json</span> <span class="comment">← Geliştirme ortamı ayarları</span><br>
+            <span class="file-config">Dockerfile</span> <span class="comment">← Docker imajı oluşturma</span><br>
+            <span class="file-config">docker-compose.yml</span> <span class="comment">← API + SQL Server birlikte çalıştırma</span><br>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- NUGET PAKETLERI -->
+    <!-- ======================== -->
+    <div id="nuget">
+        <h2><span class="num">07.</span> NuGet Paketleri (Hangi Katmana Ne Yüklenir)</h2>
+
+        <table class="cmp-table">
+            <thead>
+                <tr><th>Proje</th><th>Paket</th><th>Neden</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="layer layer-domain">HotelApp.Domain</td>
+                    <td>Hiçbir paket yok</td>
+                    <td>Saf C# sınıfları, dış bağımlılık yok</td>
+                </tr>
+                <tr>
+                    <td class="layer layer-infra">HotelApp.Infrastructure</td>
+                    <td>Microsoft.EntityFrameworkCore<br>Microsoft.EntityFrameworkCore.SqlServer<br>Microsoft.EntityFrameworkCore.Tools</td>
+                    <td>Veritabanı erişimi, Scaffold komutu</td>
+                </tr>
+                <tr>
+                    <td class="layer layer-pres">HotelApp.API</td>
+                    <td>Microsoft.AspNetCore.Authentication.JwtBearer<br>Swashbuckle.AspNetCore<br>Microsoft.EntityFrameworkCore.Design</td>
+                    <td>JWT auth, Swagger UI, EF Design-time</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <!-- ======================== -->
+    <!-- TAM DOSYA AGACI -->
+    <!-- ======================== -->
+    <div id="dosya-agaci">
+        <h2><span class="num">08.</span> Tam Dosya Ağacı</h2>
+
+        <p>Solution'ın tamamı tek bakışta:</p>
+
+        <div class="tree">
+<span class="folder">HotelApp.sln</span><br>
+<span class="folder">│</span><br>
+<span class="folder">├── HotelApp.Domain/</span> <span class="comment">← Çekirdek katman (hiçbir referansı yok)</span><br>
+<span class="folder">│</span><br>
+<span class="folder">│   ├── Entities/</span><br>
+<span class="indent"><span class="file-entity">│   │   ├── Hotel.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── RoomType.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── HotelRoom.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── User.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── Role.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── UserRole.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── Reservation.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── Review.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── HotelImage.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── Amenity.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   ├── HotelAmenity.cs</span></span><br>
+<span class="indent"><span class="file-entity">│   │   └── LogEntry.cs</span> <span class="badge badge-new">Logger Singleton</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="folder">│   ├── DTOs/</span><br>
+<span class="indent"><span class="file-dto">│   │   ├── HotelDto.cs, HotelCreateDto.cs, HotelUpdateDto.cs</span></span><br>
+<span class="indent"><span class="file-dto">│   │   ├── RoomTypeDto.cs, HotelRoomDto.cs, AvailableRoomDto.cs</span></span><br>
+<span class="indent"><span class="file-dto">│   │   ├── UserDto.cs, UserRegisterDto.cs, UserLoginDto.cs, LoginResponseDto.cs</span></span><br>
+<span class="indent"><span class="file-dto">│   │   ├── ReservationDto.cs, ReservationCreateDto.cs</span></span><br>
+<span class="indent"><span class="file-dto">│   │   ├── ReviewDto.cs, ReviewCreateDto.cs</span></span><br>
+<span class="indent"><span class="file-dto">│   │   └── LogDto.cs</span> <span class="badge badge-new">Logger Singleton</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="folder">│   ├── Interfaces/</span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IRepository&lt;T&gt;.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IUnitOfWork.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IHotelRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IRoomTypeRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IHotelRoomRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IUserRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IReservationRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   ├── IReviewRepository.cs</span></span><br>
+<span class="indent"><span class="file-interface">│   │   └── IAmenityRepository.cs</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="folder">│   └── Services/</span><br>
+<span class="indent"><span class="file-service">│       ├── IHotelService.cs + HotelService.cs</span></span><br>
+<span class="indent"><span class="file-service">│       ├── IRoomService.cs + RoomService.cs</span></span><br>
+<span class="indent"><span class="file-service">│       ├── IUserService.cs + UserService.cs</span></span><br>
+<span class="indent"><span class="file-service">│       ├── IReservationService.cs + ReservationService.cs</span></span><br>
+<span class="indent"><span class="file-service">│       ├── IReviewService.cs + ReviewService.cs</span></span><br>
+<span class="indent"><span class="file-service">│       ├── IAmenityService.cs + AmenityService.cs</span></span><br>
+<span class="indent"><span class="file-interface">│       └── ILoggerService.cs</span> <span class="badge badge-new">Logger Singleton</span></span><br>
+<span class="folder">│</span><br>
+<span class="folder">├── HotelApp.Infrastructure/</span> <span class="comment">← Veritabanı erişimi (Domain'e referans verir)</span><br>
+<span class="folder">│</span><br>
+<span class="folder">│   ├── Context/</span><br>
+<span class="indent"><span class="file-repo">│   │   └── HotelAppDbContext.cs</span> <span class="comment">← Scaffold ile üretilir</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="folder">│   ├── Repositories/</span><br>
+<span class="indent"><span class="file-repo">│   │   ├── Repository&lt;T&gt;.cs</span> <span class="comment">← Abstract generic</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── HotelRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── RoomTypeRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── HotelRoomRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── UserRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── ReservationRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── ReviewRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   ├── AmenityRepository.cs</span></span><br>
+<span class="indent"><span class="file-repo">│   │   └── LogRepository.cs</span> <span class="badge badge-pattern">Singleton</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="indent"><span class="file-repo">│   └── UnitOfWork.cs</span></span><br>
+<span class="folder">│</span><br>
+<span class="folder">├── HotelApp.API/</span> <span class="comment">← Dış dünya ile iletişim (tüm katmanlara referans verir)</span><br>
+<span class="folder">│</span><br>
+<span class="folder">│   ├── Controllers/</span><br>
+<span class="indent"><span class="file-controller">│   │   ├── HotelsController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── RoomTypesController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── HotelRoomsController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── AuthController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── ReservationsController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── ReviewsController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   ├── AmenitiesController.cs</span></span><br>
+<span class="indent"><span class="file-controller">│   │   └── AdminController.cs</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="folder">│   ├── Middleware/</span> <span class="badge badge-new">Logger Singleton</span><br>
+<span class="indent"><span class="file-service">│   │   └── ExceptionLoggingMiddleware.cs</span> <span class="comment">← Global hata yakalama + loglama</span></span><br>
+<span class="folder">│   │</span><br>
+<span class="indent"><span class="file-config">│   ├── Program.cs</span> <span class="comment">← DI, Auth, CORS, Swagger, Logger Singleton başlatma</span></span><br>
+<span class="indent"><span class="file-config">│   ├── appsettings.json</span></span><br>
+<span class="indent"><span class="file-config">│   ├── Dockerfile</span></span><br>
+<span class="indent"><span class="file-config">│   └── docker-compose.yml</span></span><br>
+        </div>
+
+        <div class="info-box cyan">
+            <h4>Toplam Dosya Sayısı (Tahmini)</h4>
+            <p><strong>Domain:</strong> 12 entity + 15 DTO + 9 interface + 13 service (ILoggerService dahil) = ~49 dosya</p>
+            <p><strong>Infrastructure:</strong> 1 DbContext + 9 repository (LogRepository Singleton dahil) + 1 UnitOfWork = ~11 dosya</p>
+            <p><strong>API:</strong> 8 controller + 1 middleware + Program.cs + config = ~13 dosya</p>
+            <p><strong>Toplam:</strong> ~73 C# dosyası + yapılandırma dosyaları</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.sidebar a').forEach(a => {
+    a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+const sections = document.querySelectorAll('[id]');
+const links = document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (s.getBoundingClientRect().top < 150) current = s.id; });
+    links.forEach(a => {
+        const isActive = a.getAttribute('href') === '#' + current;
+        a.style.background = isActive ? 'var(--surface2)' : '';
+        a.style.color = isActive ? 'var(--text)' : '';
+        a.style.borderLeftColor = isActive ? 'var(--blue)' : 'transparent';
+    });
+});
+</script>
+
+</body>
+</html>
