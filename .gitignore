@@ -79,6 +79,12 @@ appsettings.Local.json
 # =====================
 .claude/
 .agents/
+CLAUDE.md
+
+# =====================
+# Analiz / Dokumantasyon (lokal)
+# =====================
+Analysis/
 
 # =====================
 # Misc
