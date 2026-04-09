@@ -1,0 +1,23 @@
+﻿@model HotelApp.Web.Models.PaginationModel
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage - 1)">Onceki</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Model.BaseUrl?page=@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage + 1)">Sonraki</a>
+            </li>
+        </ul>
+    </nav>
+}
