@@ -33,7 +33,7 @@ artifacts/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
-launchSettings.json
+# launchSettings.json - repo'da kalacak, takim ayni ayarlari kullansin
 
 # Rider / JetBrains
 .idea/
