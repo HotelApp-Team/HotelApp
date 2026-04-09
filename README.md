@@ -38,4 +38,25 @@ Akis: dev branch -> PR -> code review -> dev merge -> main merge
 
 ## Kurulum
 
-Yakinda eklenecek.
+### 1. Repo'yu klonla
+```bash
+git clone https://github.com/alprclbi/HotelApp.git
+cd HotelApp
+```
+
+### 2. Kendi branch'ine gec
+```bash
+git checkout sevde-dev   # veya hilal-dev
+```
+
+### 3. SQL Server
+- SQL Server (.\SQLEXPRESS) kurulu ve calisiyor olmali
+- `HotelAppDB` veritabani olusturulmus olmali (SQL script takim liderinden gelecek)
+
+### 4. Build ve calistir
+- VS'de Solution'i ac, Build -> Build Solution (Ctrl+Shift+B)
+- NuGet paketleri otomatik restore edilir
+- HotelApp.API'yi startup olarak sec, F5 ile calistir
+- Swagger UI acilirsa kurulum basarili
+
+> **Not:** Port cakismasi durumunda (ornegin 7274 portu baska uygulama tarafindan kullaniliyorsa) ilgili projenin `Properties/launchSettings.json` dosyasindaki `applicationUrl` satirindaki port numarasini degistir. Web projesinin portunu degistirirsen `HotelApp.Web/appsettings.json` icindeki `ApiSettings:BaseUrl` portunu da ayni sekilde guncelle.
