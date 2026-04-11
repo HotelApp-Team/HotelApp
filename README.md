@@ -24,7 +24,7 @@ HotelApp/
 
 | Uye   | Rol           | Grup   | Sorumluluk                                                                |
 |-------|---------------|--------|---------------------------------------------------------------------------|
-| Alper | Takim Lideri  | Grup A | Kimlik & Yetkilendirme, Admin Yonetimi, Logger Singleton                  |
+| Alper | Gelistirici  | Grup A | Kimlik & Yetkilendirme, Admin Yonetimi, Logger Singleton                  |
 | Hilal | Gelistirici   | Grup B | Otel Listeleme, Arama, Gorsel & Olanak Yonetimi                           |
 | Sevde | Gelistirici   | Grup C | Oda & Rezervasyon Yonetimi, Degerlendirme Sistemi                         |
 
