@@ -5,10 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using HotelApp.Domain.Interfaces;
-using HotelApp.Infrastructure.Repositories;
 using HotelApp.Domain.Services;
-
-
+using HotelApp.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +21,7 @@ builder.Services.AddDbContext<HotelAppDbContext>(options =>
 var jwtSettings = builder.Configuration.GetSection("Jwt"); //appsettings.json'daki jwt bolgunu okur
 
 // Auth katmani DI kayitlari
-builder.Services.AddScoped<IAuthRepository, AuthRepository>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
 builder.Services.AddScoped<IAuthService, AuthService>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
 builder.Services.AddScoped<IJwtService>(sp =>
     new JwtService(

@@ -8,23 +8,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace HotelApp.Domain.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
 
-        public AuthService(IAuthRepository authRepo, IJwtService jwtService)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService)
         {
-            _authRepo = authRepo;
+            _unitOfWork = unitOfWork;
             _jwtService = jwtService;
         }
 
         public async Task<LoginResponseDto> RegisterAsync(UserRegisterDto dto)
         {
             // 1.Email zaten var mı?
-            if (await _authRepo.EmailExistsAsync(dto.Email))
+            if (await _unitOfWork.AuthRepository.EmailExistsAsync(dto.Email))
 
                 throw new InvalidOperationException("Bu email zaten mevcut.");
             // 2.Parolayı hashle
@@ -45,8 +46,8 @@ namespace HotelApp.Domain.Services
             };
 
             // 4.Kullanıcıyı veritabanına kaydet.
-            await _authRepo.AddAsync(user);
-            await _authRepo.SaveChangesAsync();
+            await _unitOfWork.AuthRepository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             // 5.JWT token oluştur ve döndür.
             var token = _jwtService.GenerateToken(user, out var expiresAt);
@@ -62,7 +63,7 @@ namespace HotelApp.Domain.Services
         public async Task<LoginResponseDto> LoginAsync(UserLoginDto dto)
         {
             // 1.Kullanıcıy mail ile bul
-            var user = await _authRepo.GetByEmailAsync(dto.Email);
+            var user = await _unitOfWork.AuthRepository.GetByEmailAsync(dto.Email);
             if (user == null)
                 throw new UnauthorizedAccessException("Geçersiz email veya parola.");
 
