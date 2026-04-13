@@ -34,4 +34,9 @@ public class AuthRepository : IAuthRepository
         await _context.Users.AddAsync(user);
         return user;
     }
+
+    public async Task<Role?> GetRoleByNameAsync(string roleName) //Role eklemek için, rolü adıyla getirir
+    {
+        return await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName); //Rolü adıyla getirir, yoksa null döner
+    }
 }
