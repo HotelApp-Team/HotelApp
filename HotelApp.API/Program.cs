@@ -26,6 +26,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //Her HTTP istegi icin ye
 builder.Services.AddScoped<IAuthService, AuthService>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<IHotelService, HotelService>();
+builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
+builder.Services.AddScoped<IHotelImageService, HotelImageService>();
 builder.Services.AddScoped<IJwtService>(sp =>
     new JwtService(
         secretKey: jwtSettings["SecretKey"]!,
