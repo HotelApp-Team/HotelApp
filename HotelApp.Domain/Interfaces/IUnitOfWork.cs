@@ -8,6 +8,8 @@ public interface IUnitOfWork : IDisposable
 
     IHotelImageRepository HotelImageRepository { get; }
 
+    IAmenityRepository AmenityRepository { get; }
+
     // Tüm değişiklikleri kaydet
     Task<int> SaveChangesAsync();
 
