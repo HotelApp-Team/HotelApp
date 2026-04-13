@@ -10,6 +10,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly HotelAppDbContext _context;
     private IDbContextTransaction? _transaction;
     private IAuthRepository? _authRepository;
+    private IUserRepository? _userRepository;
 
     public UnitOfWork(HotelAppDbContext context)
     {
@@ -19,6 +20,9 @@ public class UnitOfWork : IUnitOfWork
     // Lazy loading: ilk erisimde olustur, sonrakilerde ayni instance'i don
     public IAuthRepository AuthRepository =>
         _authRepository ??= new AuthRepository(_context);
+
+    public IUserRepository UserRepository =>
+    _userRepository ??= new UserRepository(_context);
 
 
     /// Tüm değişiklikleri veritabanına kaydeder.
