@@ -27,7 +27,7 @@ namespace HotelApp.Domain.Interfaces
         // Ana resmi getir (IsMain = true)
         Task<HotelImage?> GetMainImageAsync(int hotelId);
 
-        // Değişiklikleri kaydet
-        Task SaveChangesAsync();
+        // Ana resmi değiştir (tek main garanti eder)
+        Task SetMainImageAsync(int hotelId, int imageId);
     }
 }

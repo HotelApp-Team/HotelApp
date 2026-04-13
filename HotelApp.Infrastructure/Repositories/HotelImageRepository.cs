@@ -78,11 +78,5 @@ namespace HotelApp.Infrastructure.Repositories
                 img.IsMain = img.Id == imageId;
             }
         }
-
-        // 🔹 Kaydet (UnitOfWork ile uyumlu)
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
     }
 }
