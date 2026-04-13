@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.Entities;
+using HotelApp.Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -22,7 +22,7 @@ namespace HotelApp.Domain.Services
             _expirationMinutes = expirationMinutes;
         }
 
-        public string GenerateToken(User user, out DateTime expireAt)
+        public string GenerateToken(User user, out DateTime expiresAt)
         {
             //1. Claims (token içindeki kullanıcı bilgileri)
             var claims = new List<Claim>
@@ -42,12 +42,12 @@ namespace HotelApp.Domain.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             // 3. Token oluştur
-            expireAt = DateTime.UtcNow.AddMinutes(_expirationMinutes);
+            expiresAt = DateTime.UtcNow.AddMinutes(_expirationMinutes);
             var token = new JwtSecurityToken(
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: expireAt,
+                expires: expiresAt,
                 signingCredentials: creds
             );
 

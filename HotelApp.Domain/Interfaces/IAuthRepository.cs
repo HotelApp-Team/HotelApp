@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.Entities;
+using HotelApp.Domain.Entities;
 
 namespace HotelApp.Domain.Interfaces
 {
@@ -12,8 +12,5 @@ namespace HotelApp.Domain.Interfaces
 
         //Yeni kullanıcı ekle (Register sonrası)
         Task<User> AddAsync(User user);
-
-        //Değişiklikleri kayıt et
-        Task<int> SaveChangesAsync();
     }
 }

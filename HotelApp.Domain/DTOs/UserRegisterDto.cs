@@ -16,11 +16,11 @@ public class UserRegisterDto
     [EmailAddress(ErrorMessage = "Gecerli bir email giriniz!")]
     public string Email { get; set; } = null!;
 
-    [Required(ErrorMessage = "Þifre zorunludur.")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Þifre en az 6 karakter olmalýdýr.")]
+    [Required(ErrorMessage = "Sifre zorunludur.")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Sifre en az 6 karakter olmalidir.")]
     public string Password { get; set; } = null!;
 
     [Required(ErrorMessage = "Telefon zorunludur")]
-    [Phone(ErrorMessage = "Geçerli bir telefon giriniz!")]
+    [Phone(ErrorMessage = "Gecerli bir telefon giriniz!")]
     public string Phone { get; set; } = null!;
 }
