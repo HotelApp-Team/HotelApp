@@ -4,6 +4,8 @@ public interface IUnitOfWork : IDisposable
 {
     IAuthRepository AuthRepository { get; }
 
+    IHotelRepository HotelRepository { get; }
+    
     // Tüm değişiklikleri kaydet
     Task<int> SaveChangesAsync();
 
