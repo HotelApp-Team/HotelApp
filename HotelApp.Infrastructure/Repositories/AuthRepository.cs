@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,10 +33,5 @@ public class AuthRepository : IAuthRepository
     {
         await _context.Users.AddAsync(user);
         return user;
-    }
-
-    public async Task<int> SaveChangesAsync() //Değişiklikleri kaydeder, AddAsync tek başına kaydetmez, SaveChangesAsync çağrılmalı
-    {
-        return await _context.SaveChangesAsync();
     }
 }
