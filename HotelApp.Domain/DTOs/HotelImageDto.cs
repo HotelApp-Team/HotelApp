@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,18 +19,30 @@ namespace HotelApp.Domain.DTOs
     // Yeni otel resmi eklemek için kullanılır
     public class HotelImageCreateDto
     {
+        [Required(ErrorMessage = "HotelId zorunludur")]
         public int HotelId { get; set; }
+
+        [Required(ErrorMessage = "Resim URL zorunludur")]
         public string ImageUrl { get; set; } = null!;
+
         public bool IsMain { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "DisplayOrder 0 veya daha büyük olmalıdır")]
         public int DisplayOrder { get; set; }
     }
 
     // Mevcut otel resmini güncellemek için kullanılır
     public class HotelImageUpdateDto
     {
+        [Required(ErrorMessage = "Id zorunludur")]
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "Resim URL zorunludur")]
         public string ImageUrl { get; set; } = null!;
+
         public bool IsMain { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "DisplayOrder 0 veya daha büyük olmalıdır")]
         public int DisplayOrder { get; set; }
     }
 
