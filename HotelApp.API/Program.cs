@@ -20,9 +20,10 @@ builder.Services.AddDbContext<HotelAppDbContext>(options =>
 // JWT ayarlarini oku (DI kayitlarinda ve Authentication'da kullanilacak)
 var jwtSettings = builder.Configuration.GetSection("Jwt"); //appsettings.json'daki jwt bolgunu okur
 
-// Auth katmani DI kayitlari
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
-builder.Services.AddScoped<IAuthService, AuthService>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+// Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // Repository'lere erisim icin.
+builder.Services.AddScoped<IAuthService, AuthService>(); // Auth endpointi icin, kullanici kayit ve login islemlerini yapar.
+builder.Services.AddScoped<IUserService, UserService>(); // Profile endpointi icin, kullanici bilgilerini dondurur.
 builder.Services.AddScoped<IJwtService>(sp =>
     new JwtService(
         secretKey: jwtSettings["SecretKey"]!,

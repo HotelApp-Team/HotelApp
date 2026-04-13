@@ -2,7 +2,9 @@
 
 public interface IUnitOfWork : IDisposable
 {
+    //Repository'lere erişim
     IAuthRepository AuthRepository { get; }
+    IUserRepository UserRepository { get; }
 
     // Tüm değişiklikleri kaydet
     Task<int> SaveChangesAsync();

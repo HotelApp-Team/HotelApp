@@ -12,5 +12,8 @@ namespace HotelApp.Domain.Interfaces
 
         //Yeni kullanıcı ekle (Register sonrası)
         Task<User> AddAsync(User user);
+
+        // Role ekle
+        Task<Role?> GetRoleByNameAsync(string roleName);
     }
 }
