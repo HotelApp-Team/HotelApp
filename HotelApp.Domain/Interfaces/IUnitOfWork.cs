@@ -6,6 +6,12 @@ public interface IUnitOfWork : IDisposable
     IAuthRepository AuthRepository { get; }
     IUserRepository UserRepository { get; }
 
+    IHotelRepository HotelRepository { get; }
+
+    IHotelImageRepository HotelImageRepository { get; }
+
+    IAmenityRepository AmenityRepository { get; }
+
     // Tüm değişiklikleri kaydet
     Task<int> SaveChangesAsync();
 

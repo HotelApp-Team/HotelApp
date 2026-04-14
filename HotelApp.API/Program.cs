@@ -1,12 +1,13 @@
-using HotelApp.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Domain.Services;
 using HotelApp.Infrastructure;
+using HotelApp.Infrastructure.Context;
+using HotelApp.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,15 @@ builder.Services.AddDbContext<HotelAppDbContext>(options =>
 // JWT ayarlarini oku (DI kayitlarinda ve Authentication'da kullanilacak)
 var jwtSettings = builder.Configuration.GetSection("Jwt"); //appsettings.json'daki jwt bolgunu okur
 
+// Auth katmani DI kayitlari
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+builder.Services.AddScoped<IAuthService, AuthService>(); //Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddScoped<IHotelService, HotelService>();
+builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
+builder.Services.AddScoped<IHotelImageService, HotelImageService>();
+builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
 // Her HTTP istegi icin yeni instance, istek bitince yok edilir.
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // Repository'lere erisim icin.
 builder.Services.AddScoped<IAuthService, AuthService>(); // Auth endpointi icin, kullanici kayit ve login islemlerini yapar.

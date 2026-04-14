@@ -10,6 +10,9 @@ public class UnitOfWork : IUnitOfWork
     private readonly HotelAppDbContext _context;
     private IDbContextTransaction? _transaction;
     private IAuthRepository? _authRepository;
+    private IHotelRepository? _hotelRepository;
+    private IHotelImageRepository? _hotelImageRepository;
+    private IAmenityRepository? _amenityRepository;
     private IUserRepository? _userRepository;
 
     public UnitOfWork(HotelAppDbContext context)
@@ -21,6 +24,14 @@ public class UnitOfWork : IUnitOfWork
     public IAuthRepository AuthRepository =>
         _authRepository ??= new AuthRepository(_context);
 
+    public IHotelRepository HotelRepository =>
+       _hotelRepository ??= new HotelRepository(_context);
+
+    public IHotelImageRepository HotelImageRepository =>
+    _hotelImageRepository ??= new HotelImageRepository(_context);
+
+    public IAmenityRepository AmenityRepository =>
+           _amenityRepository ??= new AmenityRepository(_context);
     public IUserRepository UserRepository =>
     _userRepository ??= new UserRepository(_context);
 
