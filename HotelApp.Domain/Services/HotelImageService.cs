@@ -18,6 +18,7 @@ namespace HotelApp.Domain.Services
             _unitOfWork = unitOfWork;
         }
 
+        // Belirli bir otele ait tüm resimleri getirir
         public async Task<List<HotelImageDto>> GetByHotelIdAsync(int hotelId)
         {
             var images = await _unitOfWork.HotelImageRepository.GetByHotelIdAsync(hotelId);
@@ -30,7 +31,7 @@ namespace HotelApp.Domain.Services
                 DisplayOrder = x.DisplayOrder
             }).ToList();
         }
-
+        // ID’ye göre tek bir resmi getirir
         public async Task<HotelImageDto?> GetByIdAsync(int id)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(id);
@@ -46,6 +47,7 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        // Otelin ana (kapak) resmini getirir (IsMain = true)
         public async Task<HotelImageDto?> GetMainImageAsync(int hotelId)
         {
             var image = await _unitOfWork.HotelImageRepository.GetMainImageAsync(hotelId);
@@ -61,6 +63,7 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        //Mevcut resmi günceller
         public async Task AddAsync(HotelImageCreateDto dto)
         {
             var entity = new HotelImage
@@ -82,6 +85,7 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        //  Mevcut resmi günceller
         public async Task UpdateAsync(HotelImageUpdateDto dto)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(dto.Id);
@@ -102,7 +106,7 @@ namespace HotelApp.Domain.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
-
+        // Resim silme işlemi
         public async Task DeleteAsync(int id)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(id);
@@ -114,7 +118,7 @@ namespace HotelApp.Domain.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
-
+        // Bir oteldeki tek bir resmi "kapak fotoğrafı" yapar
         public async Task SetMainImageAsync(int hotelId, int imageId)
         {
             await _unitOfWork.HotelImageRepository.SetMainImageAsync(hotelId, imageId);

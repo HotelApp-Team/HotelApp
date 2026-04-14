@@ -14,7 +14,7 @@ namespace HotelApp.Infrastructure.Repositories
     {
         private readonly HotelAppDbContext _context;
 
-        // 🔹 Clean kullanım için DbSet property
+        // Clean kullanım için DbSet property
         private DbSet<HotelImage> Images => _context.HotelImages;
 
         public HotelImageRepository(HotelAppDbContext context)

@@ -156,7 +156,10 @@ namespace HotelApp.Domain.Services
             if (hotel == null)
                 throw new Exception("Otel bulunamadı");
 
-            _hotelRepository.Delete(hotel);
+            hotel.IsActive = false;
+            hotel.UpdatedAt = DateTime.UtcNow;
+
+            _hotelRepository.Update(hotel);
             await _unitOfWork.SaveChangesAsync();
         }
     }
