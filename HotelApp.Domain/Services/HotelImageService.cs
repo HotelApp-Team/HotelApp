@@ -1,11 +1,6 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
 {
@@ -18,7 +13,6 @@ namespace HotelApp.Domain.Services
             _unitOfWork = unitOfWork;
         }
 
-        // Belirli bir otele ait tüm resimleri getirir
         public async Task<List<HotelImageDto>> GetByHotelIdAsync(int hotelId)
         {
             var images = await _unitOfWork.HotelImageRepository.GetByHotelIdAsync(hotelId);
@@ -31,12 +25,15 @@ namespace HotelApp.Domain.Services
                 DisplayOrder = x.DisplayOrder
             }).ToList();
         }
-        // ID’ye göre tek bir resmi getirir
+
         public async Task<HotelImageDto?> GetByIdAsync(int id)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(id);
 
-            if (image == null) return null;
+            if (image == null)
+            {
+                return null;
+            }
 
             return new HotelImageDto
             {
@@ -47,12 +44,14 @@ namespace HotelApp.Domain.Services
             };
         }
 
-        // Otelin ana (kapak) resmini getirir (IsMain = true)
         public async Task<HotelImageDto?> GetMainImageAsync(int hotelId)
         {
             var image = await _unitOfWork.HotelImageRepository.GetMainImageAsync(hotelId);
 
-            if (image == null) return null;
+            if (image == null)
+            {
+                return null;
+            }
 
             return new HotelImageDto
             {
@@ -63,7 +62,6 @@ namespace HotelApp.Domain.Services
             };
         }
 
-        //Mevcut resmi günceller
         public async Task AddAsync(HotelImageCreateDto dto)
         {
             var entity = new HotelImage
@@ -75,23 +73,23 @@ namespace HotelApp.Domain.Services
             };
 
             await _unitOfWork.HotelImageRepository.AddAsync(entity);
+            await _unitOfWork.SaveChangesAsync();
 
-            // Eğer main olarak ekleniyorsa diğerlerini kapat
             if (dto.IsMain)
             {
                 await _unitOfWork.HotelImageRepository.SetMainImageAsync(dto.HotelId, entity.Id);
+                await _unitOfWork.SaveChangesAsync();
             }
-
-            await _unitOfWork.SaveChangesAsync();
         }
 
-        //  Mevcut resmi günceller
         public async Task UpdateAsync(HotelImageUpdateDto dto)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(dto.Id);
 
             if (image == null)
+            {
                 throw new Exception("Resim bulunamadı");
+            }
 
             image.ImageUrl = dto.ImageUrl;
             image.IsMain = dto.IsMain;
@@ -106,19 +104,20 @@ namespace HotelApp.Domain.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
-        // Resim silme işlemi
+
         public async Task DeleteAsync(int id)
         {
             var image = await _unitOfWork.HotelImageRepository.GetByIdAsync(id);
 
             if (image == null)
+            {
                 throw new Exception("Resim bulunamadı");
+            }
 
             _unitOfWork.HotelImageRepository.Delete(image);
-
             await _unitOfWork.SaveChangesAsync();
         }
-        // Bir oteldeki tek bir resmi "kapak fotoğrafı" yapar
+
         public async Task SetMainImageAsync(int hotelId, int imageId)
         {
             await _unitOfWork.HotelImageRepository.SetMainImageAsync(hotelId, imageId);

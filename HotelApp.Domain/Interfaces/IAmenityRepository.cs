@@ -1,36 +1,15 @@
-﻿using HotelApp.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HotelApp.Domain.Entities;
 
-namespace HotelApp.Domain.Interfaces
+namespace HotelApp.Domain.Interfaces;
+
+public interface IAmenityRepository : IRepository<Amenity>
 {
-    public interface IAmenityRepository
-    {
-        // Tüm olanakları getir
-        Task<List<Amenity>> GetAllAsync();
+    // Otele ait olanakları getir
+    Task<List<Amenity>> GetAmenitiesByHotelIdAsync(int hotelId);
 
-        // Id'ye göre getir
-        Task<Amenity?> GetByIdAsync(int id);
+    // Otele olanak ekle
+    Task AddAmenityToHotelAsync(int hotelId, int amenityId);
 
-        // Yeni olanak ekle
-        Task AddAsync(Amenity amenity);
-
-        // Güncelle
-        Task UpdateAsync(Amenity amenity);
-
-        // Sil
-        Task DeleteAsync(int id);
-
-        // Otele ait olanakları getir
-        Task<List<Amenity>> GetAmenitiesByHotelIdAsync(int hotelId);
-
-        // Otele olanak ekle
-        Task AddAmenityToHotelAsync(int hotelId, int amenityId);
-
-        // Otelden olanak kaldır
-        Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId);
-    }
+    // Otelden olanak kaldır
+    Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId);
 }

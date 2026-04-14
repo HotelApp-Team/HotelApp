@@ -1,82 +1,53 @@
-﻿using HotelApp.Domain.Entities;
+using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace HotelApp.Infrastructure.Repositories
+namespace HotelApp.Infrastructure.Repositories;
+
+public class HotelImageRepository : Repository<HotelImage>, IHotelImageRepository
 {
-    public class HotelImageRepository : IHotelImageRepository
+    public HotelImageRepository(HotelAppDbContext context) : base(context)
     {
-        private readonly HotelAppDbContext _context;
+    }
 
-        // Clean kullanım için DbSet property
-        private DbSet<HotelImage> Images => _context.HotelImages;
+    public async Task<IEnumerable<HotelImage>> GetByHotelIdAsync(int hotelId)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(x => x.HotelId == hotelId)
+            .OrderBy(x => x.DisplayOrder)
+            .ToListAsync();
+    }
 
-        public HotelImageRepository(HotelAppDbContext context)
+    public async Task<HotelImage?> GetMainImageAsync(int hotelId)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.HotelId == hotelId && x.IsMain);
+    }
+
+    public async Task SetMainImageAsync(int hotelId, int imageId)
+    {
+        var targetImage = await _dbSet.FirstOrDefaultAsync(x => x.Id == imageId);
+
+        if (targetImage == null)
         {
-            _context = context;
+            throw new InvalidOperationException("Resim bulunamadı.");
         }
 
-        // Belirli bir otele ait tüm resimler
-        public async Task<IEnumerable<HotelImage>> GetByHotelIdAsync(int hotelId)
+        if (targetImage.HotelId != hotelId)
         {
-            return await Images
-                .AsNoTracking()
-                .Where(x => x.HotelId == hotelId)
-                .OrderBy(x => x.DisplayOrder)
-                .ToListAsync();
+            throw new InvalidOperationException("Seçilen resim bu otele ait değil.");
         }
 
-        // Tek resim getir
-        public async Task<HotelImage?> GetByIdAsync(int id)
-        {
-            return await Images
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
-        }
+        var images = await _dbSet
+            .Where(x => x.HotelId == hotelId)
+            .ToListAsync();
 
-        // Ana resmi getir
-        public async Task<HotelImage?> GetMainImageAsync(int hotelId)
+        foreach (var img in images)
         {
-            return await Images
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.HotelId == hotelId && x.IsMain);
-        }
-
-        // Yeni resim ekle
-        public async Task AddAsync(HotelImage image)
-        {
-            await Images.AddAsync(image);
-        }
-
-        // Güncelle
-        public void Update(HotelImage image)
-        {
-            Images.Update(image);
-        }
-
-        // Sil
-        public void Delete(HotelImage image)
-        {
-            Images.Remove(image);
-        }
-
-        // Ana resmi değiştir (tek main garanti eder)
-        public async Task SetMainImageAsync(int hotelId, int imageId)
-        {
-            var images = await Images
-                .Where(x => x.HotelId == hotelId)
-                .ToListAsync();
-
-            foreach (var img in images)
-            {
-                img.IsMain = img.Id == imageId;
-            }
+            img.IsMain = img.Id == imageId;
         }
     }
 }

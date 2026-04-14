@@ -1,49 +1,32 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
 {
     public class HotelService : IHotelService
     {
-        private readonly IHotelRepository _hotelRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public HotelService(IHotelRepository hotelRepository, IUnitOfWork unitOfWork)
+        public HotelService(IUnitOfWork unitOfWork)
         {
-            _hotelRepository = hotelRepository;
             _unitOfWork = unitOfWork;
         }
 
-        // Tüm oteller (Liste DTO)
         public async Task<IEnumerable<HotelListDto>> GetAllAsync()
         {
-            var hotels = await _hotelRepository.GetAllAsync();
-
-            return hotels.Select(x => new HotelListDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                City = x.City,
-                Country = x.Country,
-                StarRating = x.StarRating,
-                AvgRating = x.AvgRating,
-                IsActive = x.IsActive
-            });
+            var hotels = await _unitOfWork.HotelRepository.GetAllAsync();
+            return hotels.Select(MapToListDto);
         }
 
-        // Detay
         public async Task<HotelDetailDto?> GetByIdAsync(int id)
         {
-            var hotel = await _hotelRepository.GetWithDetailsAsync(id);
+            var hotel = await _unitOfWork.HotelRepository.GetWithDetailsAsync(id);
 
             if (hotel == null)
+            {
                 return null;
+            }
 
             return new HotelDetailDto
             {
@@ -60,47 +43,23 @@ namespace HotelApp.Domain.Services
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
                 IsActive = hotel.IsActive,
-
                 ImageUrls = hotel.HotelImages.Select(i => i.ImageUrl).ToList(),
                 Amenities = hotel.Amenities.Select(a => a.Name).ToList()
             };
         }
 
-        // Şehre göre filtre
         public async Task<IEnumerable<HotelListDto>> GetByCityAsync(string city)
         {
-            var hotels = await _hotelRepository.GetByCityAsync(city);
-
-            return hotels.Select(x => new HotelListDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                City = x.City,
-                Country = x.Country,
-                StarRating = x.StarRating,
-                AvgRating = x.AvgRating,
-                IsActive = x.IsActive
-            });
+            var hotels = await _unitOfWork.HotelRepository.GetByCityAsync(city);
+            return hotels.Select(MapToListDto);
         }
 
-        // Aktif oteller
         public async Task<IEnumerable<HotelListDto>> GetActiveAsync()
         {
-            var hotels = await _hotelRepository.GetActiveAsync();
-
-            return hotels.Select(x => new HotelListDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                City = x.City,
-                Country = x.Country,
-                StarRating = x.StarRating,
-                AvgRating = x.AvgRating,
-                IsActive = x.IsActive
-            });
+            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
+            return hotels.Select(MapToListDto);
         }
 
-        // Create
         public async Task CreateAsync(HotelCreateDto dto)
         {
             var hotel = new Hotel
@@ -119,17 +78,18 @@ namespace HotelApp.Domain.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _hotelRepository.AddAsync(hotel);
+            await _unitOfWork.HotelRepository.AddAsync(hotel);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        // Update
         public async Task UpdateAsync(HotelUpdateDto dto)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(dto.Id);
+            var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.Id);
 
             if (hotel == null)
+            {
                 throw new Exception("Otel bulunamadı");
+            }
 
             hotel.Name = dto.Name;
             hotel.Description = dto.Description;
@@ -144,23 +104,38 @@ namespace HotelApp.Domain.Services
             hotel.IsActive = dto.IsActive;
             hotel.UpdatedAt = DateTime.UtcNow;
 
-            _hotelRepository.Update(hotel);
+            _unitOfWork.HotelRepository.Update(hotel);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        // Delete
         public async Task DeleteAsync(int id)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(id);
+            var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(id);
 
             if (hotel == null)
+            {
                 throw new Exception("Otel bulunamadı");
+            }
 
             hotel.IsActive = false;
             hotel.UpdatedAt = DateTime.UtcNow;
 
-            _hotelRepository.Update(hotel);
+            _unitOfWork.HotelRepository.Update(hotel);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        private static HotelListDto MapToListDto(Hotel hotel)
+        {
+            return new HotelListDto
+            {
+                Id = hotel.Id,
+                Name = hotel.Name,
+                City = hotel.City,
+                Country = hotel.Country,
+                StarRating = hotel.StarRating,
+                AvgRating = hotel.AvgRating,
+                IsActive = hotel.IsActive
+            };
         }
     }
 }
