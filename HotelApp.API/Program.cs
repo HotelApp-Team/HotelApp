@@ -30,6 +30,10 @@ builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
 builder.Services.AddScoped<IHotelImageService, HotelImageService>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
+// Her HTTP istegi icin yeni instance, istek bitince yok edilir.
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // Repository'lere erisim icin.
+builder.Services.AddScoped<IAuthService, AuthService>(); // Auth endpointi icin, kullanici kayit ve login islemlerini yapar.
+builder.Services.AddScoped<IUserService, UserService>(); // Profile endpointi icin, kullanici bilgilerini dondurur.
 builder.Services.AddScoped<IJwtService>(sp =>
     new JwtService(
         secretKey: jwtSettings["SecretKey"]!,

@@ -13,6 +13,8 @@ public class UnitOfWork : IUnitOfWork
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
     private IAmenityRepository? _amenityRepository;
+    private IUserRepository? _userRepository;
+
     public UnitOfWork(HotelAppDbContext context)
     {
         _context = context;
@@ -30,6 +32,8 @@ public class UnitOfWork : IUnitOfWork
 
     public IAmenityRepository AmenityRepository =>
            _amenityRepository ??= new AmenityRepository(_context);
+    public IUserRepository UserRepository =>
+    _userRepository ??= new UserRepository(_context);
 
 
     /// Tüm değişiklikleri veritabanına kaydeder.

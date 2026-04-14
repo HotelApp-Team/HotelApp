@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,8 +35,8 @@ public class AuthRepository : IAuthRepository
         return user;
     }
 
-    public async Task<int> SaveChangesAsync() //Değişiklikleri kaydeder, AddAsync tek başına kaydetmez, SaveChangesAsync çağrılmalı
+    public async Task<Role?> GetRoleByNameAsync(string roleName) //Role eklemek için, rolü adıyla getirir
     {
-        return await _context.SaveChangesAsync();
+        return await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName); //Rolü adıyla getirir, yoksa null döner
     }
 }
