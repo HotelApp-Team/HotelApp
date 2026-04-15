@@ -58,7 +58,7 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
 
             // 5.JWT token oluştur ve döndür.
-            var token = _jwtService.GenerateToken(user, out var expiresAt);
+            var token = _jwtService.GenerateToken(user, false, out var expiresAt);
 
             return new LoginResponseDto
             {
@@ -117,7 +117,7 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
 
             // 4.JWT token oluştur ve döndür.
-            var token = _jwtService.GenerateToken(user, out var expiresAt);
+            var token = _jwtService.GenerateToken(user, dto.RememberMe, out var expiresAt);
 
             return new LoginResponseDto
             {

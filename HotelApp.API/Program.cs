@@ -43,7 +43,8 @@ builder.Services.AddScoped<IJwtService>(sp =>
         secretKey: jwtSettings["SecretKey"]!,
         issuer: jwtSettings["Issuer"]!,
         audience: jwtSettings["Audience"]!,
-        expirationMinutes: int.Parse(jwtSettings["ExpirationMinutes"]!)
+        expirationMinutes: int.Parse(jwtSettings["ExpirationMinutes"]!),
+        rememberMeTokenExpiryDays: int.Parse(jwtSettings["RememberMeTokenExpiryDays"]!)
     ));
 
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
