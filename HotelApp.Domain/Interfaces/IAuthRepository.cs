@@ -10,6 +10,9 @@ public interface IAuthRepository : IRepository<User>
     // Login için email'e göre kullanıcıyı getir
     Task<User?> GetByEmailAsync(string email);
 
+    // Verify email işlemi için EmailVerificationToken alanına göre kullanıcıyı getirir
+    Task<User?> GetByVerificationTokenAsync(string token);
+
     // Role ekle
     Task<Role?> GetRoleByNameAsync(string roleName);
 }

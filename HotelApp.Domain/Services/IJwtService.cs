@@ -9,6 +9,8 @@ namespace HotelApp.Domain.Services
 {
     public interface IJwtService
     {
-        string GenerateToken(User user, out DateTime expiresAt); //Generate token üretirken aynı zamanda token'ın ne zaman geçersiz olacağını da döndürür
+        //Generate token üretirken aynı zamanda token'ın ne zaman geçersiz olacağını da döndürür
+        //Token imzasina RememberMe özelliği
+        string GenerateToken(User user, bool rememberMe, out DateTime expiresAt);
     }
 }
