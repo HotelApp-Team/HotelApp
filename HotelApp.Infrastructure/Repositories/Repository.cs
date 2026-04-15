@@ -10,6 +10,7 @@ public abstract class Repository<T> : IRepository<T> where T : class
     protected readonly HotelAppDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
+    // Constructor ile hem DbContext'i hem de ilgili entity'nin DbSet'ini hazirliyoruz
     protected Repository(HotelAppDbContext context)
     {
         _context = context;
@@ -18,6 +19,8 @@ public abstract class Repository<T> : IRepository<T> where T : class
 
     public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
+        // 1. Tum kayitlari getir
+        // 2. AsNoTracking ile sadece okuma amacli calistir
         return await _dbSet
             .AsNoTracking()
             .ToListAsync();
@@ -25,11 +28,13 @@ public abstract class Repository<T> : IRepository<T> where T : class
 
     public virtual async Task<T?> GetByIdAsync(int id)
     {
+        // Verilen primary key ile tek bir kaydi bulur
         return await _dbSet.FindAsync(id);
     }
 
     public virtual async Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
     {
+        // Gonderilen kosula uyan ilk kaydi bulur
         return await _dbSet
             .AsNoTracking()
             .FirstOrDefaultAsync(predicate);
@@ -37,21 +42,25 @@ public abstract class Repository<T> : IRepository<T> where T : class
 
     public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
     {
+        // Kosula uyan herhangi bir kayit var mi kontrol eder
         return await _dbSet.AnyAsync(predicate);
     }
 
     public virtual async Task AddAsync(T entity)
     {
+        // Yeni entity'yi context'e ekler, kaydetme islemi UnitOfWork tarafinda yapilir
         await _dbSet.AddAsync(entity);
     }
 
     public virtual void Update(T entity)
     {
+        // Var olan entity'yi guncellenmis olarak isaretler
         _dbSet.Update(entity);
     }
 
     public virtual void Delete(T entity)
     {
+        // Entity'yi silinmek uzere isaretler
         _dbSet.Remove(entity);
     }
 }

@@ -43,17 +43,53 @@ public class AuthController : ControllerBase
     [HttpGet("profile")]
     public async Task<ActionResult<UserDto>> GetProfile()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim))
-            return Unauthorized("Token içinde kullanıcı bilgisi bulunamadı.");
-
-        if (!int.TryParse(userIdClaim, out int userId))
-            return Unauthorized("Geçersiz kullanıcı bilgisi.");
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized("Token içinde geçerli kullanıcı bilgisi bulunamadı.");
 
         var result = await _userService.GetProfileAsync(userId);
         return Ok(result);
+    }
+
+    // GET api/auth/verify-email?token=abc123
+    // Email doğrulama linkinden gelen token'ı alır, service'e gönderir ve sonucu döndürür
+    [AllowAnonymous]
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        // Token query string'den gelir, doğrulama ve JWT üretme mantığı service tarafında çalışır
+        var result = await _authService.VerifyEmailAsync(token);
+        return Ok(result);
+    }
+
+    // POST api/auth/resend-verification
+    [AllowAnonymous]
+    [HttpPost("resend-verification")]
+    public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationDto dto)
+    {
+        var result = await _authService.ResendVerificationAsync(dto);
+        return Ok(new { Message = result });
+    }
+
+    // PUT api/auth/profile
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] ProfileDto profileDto)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized("Token içinde geçerli kullanıcı bilgisi bulunamadı.");
+
+        var result = await _userService.UpdateProfileAsync(userId, profileDto);
+        return Ok(result);
+    }
+
+    private bool TryGetCurrentUserId(out int userId)
+    {
+        userId = 0;
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
     }
 }
 
