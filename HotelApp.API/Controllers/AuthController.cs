@@ -50,6 +50,26 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    // GET api/auth/verify-email?token=abc123
+    // Email doğrulama linkinden gelen token'ı alır, service'e gönderir ve sonucu döndürür
+    [AllowAnonymous]
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        // Token query string'den gelir, doğrulama ve JWT üretme mantığı service tarafında çalışır
+        var result = await _authService.VerifyEmailAsync(token);
+        return Ok(result);
+    }
+
+    // POST api/auth/resend-verification
+    [AllowAnonymous]
+    [HttpPost("resend-verification")]
+    public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationDto dto)
+    {
+        var result = await _authService.ResendVerificationAsync(dto);
+        return Ok(new { Message = result });
+    }
+
     // PUT api/auth/profile
     [Authorize]
     [HttpPut("profile")]
