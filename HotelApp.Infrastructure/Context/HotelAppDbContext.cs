@@ -40,6 +40,8 @@ public partial class HotelAppDbContext : DbContext
 
     public virtual DbSet<VwRoomDetail> VwRoomDetails { get; set; }
 
+    public virtual DbSet<VwReservationDetail> VwReservationDetails { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Amenity>(entity =>
@@ -282,6 +284,25 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.HotelName).HasMaxLength(200);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.RoomTypeName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<VwReservationDetail>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_ReservationDetails");
+
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.FirstName).HasMaxLength(100);
+            entity.Property(e => e.HotelName).HasMaxLength(200);
+            entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.RoomTypeName).HasMaxLength(100);
+            entity.Property(e => e.Status).HasMaxLength(20);
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
         });
 
         OnModelCreatingPartial(modelBuilder);

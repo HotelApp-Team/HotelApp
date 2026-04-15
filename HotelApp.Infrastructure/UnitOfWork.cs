@@ -12,6 +12,10 @@ public class UnitOfWork : IUnitOfWork
     private IAuthRepository? _authRepository;
     private IRoomTypeRepository? _roomTypeRepository;
     private IHotelRoomRepository? _hotelRoomRepository;
+    private IHotelRepository? _hotelRepository;
+    private IHotelImageRepository? _hotelImageRepository;
+    private IAmenityRepository? _amenityRepository;
+    private IUserRepository? _userRepository;
 
     public UnitOfWork(HotelAppDbContext context, IHotelRoomRepository hotelRoomRepository, IRoomTypeRepository roomTypeRepository)
     {
@@ -27,6 +31,16 @@ public class UnitOfWork : IUnitOfWork
 
     public IHotelRoomRepository HotelRoomRepository =>
         _hotelRoomRepository ??= new HotelRoomRepository(_context);
+    public IHotelRepository HotelRepository =>
+       _hotelRepository ??= new HotelRepository(_context);
+
+    public IHotelImageRepository HotelImageRepository =>
+    _hotelImageRepository ??= new HotelImageRepository(_context);
+
+    public IAmenityRepository AmenityRepository =>
+           _amenityRepository ??= new AmenityRepository(_context);
+    public IUserRepository UserRepository =>
+    _userRepository ??= new UserRepository(_context);
 
 
     /// Tüm değişiklikleri veritabanına kaydeder.
