@@ -1,7 +1,6 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -27,7 +26,6 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RegisterAsync(userRegisterDto);
         return Ok(result);
-
     }
 
     //POST api/auth/login
@@ -92,4 +90,3 @@ public class AuthController : ControllerBase
         return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
     }
 }
-

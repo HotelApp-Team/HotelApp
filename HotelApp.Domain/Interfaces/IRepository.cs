@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
 
+// IRepository, tum entity'ler icin ortak CRUD sozlesmesini tanimlar.
+// Amaci, tekrar eden veri erisim kurallarini ortak bir yapida toplamaktir.
 namespace HotelApp.Domain.Interfaces;
 
 public interface IRepository<T> where T : class

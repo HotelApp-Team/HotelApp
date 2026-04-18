@@ -20,6 +20,12 @@ builder.Services.AddDbContext<HotelAppDbContext>(options =>
 // JWT ayarlarini oku (DI kayitlarinda ve Authentication'da kullanilacak)
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
+// Email ayarlarini oku (IEmailService kaydinda kullanilacak)
+var emailSettings = builder.Configuration.GetSection("EmailSettings");
+
+// Auth ayarlarini oku (Faz 1 / Faz 2 fallback davranisinda kullanilacak)
+var authSettings = builder.Configuration.GetSection("AuthSettings");
+
 // UnitOfWork kaydi
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -31,7 +37,13 @@ builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
 
 // Service kayitlari
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService>(sp =>
+    new AuthService(
+        sp.GetRequiredService<IUnitOfWork>(),
+        sp.GetRequiredService<IJwtService>(),
+        sp.GetRequiredService<IEmailService>(),
+        bool.Parse(authSettings["UseEmailVerification"] ?? "true")
+    ));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IHotelImageService, HotelImageService>();
@@ -45,6 +57,17 @@ builder.Services.AddScoped<IJwtService>(sp =>
         audience: jwtSettings["Audience"]!,
         expirationMinutes: int.Parse(jwtSettings["ExpirationMinutes"]!),
         rememberMeTokenExpiryDays: int.Parse(jwtSettings["RememberMeTokenExpiryDays"]!)
+    ));
+
+builder.Services.AddScoped<IEmailService>(sp =>
+    new EmailService(
+        smtpServer: emailSettings["SmtpServer"]!,
+        smtpPort: int.Parse(emailSettings["SmtpPort"]!),
+        senderEmail: emailSettings["SenderEmail"]!,
+        senderName: emailSettings["SenderName"]!,
+        username: emailSettings["Username"]!,
+        password: emailSettings["Password"]!,
+        verifyEmailBaseUrl: emailSettings["VerifyEmailBaseUrl"]!
     ));
 
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);

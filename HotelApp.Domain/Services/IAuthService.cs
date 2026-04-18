@@ -1,21 +1,19 @@
-﻿using HotelApp.Domain.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HotelApp.Domain.DTOs;
 
+// IAuthService, auth islemleri icin servis sozlesmesini tanimlar.
+// Amaci, controller'in somut sinifa degil interface'e baglanmasini saglamaktir.
+// SOLID: DIP ve ISP kullanir.
 namespace HotelApp.Domain.Services
 {
     public interface IAuthService
     {
-        // Yeni kullanici kaydi olusturur ve sonucunda login response dondurur
-        Task<LoginResponseDto> RegisterAsync(UserRegisterDto registerRequest);
+        // Yeni kullanici kaydi olusturur ve Faz ayarina gore verify mesaji veya JWT dondurur
+        Task<RegisterResponseDto> RegisterAsync(UserRegisterDto registerRequest);
 
         // Kullanici girisi yapar, bilgiler dogruysa JWT token iceren response dondurur
         Task<LoginResponseDto> LoginAsync(UserLoginDto loginRequest);
 
-        // Email doğrulama token'ını kontrol eder, kullanıcıyı doğrular ve otomatik giriş için JWT döndürür
+        // Email dogrulama token'ini kontrol eder, kullaniciyi dogrular ve otomatik giris icin JWT dondurur
         Task<LoginResponseDto> VerifyEmailAsync(string token);
 
         // Email dogrulama mailini yeniden gondermek icin yeni verification token uretir ve sonucunda bilgilendirme mesaji dondurur

@@ -1,42 +1,37 @@
-﻿using BCrypt.Net;
 using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 
-
+// AuthService, kayit, login, email verify ve resend gibi kimlik islemlerini yonetir.
+// Amaci, auth kurallarini tek yerde toplamak ve controller'i sade tutmaktir.
+// SOLID: SRP kullanir, DIP ile IUnitOfWork/IJwtService/IEmailService abstraction'larina baglanir.
 namespace HotelApp.Domain.Services;
 
 public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtService _jwtService;
+    private readonly IEmailService _emailService;
+    private readonly bool _useEmailVerification;
 
-    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService)
+    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, bool useEmailVerification)
     {
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
+        _emailService = emailService;
+        _useEmailVerification = useEmailVerification;
     }
 
-    public async Task<LoginResponseDto> RegisterAsync(UserRegisterDto dto)
+    public async Task<RegisterResponseDto> RegisterAsync(UserRegisterDto dto)
     {
-        // 1.Email zaten var mı?
+        // Email zaten var mi?
         if (await _unitOfWork.AuthRepository.EmailExistsAsync(dto.Email))
-
             throw new InvalidOperationException("Bu email zaten mevcut.");
-        // 2.Parolayı hashle
+
+        // Parolayi hashle
         var hash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-        // 3.Email dogrulama icin token ve sure olustur
-        var verificationToken = Guid.NewGuid().ToString();
-        var verificationTokenExpiry = DateTime.UtcNow.AddHours(24); // 24 saat geçerli
-
-        //4.Kullanıcı nesnesi oluştur
+        // Kullanici nesnesi olustur
         var user = new User
         {
             FirstName = dto.FirstName,
@@ -44,59 +39,93 @@ public class AuthService : IAuthService
             Email = dto.Email,
             PasswordHash = hash,
             Phone = dto.Phone,
-            IsActive = true,
-            IsEmailVerified = false,
-            EmailVerificationToken = verificationToken,
-            VerificationTokenExpiry = verificationTokenExpiry
+            IsActive = true
         };
 
-        // 5.Yeni kayit olan kullaniciya varsayilan olarak User rolunu atiyoruz.
+        // Yeni kayit olan kullaniciya varsayilan olarak User rolunu atiyoruz.
         var defaultRole = await _unitOfWork.AuthRepository.GetRoleByNameAsync("User");
         if (defaultRole == null)
-        {
             throw new InvalidOperationException("Varsayılan Kullanıcı rolü bulunamadı.");
-        }
+
         user.Roles.Add(defaultRole);
 
-        // 6.Kullanıcıyı veritabanına kaydet.
+        if (_useEmailVerification)
+        {
+            // Faz 2 akisi icin verify bilgilerini hazirla
+            user.IsEmailVerified = false;
+            user.EmailVerificationToken = Guid.NewGuid().ToString();
+            user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
+
+            // Kullaniciyi veritabanina ekle
+            await _unitOfWork.AuthRepository.AddAsync(user);
+
+            // Degisiklikleri veritabanina kaydet
+            await _unitOfWork.SaveChangesAsync();
+
+            // Email dogrulama mailini gonder
+            await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
+
+            return new RegisterResponseDto
+            {
+                RequiresEmailVerification = true,
+                Message = "Kayıt başarılı! Lütfen emailinizi doğrulayın."
+            };
+        }
+
+        // Faz 1 fallback akisinda email verify beklenmez
+        user.IsEmailVerified = true;
+        user.EmailVerificationToken = null;
+        user.VerificationTokenExpiry = null;
+
+        // Kullaniciyi veritabanina ekle
         await _unitOfWork.AuthRepository.AddAsync(user);
+
+        // Degisiklikleri veritabanina kaydet
         await _unitOfWork.SaveChangesAsync();
 
-        // 7.JWT token oluştur ve döndür.
+        // JWT token olustur ve dondur
         var token = _jwtService.GenerateToken(user, false, out var expiresAt);
 
-        return new LoginResponseDto
+        return new RegisterResponseDto
         {
+            RequiresEmailVerification = false,
+            Message = "Kayıt başarılı.",
             Token = token,
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}",
             ExpiresAt = expiresAt
         };
     }
+
     public async Task<LoginResponseDto> LoginAsync(UserLoginDto dto)
     {
-        // 1.Kullanıcıy mail ile bul
+        // Kullaniciyi email ile bul
         var user = await _unitOfWork.AuthRepository.GetByEmailAsync(dto.Email);
         if (user == null)
             throw new UnauthorizedAccessException("Geçersiz email veya parola.");
 
-        // 2.Hesap aktif mi?
+        // Hesap aktif mi?
         if (!user.IsActive)
             throw new UnauthorizedAccessException("Hesabınız aktif değil.");
 
-        // 3.Lockout süresi devam ediyor mu?
+        // Email dogrulandi mi?
+        if (!user.IsEmailVerified)
+            throw new UnauthorizedAccessException("Email adresiniz henüz doğrulanmamış. Lütfen emailinizi doğrulayın.");
+
+        // Lockout suresi devam ediyor mu?
         if (user.LockoutEndTime.HasValue)
         {
             if (user.LockoutEndTime.Value > DateTime.UtcNow)
                 throw new UnauthorizedAccessException("Hesabınız geçici olarak kilitlendi. Lütfen 1 dakika sonra tekrar deneyiniz");
             else
             {
-                // Lockout süresi dolmuş, sıfırla
+                // Lockout suresi dolmussa sifirla
                 user.FailedLoginAttempts = 0;
                 user.LockoutEndTime = null;
             }
         }
-        // 4.Parola doğrula
+
+        // Parolayi dogrula
         var isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
         if (!isPasswordValid)
@@ -115,13 +144,13 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Geçersiz email veya parola.");
         }
 
-        // 5. Başarılı girişte sayaç ve kilidi sıfırla
+        // Basarili giriste sayaci ve kilidi sifirla
         user.FailedLoginAttempts = 0;
         user.LockoutEndTime = null;
 
         await _unitOfWork.SaveChangesAsync();
 
-        // 4.JWT token oluştur ve döndür.
+        // JWT token olustur ve dondur
         var token = _jwtService.GenerateToken(user, dto.RememberMe, out var expiresAt);
 
         return new LoginResponseDto
@@ -132,34 +161,35 @@ public class AuthService : IAuthService
             ExpiresAt = expiresAt
         };
     }
-    // 6. Email doğrulama işlemi
+
+    // Email dogrulama islemi
     public async Task<LoginResponseDto> VerifyEmailAsync(string token)
     {
-        // 1. Token boş mu kontrol et
+        // Token bos mu kontrol et
         if (string.IsNullOrWhiteSpace(token))
             throw new ArgumentException("Doğrulama token'i boş olamaz.");
 
-        // 2. Token'a ait kullanıcıyı veritabanından bul
+        // Token'a ait kullaniciyi veritabanindan bul
         var user = await _unitOfWork.AuthRepository.GetByVerificationTokenAsync(token);
         if (user == null)
             throw new KeyNotFoundException("Doğrulama token'ine ait kullanıcı bulunamadı.");
 
-        // 3. Token süresi geçmiş mi kontrol et
+        // Token suresi gecmis mi kontrol et
         if (!user.VerificationTokenExpiry.HasValue || user.VerificationTokenExpiry.Value < DateTime.UtcNow)
             throw new InvalidOperationException("Doğrulama token'inin süresi dolmuş.");
 
-        // 4. Kullanıcının email bilgisini doğrulanmış yap ve token alanlarını temizle
+        // Kullanicinin email bilgisini dogrulanmis yap ve token alanlarini temizle
         user.IsEmailVerified = true;
         user.EmailVerificationToken = null;
         user.VerificationTokenExpiry = null;
 
-        // 5. Değişiklikleri veritabanına kaydet
+        // Degisiklikleri veritabanina kaydet
         await _unitOfWork.SaveChangesAsync();
 
-        // 6. Otomatik giriş için JWT token üret
+        // Otomatik giris icin JWT token uret
         var jwtToken = _jwtService.GenerateToken(user, false, out var expiresAt);
 
-        // 7. JWT ve kullanıcı bilgilerini LoginResponseDto olarak geri döndür
+        // JWT ve kullanici bilgilerini LoginResponseDto olarak geri dondur
         return new LoginResponseDto
         {
             Token = jwtToken,
@@ -169,24 +199,31 @@ public class AuthService : IAuthService
         };
     }
 
-    // Email doğrulama mailini yeniden gönderme işlemi
+    // Email dogrulama mailini yeniden gonderme islemi
     public async Task<string> ResendVerificationAsync(ResendVerificationDto dto)
     {
-        // 1. Email ile kullanıcıyı bul
+        // Email ile kullaniciyi bul
         var user = await _unitOfWork.AuthRepository.GetByEmailAsync(dto.Email);
         if (user == null)
             throw new KeyNotFoundException("Bu email adresine sahip bir kullanıcı bulunamadı.");
-        // 2. Kullanıcının email doğrulanmış mı kontrol et
+
+        // Kullanicinin emaili dogrulanmis mi kontrol et
         if (user.IsEmailVerified)
             throw new InvalidOperationException("Bu email adresi zaten doğrulanmış.");
-        // 3. Yeni bir doğrulama token'i oluştur ve kullanıcıya ata
-        user.EmailVerificationToken = Guid.NewGuid().ToString();
-        // 4. Token'in geçerlilik süresini belirle (örneğin 24 saat)
-        user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
-        // 5. Değişiklikleri veritabanına kaydet
-        await _unitOfWork.SaveChangesAsync();
-        // 6. Doğrulama mailini gönder (Bu kısımda gerçek mail gönderme kodu olmalı, burada sadece token'i döndürüyoruz)
-        return user.EmailVerificationToken;
-    }
 
+        // Yeni bir dogrulama token'i olustur ve kullaniciya ata
+        user.EmailVerificationToken = Guid.NewGuid().ToString();
+
+        // Token'in gecerlilik suresini belirle (ornegin 24 saat)
+        user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
+
+        // Degisiklikleri veritabanina kaydet
+        await _unitOfWork.SaveChangesAsync();
+
+        // Dogrulama mailini tekrar gonder
+        await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
+
+        // Bilgilendirme mesaji dondur
+        return "Dogrulama maili tekrar gonderildi.";
+    }
 }
