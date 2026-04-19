@@ -1,8 +1,10 @@
+using HotelApp.API.Middleware;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Domain.Services;
 using HotelApp.Infrastructure;
 using HotelApp.Infrastructure.Context;
 using HotelApp.Infrastructure.Repositories;
+using HotelApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,8 +16,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Servisleri container'a ekle.
 builder.Services.AddControllers();
 
+// Global exception handler kaydi (.NET 8 IExceptionHandler pattern)
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// ProblemDetails - hata cevaplari icin standart format saglar
+builder.Services.AddProblemDetails();
+
 builder.Services.AddDbContext<HotelAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// LoggerService Singleton baslatma ve DI kaydi
+LoggerService.Initialize(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddSingleton<ILoggerService>(LoggerService.Instance);
 
 // JWT ayarlarini oku (DI kayitlarinda ve Authentication'da kullanilacak)
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -139,6 +151,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Exception handler EN BASTA olmali ki sonraki tum middleware/controller hatalarini yakalasin
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

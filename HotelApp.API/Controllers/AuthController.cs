@@ -13,11 +13,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IUserService _userService;
+    private readonly ILoggerService _logger;
 
-    public AuthController(IAuthService authService, IUserService userService)
+    public AuthController(IAuthService authService, IUserService userService, ILoggerService logger)
     {
         _authService = authService;
         _userService = userService;
+        _logger = logger;
     }
 
     //POST api/auth/register
@@ -25,6 +27,13 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
     {
         var result = await _authService.RegisterAsync(userRegisterDto);
+
+        await LogInfoAsync(
+            result.RequiresEmailVerification
+                ? $"Yeni kullanıcı kaydı oluşturuldu, email doğrulaması bekleniyor: {userRegisterDto.Email}"
+                : $"Yeni kullanıcı kaydı oluşturuldu: {userRegisterDto.Email}",
+            userEmail: userRegisterDto.Email);
+
         return Ok(result);
     }
 
@@ -33,6 +42,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto)
     {
         var result = await _authService.LoginAsync(userLoginDto);
+
+        await LogInfoAsync(
+            $"Kullanıcı giriş yaptı. RememberMe: {(userLoginDto.RememberMe ? "Evet" : "Hayır")}",
+            userEmail: result.Email);
+
         return Ok(result);
     }
 
@@ -56,6 +70,11 @@ public class AuthController : ControllerBase
     {
         // Token query string'den gelir, doğrulama ve JWT üretme mantığı service tarafında çalışır
         var result = await _authService.VerifyEmailAsync(token);
+
+        await LogInfoAsync(
+            $"Email doğrulandı ve otomatik giriş yapıldı: {result.Email}",
+            userEmail: result.Email);
+
         return Ok(result);
     }
 
@@ -65,6 +84,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationDto dto)
     {
         var result = await _authService.ResendVerificationAsync(dto);
+
+        await LogInfoAsync(
+            $"Email doğrulama maili yeniden gönderildi: {dto.Email}",
+            userEmail: dto.Email);
+
         return Ok(new { Message = result });
     }
 
@@ -77,7 +101,24 @@ public class AuthController : ControllerBase
             return Unauthorized("Token içinde geçerli kullanıcı bilgisi bulunamadı.");
 
         var result = await _userService.UpdateProfileAsync(userId, profileDto);
+
+        await LogInfoAsync(
+            $"Kullanıcı profilini güncelledi: {result.Email}",
+            userId: result.Id,
+            userEmail: result.Email);
+
         return Ok(result);
+    }
+
+    private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
+    {
+        await _logger.LogInfoAsync(
+            message: message,
+            userId: userId,
+            userEmail: userEmail,
+            controller: nameof(AuthController),
+            action: $"{Request.Method} {Request.Path}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
     }
 
     private bool TryGetCurrentUserId(out int userId)
