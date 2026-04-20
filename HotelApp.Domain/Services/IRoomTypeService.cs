@@ -11,11 +11,11 @@ namespace HotelApp.Domain.Services
     {
         Task<IEnumerable<RoomTypeDto>> GetAllRoomTypesAsync();
         Task<RoomTypeDto?> GetRoomTypeByIdAsync(int id);
-        Task<RoomTypeDto> GetRoomTypeByNameAsync(string name);
-        Task<IEnumerable<RoomTypeDto>> GetRoomTypeByMaxGuestsAsync(int maxGuests);
+        Task<RoomTypeDto?> GetRoomTypeByNameAsync(string name);
+        Task<IEnumerable<RoomTypeDto>> GetRoomTypesByMaxGuestsAsync(int maxGuests);
 
-        Task AddRoomTypeAsync(RoomTypeDto dto);
-        Task UpdateRoomTypeAsync(RoomTypeDto dto);
+        Task AddRoomTypeAsync(CreateRoomTypeDto dto);
+        Task UpdateRoomTypeAsync(UpdateRoomTypeDto dto);
         Task DeleteRoomTypeAsync(int id);
     }
 }

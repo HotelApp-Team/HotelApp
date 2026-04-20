@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Interfaces
 {
-    public interface IHotelRoomRepository
+    public interface IHotelRoomRepository : IRepository<HotelRoom>
     {
         //Oda ilişkile veriler 
         Task<HotelRoom?> GetRoomWithDetailsAsync(int id);
@@ -21,8 +21,5 @@ namespace HotelApp.Domain.Interfaces
 
         Task<IEnumerable<HotelRoom>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut);
 
-        Task AddAsync(HotelRoom entity);
-        Task UpdateAsync(HotelRoom entity);
-        Task DeleteAsync(int id);
     }
 }

@@ -8,57 +8,80 @@ using System.Threading.Tasks;
 namespace HotelApp.Domain.DTOs
 {
     // Oda bilgilerini içeren Dto
-    public class HotelRoomDto
+    namespace HotelApp.Domain.DTOs
     {
-        public int Id { get; set; }
+        public class HotelRoomDto
+        {
+            public int Id { get; set; }
 
-        [Required(ErrorMessage = "Oda tipi zorunludur.")]
-        public int RoomTypeId { get; set; }
+            [Required(ErrorMessage = "Oda tipi zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+            public int RoomTypeId { get; set; }
 
-        [Range(0.01,double.MaxValue,ErrorMessage ="Fiyat 0'dan büyük olmalı.")]
-        public decimal PricePerNight { get; set; }
+            [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
+            public decimal PricePerNight { get; set; }
 
-        [Range(0.1, double.MaxValue, ErrorMessage = "Oda sayısı 0'dan büyük olmalı.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
+            public int TotalRooms { get; set; }
 
-        public int TotalRooms { get; set; } 
+            public string HotelName { get; set; } = string.Empty;
+            public string RoomTypeName { get; set; } = string.Empty;
+        }
 
-        public string HotelName { get; set; } = null!;
-        public string RoomTypeName { get; set; } = null!;
-    }
+        public class DetailHotelRoomDto
+        {
+            public int Id { get; set; }
+            public int HotelId { get; set; }
+            public int RoomTypeId { get; set; }
+            public decimal PricePerNight { get; set; }
+            public int TotalRooms { get; set; }
+            public bool IsActive { get; set; }
+            public string HotelName { get; set; } = string.Empty;  // düzeltildi
+            public string RoomTypeName { get; set; } = string.Empty;
+            public int ReservationCount { get; set; }
+        }
 
-    // Detaylı bilgi içeren Dto
-    public class DetailHotelRoomDto
-    {
-        public int Id { get; set; }
-        public int HotelId { get; set; }
-        public int RoomTypeId { get; set; }
-        public decimal PricePerNight { get; set; }
-        public int TotalRooms { get; set; }
-        public bool IsActive { get; set; }
-        public string HotelName { get; set; }
-        public string RoomTypeName { get; set; } = null!;
+        public class CreateHotelRoomDto
+        {
+            [Required(ErrorMessage = "HotelId zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir HotelId giriniz.")]
+            public int HotelId { get; set; }
 
-        public int ReservationCount { get; set; }
-    }
+            [Required(ErrorMessage = "RoomTypeId zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+            public int RoomTypeId { get; set; }
 
-    // Oluşturma İşlemi için Dto
-    public class CreateHotelRoomDto
-    {
-        public int HotelId { get; set; }
-        public int RoomTypeId { get; set; }
-        public decimal PricePerNight { get; set; }
-        public int TotalRooms { get; set; }
-    }
+            [Required(ErrorMessage = "Fiyat zorunludur.")]
+            [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
+            public decimal PricePerNight { get; set; }
 
-    // Güncelleme İşlemi için Dto
-    public class UpdateHotelRoomDto
-    {
-        public int Id { get; set; }
-        public int HotelId { get; set; }
-        public int RoomTypeId { get; set; }
-        public decimal PricePerNight { get; set; }
-        public int TotalRooms { get; set; }
-        public bool IsActive { get; set; }
+            [Required(ErrorMessage = "Oda sayısı zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
+            public int TotalRooms { get; set; }
+        }
+
+        public class UpdateHotelRoomDto
+        {
+            public int Id { get; set; }
+
+            [Required(ErrorMessage = "HotelId zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir HotelId giriniz.")]
+            public int HotelId { get; set; }
+
+            [Required(ErrorMessage = "RoomTypeId zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+            public int RoomTypeId { get; set; }
+
+            [Required(ErrorMessage = "Fiyat zorunludur.")]
+            [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
+            public decimal PricePerNight { get; set; }
+
+            [Required(ErrorMessage = "Oda sayısı zorunludur.")]
+            [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
+            public int TotalRooms { get; set; }
+
+            public bool IsActive { get; set; }
+        }
     }
 
 }

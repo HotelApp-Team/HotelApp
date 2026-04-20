@@ -2,9 +2,20 @@
 
 public interface IUnitOfWork : IDisposable
 {
+    //Repository'lere erişim
     IAuthRepository AuthRepository { get; }
+
     IHotelRoomRepository HotelRoomRepository { get; }
     IRoomTypeRepository RoomTypeRepository { get; }
+
+    IUserRepository UserRepository { get; }
+
+    IHotelRepository HotelRepository { get; }
+
+    IHotelImageRepository HotelImageRepository { get; }
+
+    IAmenityRepository AmenityRepository { get; }
+
 
     // Tüm değişiklikleri kaydet
     Task<int> SaveChangesAsync();

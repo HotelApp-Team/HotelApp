@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Interfaces
 {
-    public interface IRoomTypeRepository
+    public interface IRoomTypeRepository : IRepository<RoomType>
     {
         Task<RoomType?> GetByIdAsync(int id);
         Task<IEnumerable<RoomType>> GetAllAsync();
@@ -16,9 +16,5 @@ namespace HotelApp.Domain.Interfaces
         Task<IEnumerable<RoomType>> GetByMaxGuestsAsync(int maxGuests);
         Task<RoomType?> GetByNameAsync(string name);
 
-        Task AddAsync(RoomType entity);
-        Task UpdateAsync(RoomType entity);
-        Task DeleteAsync(int id);
-        Task AddRoomTypeAsync(RoomType entity);
     }
 }

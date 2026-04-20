@@ -5,29 +5,22 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Umbraco.Core.Composing.CompositionExtensions;
 
 namespace HotelApp.Infrastructure.Repositories
 {
-    public class HotelRoomRepository : IHotelRoomRepository
+    public class HotelRoomRepository : Repository<HotelRoom>, IHotelRoomRepository
     {
-        private readonly HotelAppDbContext _context;
-        public HotelRoomRepository(HotelAppDbContext context) => _context = context;
-
-        public async Task<HotelRoom?> GetByIdAsync(int id)
+        public HotelRoomRepository(HotelAppDbContext context) : base(context)
         {
-            return await _context.HotelRooms.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        public async Task<IEnumerable<HotelRoom>> GetAllAsync()
-        {
-            return await _context.HotelRooms.ToListAsync();
         }
 
         public async Task<HotelRoom?> GetRoomWithDetailsAsync(int id)
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
@@ -37,7 +30,7 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<HotelRoom>> GetAllWithRoomsAsync()
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
@@ -46,7 +39,7 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<HotelRoom>> GetByMaxGuestsAsync(int maxGuests)
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Include(x => x.RoomType)
                 .Include(x => x.Hotel)
                 .Where(x => x.RoomType.MaxGuests >= maxGuests)
@@ -55,38 +48,17 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<HotelRoom>> GetByNameAsync(string name)
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Include(x => x.RoomType)
                 .Include(x => x.Hotel)
                 .Where(x => x.RoomType.Name.Contains(name))
                 .ToListAsync();
         }
 
-        public async Task AddAsync(HotelRoom entity)
-        {
-            await _context.HotelRooms.AddAsync(entity);
-        }
-
-        public async Task UpdateAsync(HotelRoom entity)
-        {
-            _context.HotelRooms.Update(entity);
-            await Task.CompletedTask;
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                _context.HotelRooms.Remove(entity);
-            }
-        }
-
-
 
         public async Task<IEnumerable<HotelRoom>> GetRoomsWithDetailsAsync()
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
@@ -95,7 +67,7 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<HotelRoom>> GetRoomsByHotelAsync(int hotelId)
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Where(x => x.HotelId == hotelId)
                 .Include(x => x.RoomType)
                 .ToListAsync();
@@ -103,7 +75,7 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<HotelRoom>> GetRoomsByRoomTypeAsync(int roomTypeId)
         {
-            return await _context.HotelRooms
+            return await _dbSet
                 .Where(x => x.RoomTypeId == roomTypeId)
                 .Include(x => x.Hotel)
                 .ToListAsync();
@@ -114,11 +86,15 @@ namespace HotelApp.Infrastructure.Repositories
             var checkInDateOnly = DateOnly.FromDateTime(checkIn);
             var checkOutDateOnly = DateOnly.FromDateTime(checkOut);
 
-            return await _context.HotelRooms
-                .Include(x => x.Reservations)
-                .Where(x => !x.Reservations.Any(r => r.CheckInDate < checkOutDateOnly &&
-                    r.CheckOutDate > checkInDateOnly))
-                .ToListAsync();
+            return await _dbSet
+                  .Include(x => x.Reservations)
+                  .Include(x => x.Hotel)       
+                  .Include(x => x.RoomType)    
+                  .Where(x => !x.Reservations.Any(r =>
+        r.CheckInDate < checkOutDateOnly &&
+        r.CheckOutDate > checkInDateOnly))
+                  .ToListAsync();
         }
+
     }
 }
