@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// IJwtService, token uretme davranisinin sozlesmesini tanimlar.
+// Amaci, auth akisinin somut JWT implementasyonuna bagimli kalmamasidir.
+// SOLID: DIP ve ISP kullanir.
 namespace HotelApp.Domain.Services
 {
     public interface IJwtService

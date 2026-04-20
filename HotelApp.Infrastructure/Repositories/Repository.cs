@@ -3,6 +3,9 @@ using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
+// Repository, ortak CRUD islemlerinin temel implementasyonunu saglar.
+// Amaci, tekrar eden EF Core kodunu tek yerde toplamak ve alt repository'leri sade tutmaktir.
+// SOLID: SRP kullanir, OCP icin kalitimla genisletilebilir.
 namespace HotelApp.Infrastructure.Repositories;
 
 public abstract class Repository<T> : IRepository<T> where T : class

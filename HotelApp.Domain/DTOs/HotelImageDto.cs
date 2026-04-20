@@ -45,13 +45,4 @@ namespace HotelApp.Domain.DTOs
         [Range(0, int.MaxValue, ErrorMessage = "DisplayOrder 0 veya daha büyük olmalıdır")]
         public int DisplayOrder { get; set; }
     }
-
-    // Otel + tüm resimlerini birlikte döndürmek için kullanılır
-    public class HotelWithImagesDto
-    {
-        public int HotelId { get; set; }
-        public string HotelName { get; set; } = null!;
-
-        public List<HotelImageDto> Images { get; set; } = new();
-    }
 }

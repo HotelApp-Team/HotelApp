@@ -3,6 +3,9 @@ using HotelApp.Infrastructure.Context;
 using HotelApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
+// UnitOfWork, repository'leri tek merkezden yonetir ve SaveChanges/transaction kontrolu saglar.
+// Amaci, ayni is akisi icindeki veri degisikliklerini birlikte yonetmektir.
+// SOLID: SRP kullanir, DIP icin IUnitOfWork interface'ini uygular.
 namespace HotelApp.Infrastructure;
 
 public class UnitOfWork : IUnitOfWork

@@ -2,6 +2,9 @@
 using HotelApp.Domain.Interfaces;
 using HotelApp.Domain.Entities;
 
+// UserService, kullanici profilini getirme ve guncelleme islemlerini yonetir.
+// Amaci, profil business logic'ini controller'dan ayirmaktir.
+// SOLID: SRP kullanir, DIP ile IUnitOfWork abstraction'ina baglanir.
 namespace HotelApp.Domain.Services;
 
 public class UserService : IUserService
