@@ -1,9 +1,12 @@
-﻿using System.Net.Http.Headers;
+using HotelApp.Web.Models;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
 namespace HotelApp.Web.Services;
 
+// ApiService, MVC ile Web API arasindaki koprudur.
+// Istek atar, token ekler, JSON verisini cevirir ve hata mesajlarini duzenli sekilde geri dondurur.
 public class ApiService
 {
     private readonly HttpClient _httpClient;
@@ -17,60 +20,175 @@ public class ApiService
         _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
-    // Her istekte JWT token varsa header'a ekle
-
+    // Session'da token varsa Authorization header'a ekler.
+    // Token yoksa eski header temizlenir ki onceki kullanicidan veri kalmasin.
     private void SetAuthHeader()
     {
         var token = _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
-        if (!string.IsNullOrEmpty(token))
 
+        if (!string.IsNullOrEmpty(token))
+        {
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
+        }
+        else
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
     }
 
-    //GET istegi atarken T tipinde bir nesne doner
-    public async Task<T?> GetTAsync<T>(string endpoint)
+    // API basarisiz dondugunde body icindeki hata mesajini okumaya calisir.
+    // Standart message alani yoksa genel bir mesaj dondurur.
+    private async Task<string> GetErrorMessageAsync(HttpResponseMessage response)
+    {
+        var json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json))
+            return $"Istek basarisiz oldu. Durum kodu: {(int)response.StatusCode}";
+
+        try
+        {
+            var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(json, _jsonOptions);
+
+            if (!string.IsNullOrWhiteSpace(errorResponse?.Message))
+                return errorResponse.Message;
+        }
+        catch (JsonException)
+        {
+            // Hata cevabi bizim standart modelimize uymuyorsa genel mesaj verecegiz.
+        }
+
+        return $"Istek basarisiz oldu. Durum kodu: {(int)response.StatusCode}";
+    }
+
+    // Ortak basarili response nesnesi olusturur.
+    private static ApiResponse<T> CreateSuccessResponse<T>(T? data, HttpResponseMessage response)
+    {
+        return new ApiResponse<T>
+        {
+            Success = true,
+            Data = data,
+            StatusCode = (int)response.StatusCode
+        };
+    }
+
+    // Ortak hatali response nesnesi olusturur.
+    private static ApiResponse<T> CreateErrorResponse<T>(string message, HttpResponseMessage response)
+    {
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            StatusCode = (int)response.StatusCode
+        };
+    }
+
+    // Obje gonderilecek isteklerde JSON content hazirlar.
+    private static StringContent CreateJsonContent(object data)
+    {
+        return new StringContent(
+            JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
+    }
+
+    // Basarili response body'si varsa T tipine cevirir.
+    // Body bos ise Success=true doner, Data default kalir.
+    private async Task<ApiResponse<T>> ReadSuccessResponseAsync<T>(HttpResponseMessage response)
+    {
+        var json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json))
+            return CreateSuccessResponse<T>(default, response);
+
+        var data = JsonSerializer.Deserialize<T>(json, _jsonOptions);
+        return CreateSuccessResponse(data, response);
+    }
+
+    // Yeni ve temiz GET metodu.
+    public async Task<ApiResponse<T>> GetAsync<T>(string endpoint)
     {
         SetAuthHeader();
+
         var response = await _httpClient.GetAsync(endpoint);
-        if (!response.IsSuccessStatusCode) return default;
-        
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await GetErrorMessageAsync(response);
+            return CreateErrorResponse<T>(message, response);
+        }
+
+        return await ReadSuccessResponseAsync<T>(response);
     }
 
-    //POST istegi atarken T tipinde bir nesne doner
-    public async Task<T?> PostTAsync<T>(string endpoint, object data)
+    // Yeni ve temiz POST metodu.
+    public async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object data)
     {
         SetAuthHeader();
-        var content = new StringContent(
-            JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
+        var content = CreateJsonContent(data);
         var response = await _httpClient.PostAsync(endpoint, content);
-        if(!response.IsSuccessStatusCode) return default;
-        
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await GetErrorMessageAsync(response);
+            return CreateErrorResponse<T>(message, response);
+        }
+
+        return await ReadSuccessResponseAsync<T>(response);
     }
 
-    //PUT istegi atarken T tipinde bir nesne doner
-    public async Task<bool> PutAsync(string endpoint, object data)
+    // PUT sonunda veri donen endpoint'ler icin generic versiyon.
+    public async Task<ApiResponse<T>> PutAsync<T>(string endpoint, object data)
     {
         SetAuthHeader();
-        var content = new StringContent (
-            JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
+        var content = CreateJsonContent(data);
         var response = await _httpClient.PutAsync(endpoint, content);
-        return response.IsSuccessStatusCode;
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await GetErrorMessageAsync(response);
+            return CreateErrorResponse<T>(message, response);
+        }
+
+        return await ReadSuccessResponseAsync<T>(response);
     }
 
-    //DELETE istegi atarken T tipinde bir nesne doner
-    public async Task<bool> DeleteAsync(string endpoint)
+    // PUT sonunda sadece basari bilgisi gerekiyorsa bu kisayol kullanilabilir.
+    public async Task<ApiResponse<bool>> PutAsync(string endpoint, object data)
     {
         SetAuthHeader();
-        var response = await _httpClient.DeleteAsync(endpoint);
-        return response.IsSuccessStatusCode;
+
+        var content = CreateJsonContent(data);
+        var response = await _httpClient.PutAsync(endpoint, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await GetErrorMessageAsync(response);
+            return CreateErrorResponse<bool>(message, response);
+        }
+
+        return CreateSuccessResponse(true, response);
     }
 
-}
+    // DELETE icin sadece islem sonucu yeterlidir.
+    public async Task<ApiResponse<bool>> DeleteAsync(string endpoint)
+    {
+        SetAuthHeader();
 
+        var response = await _httpClient.DeleteAsync(endpoint);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await GetErrorMessageAsync(response);
+            return CreateErrorResponse<bool>(message, response);
+        }
+
+        return CreateSuccessResponse(true, response);
+    }
+
+    // Eski isimlendirme ile uyum icin bir sure daha tutulabilir.
+    public Task<ApiResponse<T>> GetTAsync<T>(string endpoint) => GetAsync<T>(endpoint);
+
+    // Eski isimlendirme ile uyum icin bir sure daha tutulabilir.
+    public Task<ApiResponse<T>> PostTAsync<T>(string endpoint, object data) => PostAsync<T>(endpoint, data);
+}

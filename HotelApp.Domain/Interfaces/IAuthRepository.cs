@@ -1,5 +1,7 @@
 using HotelApp.Domain.Entities;
 
+// IAuthRepository, auth islemleri icin gerekli veri erisim sozlesmesini tanimlar.
+// Amaci, auth tarafindaki ozel sorgulari standart repository'den ayirmaktir.
 namespace HotelApp.Domain.Interfaces;
 
 public interface IAuthRepository : IRepository<User>

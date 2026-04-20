@@ -1,4 +1,7 @@
-﻿namespace HotelApp.Domain.Interfaces;
+﻿// IUnitOfWork, repository'leri ve kaydetme islemini tek sozlesmede toplar.
+// Amaci, birden fazla veri islemini tek bir is birimi olarak yonetmektir.
+
+namespace HotelApp.Domain.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {

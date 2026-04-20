@@ -4,6 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+// JwtService, kullanici icin JWT token uretir.
+// Amaci, token olusturma detaylarini diger servislerden ayirmaktir.
+// SOLID: SRP kullanir, DIP sayesinde IJwtService abstraction'i ile kullanilir.
 namespace HotelApp.Domain.Services
 {
     public class JwtService : IJwtService
