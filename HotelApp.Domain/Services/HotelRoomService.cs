@@ -54,21 +54,7 @@ namespace HotelApp.Domain.Services
 
         public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
         {
-            var checkInDateOnly = DateOnly.FromDateTime(checkIn);
-            var checkOutDateOnly = DateOnly.FromDateTime(checkOut);
-
-            var rooms = await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(checkIn, checkOut);
-
-            return rooms.Select(x => new AvailableRoomDto
-            {
-                RoomId = x.Id,
-                HotelName = x.Hotel != null ? x.Hotel.Name : "Bilinmiyor",
-                RoomTypeName = x.RoomType != null ? x.RoomType.Name : "Bilinmiyor",
-                PricePerNight = x.PricePerNight,
-                Available = x.TotalRooms - x.Reservations.Count(r =>
-                         r.CheckInDate < checkOutDateOnly &&
-                         r.CheckOutDate > checkInDateOnly)
-            });
+            return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(checkIn, checkOut);
         }
 
         public async Task<DetailHotelRoomDto?> GetRoomByIdAsync(int id)

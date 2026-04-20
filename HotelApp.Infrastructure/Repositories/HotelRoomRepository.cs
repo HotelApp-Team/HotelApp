@@ -1,9 +1,11 @@
-﻿using HotelApp.Domain.Entities;
+﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -81,19 +83,15 @@ namespace HotelApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<HotelRoom>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
+        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
         {
-            var checkInDateOnly = DateOnly.FromDateTime(checkIn);
-            var checkOutDateOnly = DateOnly.FromDateTime(checkOut);
+            var checkInDateOnly = new SqlParameter("@CheckIn", checkIn);
+            var checkOutDateOnly = new SqlParameter("@CheckOut", checkOut);
 
-            return await _dbSet
-                  .Include(x => x.Reservations)
-                  .Include(x => x.Hotel)       
-                  .Include(x => x.RoomType)    
-                  .Where(x => !x.Reservations.Any(r =>
-        r.CheckInDate < checkOutDateOnly &&
-        r.CheckOutDate > checkInDateOnly))
-                  .ToListAsync();
+            var result = await _context.Set<AvailableRoomDto>()
+                .FromSqlRaw("EXEC SP_GetAvailableRooms @CheckIn, @CheckOut", checkInDateOnly, checkOutDateOnly)
+                .ToListAsync();
+            return result;
         }
 
     }

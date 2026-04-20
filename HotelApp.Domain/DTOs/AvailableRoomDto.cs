@@ -10,8 +10,8 @@ namespace HotelApp.Domain.DTOs
     public class AvailableRoomDto
     {
         public int RoomId { get; set; }
-        public string HotelName { get; set; } = null!;
-        public string RoomTypeName { get; set; } = null!;
+        public string HotelName { get; set; } = string.Empty;
+        public string RoomTypeName { get; set; } = string.Empty;
         public decimal PricePerNight { get; set; }
         public int MaxGuests { get; set; }
         public DateOnly CheckInDate { get; set; }
