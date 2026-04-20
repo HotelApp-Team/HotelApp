@@ -36,4 +36,14 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task<List<string>> GetActiveCitiesAsync()
+    {
+        return await _context.Hotels
+            .Where(x => x.IsActive)
+            .Select(x => x.City)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync();
+    }
 }

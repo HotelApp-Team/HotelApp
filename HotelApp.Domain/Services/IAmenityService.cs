@@ -18,7 +18,7 @@ namespace HotelApp.Domain.Services
 
         Task<List<AmenityDto>> GetAmenitiesByHotelIdAsync(int hotelId);
 
-        Task AddAmenityToHotelAsync(int hotelId, int amenityId);
+        Task AddAmenitiesToHotelAsync(int hotelId, List<int> amenityIds);
         Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId);
     }
 }

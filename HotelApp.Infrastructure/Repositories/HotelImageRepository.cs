@@ -11,6 +11,12 @@ public class HotelImageRepository : Repository<HotelImage>, IHotelImageRepositor
     {
     }
 
+    public async Task<HotelImage?> GetByHotelAndImageIdAsync(int hotelId, int imageId)
+    {
+        return await _dbSet
+            .FirstOrDefaultAsync(x => x.HotelId == hotelId && x.Id == imageId);
+    }
+
     public async Task<IEnumerable<HotelImage>> GetByHotelIdAsync(int hotelId)
     {
         return await _dbSet

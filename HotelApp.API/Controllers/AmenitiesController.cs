@@ -32,8 +32,15 @@ public class AmenitiesController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        await _service.AddAsync(dto);
-        return Ok("Olanak eklendi.");
+        try
+        {
+            await _service.AddAsync(dto);
+            return StatusCode(201);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     // E49 - PUT
@@ -44,8 +51,22 @@ public class AmenitiesController : Controller
         if (id != dto.Id)
             return BadRequest("Id uyumsuz.");
 
-        await _service.UpdateAsync(dto);
-        return Ok("Olanak güncellendi.");
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            await _service.UpdateAsync(dto);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     // E50 - DELETE
@@ -53,7 +74,18 @@ public class AmenitiesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        await _service.DeleteAsync(id);
-        return Ok("Olanak silindi.");
+        try
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 }
