@@ -10,10 +10,15 @@ public class UnitOfWork : IUnitOfWork
     private readonly HotelAppDbContext _context;
     private IDbContextTransaction? _transaction;
     private IAuthRepository? _authRepository;
+<<<<<<< HEAD
 
     private IRoomTypeRepository? _roomTypeRepository;
     private IHotelRoomRepository? _hotelRoomRepository;
 
+=======
+    private IRoomTypeRepository? _roomTypeRepository;
+    private IHotelRoomRepository? _hotelRoomRepository;
+>>>>>>> e41468883b5cb46972dbb50084b11aad5efe789f
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
     private IAmenityRepository? _amenityRepository;
@@ -29,13 +34,19 @@ public class UnitOfWork : IUnitOfWork
     public IAuthRepository AuthRepository =>
         _authRepository ??= new AuthRepository(_context);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e41468883b5cb46972dbb50084b11aad5efe789f
     public IRoomTypeRepository RoomTypeRepository =>
         _roomTypeRepository ??= new RoomTypeRepository(_context);
 
     public IHotelRoomRepository HotelRoomRepository =>
         _hotelRoomRepository ??= new HotelRoomRepository(_context);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e41468883b5cb46972dbb50084b11aad5efe789f
     public IHotelRepository HotelRepository =>
        _hotelRepository ??= new HotelRepository(_context);
 
@@ -46,7 +57,10 @@ public class UnitOfWork : IUnitOfWork
            _amenityRepository ??= new AmenityRepository(_context);
     public IUserRepository UserRepository =>
     _userRepository ??= new UserRepository(_context);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e41468883b5cb46972dbb50084b11aad5efe789f
 
 
     /// Tüm değişiklikleri veritabanına kaydeder.
