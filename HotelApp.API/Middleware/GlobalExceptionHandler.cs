@@ -1,4 +1,4 @@
-using HotelApp.Domain.Services;
+﻿using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Security.Claims;
 
@@ -24,20 +24,36 @@ public class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        // Hatayi veritabanina logla
-        await LogExceptionAsync(httpContext, exception);
+
+        var statusCode = exception switch
+        {
+            KeyNotFoundException => StatusCodes.Status404NotFound, //kaynak bulunamadi hatasi
+            InvalidOperationException => StatusCodes.Status409Conflict, // kural ihlali, onceden var olan kaynakla ilgili hata
+            UnauthorizedAccessException => StatusCodes.Status401Unauthorized, // yetkisiz erisim hatasi
+            ArgumentException => StatusCodes.Status400BadRequest, // gecersiz parametre
+            _ => StatusCodes.Status500InternalServerError // diger tum hatalar icin genel sunucu hatasi
+        };
+
+        if (statusCode == StatusCodes.Status500InternalServerError)
+        {
+            // Sadece 500 hatalarini logluyoruz, cunku digerleri genellikle istemci hatasi ve beklenen durumlar olabilir.
+            await LogExceptionAsync(httpContext, exception);
+        }
 
         // Kullaniciya standart hata cevabi don
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        httpContext.Response.StatusCode = statusCode;
+        var message = statusCode == StatusCodes.Status500InternalServerError
+             ? "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyiniz."
+             : exception.Message; // 500 olmayan hatalarda orijinal mesajı dönebiliriz
 
         await httpContext.Response.WriteAsJsonAsync(new
         {
             success = false,
-            message = "Sunucu tarafinda bir hata olustu. Lutfen daha sonra tekrar deneyin."
-            // Guvenlik icin hata detayini disariya donmuyoruz.
+            message = message
         }, cancellationToken);
 
         return true;
+
     }
 
     // Log icin gerekli ek bilgileri topla ve logger'a gonder

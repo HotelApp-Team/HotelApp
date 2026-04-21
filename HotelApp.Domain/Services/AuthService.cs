@@ -56,20 +56,33 @@ public class AuthService : IAuthService
             user.EmailVerificationToken = Guid.NewGuid().ToString();
             user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
 
-            // Kullaniciyi veritabanina ekle
+            // Kullaniciyi veritabanina ekle ve kaydi tamamla
             await _unitOfWork.AuthRepository.AddAsync(user);
-
-            // Degisiklikleri veritabanina kaydet
             await _unitOfWork.SaveChangesAsync();
 
-            // Email dogrulama mailini gonder
-            await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
-
-            return new RegisterResponseDto
+            // Dogrulama mailini gondermeyi dene.
+            // Mail gonderimi basarisiz olursa (SMTP kapali, baglanti hatasi vs.) kullanicinin
+            // DB kaydi zaten olustu; bu yuzden kaydi basarili sayip "mail su an gonderilemedi,
+            // tekrar denemeyi bekliyoruz" mesaji donuyoruz. Aksi halde kullanici ayni email ile
+            // yeniden Register denerse "Bu email zaten mevcut" hatasi alip kilitlenir.
+            try
             {
-                RequiresEmailVerification = true,
-                Message = "Kayıt başarılı! Lütfen emailinizi doğrulayın."
-            };
+                await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
+
+                return new RegisterResponseDto
+                {
+                    RequiresEmailVerification = true,
+                    Message = "Kayıt başarılı! Lütfen emailinizi doğrulayın."
+                };
+            }
+            catch
+            {
+                return new RegisterResponseDto
+                {
+                    RequiresEmailVerification = true,
+                    Message = "Kayıt başarılı, ancak doğrulama maili şu an gönderilemedi. Lütfen birkaç dakika sonra 'Maili tekrar gönder' ile yeniden deneyin."
+                };
+            }
         }
 
         // Faz 1 fallback akisinda email verify beklenmez
@@ -199,31 +212,31 @@ public class AuthService : IAuthService
         };
     }
 
-    // Email dogrulama mailini yeniden gonderme islemi
+    // Dogrulama mailini yeniden gonderir.
+    // Guvenlik notu: Saldirgan hangi email'lerin sistemde kayitli oldugunu ogrenmesin diye
+    // her durumda (kullanici var/yok, dogrulanmis/dogrulanmamis) ayni mesaji donuyoruz.
     public async Task<string> ResendVerificationAsync(ResendVerificationDto dto)
     {
-        // Email ile kullaniciyi bul
+        const string genericMessage = "Eğer bu email adresi kayıtlı ve doğrulanmamışsa, doğrulama maili gönderildi.";
+
         var user = await _unitOfWork.AuthRepository.GetByEmailAsync(dto.Email);
+
+        // Kullanici yoksa sessizce basarili gibi don (email kayitli mi bilgisi sizdirilmasin)
         if (user == null)
-            throw new KeyNotFoundException("Bu email adresine sahip bir kullanıcı bulunamadı.");
+            return genericMessage;
 
-        // Kullanicinin emaili dogrulanmis mi kontrol et
+        // Email zaten dogrulanmissa da ayni mesaji don (bu bilgi de disariya verilmemeli)
         if (user.IsEmailVerified)
-            throw new InvalidOperationException("Bu email adresi zaten doğrulanmış.");
+            return genericMessage;
 
-        // Yeni bir dogrulama token'i olustur ve kullaniciya ata
+        // Yeni dogrulama token'i uret ve 24 saat gecerli yap
         user.EmailVerificationToken = Guid.NewGuid().ToString();
-
-        // Token'in gecerlilik suresini belirle (ornegin 24 saat)
         user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
 
-        // Degisiklikleri veritabanina kaydet
         await _unitOfWork.SaveChangesAsync();
 
-        // Dogrulama mailini tekrar gonder
         await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
 
-        // Bilgilendirme mesaji dondur
-        return "Dogrulama maili tekrar gonderildi.";
+        return genericMessage;
     }
 }
