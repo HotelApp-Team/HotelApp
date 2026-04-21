@@ -5,12 +5,12 @@ using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Umbraco.Core.Composing.CompositionExtensions;
+
 
 namespace HotelApp.Infrastructure.Repositories
 {
@@ -71,7 +71,9 @@ namespace HotelApp.Infrastructure.Repositories
         {
             return await _dbSet
                 .Where(x => x.HotelId == hotelId)
+                .Include(x=>x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x=>x.Reservations)
                 .ToListAsync();
         }
 
@@ -80,17 +82,22 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Where(x => x.RoomTypeId == roomTypeId)
                 .Include(x => x.Hotel)
+                .Include(x=>x.RoomType)
+                .Include(x=>x.Reservations)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
+        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
-            var checkInDateOnly = new SqlParameter("@CheckIn", checkIn);
-            var checkOutDateOnly = new SqlParameter("@CheckOut", checkOut);
-
-            var result = await _context.Set<AvailableRoomDto>()
-                .FromSqlRaw("EXEC SP_GetAvailableRooms @CheckIn, @CheckOut", checkInDateOnly, checkOutDateOnly)
+            var result = await _context.Database
+                .SqlQueryRaw<AvailableRoomDto>(
+                "EXEC sp_SearchAvailableRooms @City, @CheckInDate, @CheckOutDate, @GuestCount",
+                new SqlParameter("@City", city),
+                new SqlParameter("@CheckInDate", checkIn.Date),
+                new SqlParameter("@CheckOutDate", checkOut.Date),
+                new SqlParameter("@GuestCount", guestCount))
                 .ToListAsync();
+
             return result;
         }
 

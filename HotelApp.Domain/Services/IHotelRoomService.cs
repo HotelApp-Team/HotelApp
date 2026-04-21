@@ -13,7 +13,7 @@ namespace HotelApp.Domain.Services
         Task<DetailHotelRoomDto?> GetRoomByIdAsync(int id);
         Task<IEnumerable<HotelRoomDto>> GetRoomsByHotelAsync(int hotelId);
         Task<IEnumerable<HotelRoomDto>> GetRoomsByTypeAsync(int roomTypeId);
-        Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut);
+        Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount);
         Task AddRoomsAsync(CreateHotelRoomDto dto);
         Task UpdateRoomsAsync(UpdateHotelRoomDto dto);
         Task DeleteRoomsAsync(int id);

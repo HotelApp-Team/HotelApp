@@ -1,4 +1,5 @@
 ﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,18 @@ namespace HotelApp.Domain.Services
 
         public async Task AddRoomsAsync(CreateHotelRoomDto dto)
         {
-            var entity = new Entities.HotelRoom
+            var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.HotelId);
+            if (hotel == null) throw new Exception("Hotel bulunamadı.");
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIdAsync(dto.RoomTypeId);
+            if (roomType == null) throw new Exception("Oda tipi bulunamdı.");
+
+            var existing = await _unitOfWork.HotelRoomRepository
+                .FindAsync(x => x.HotelId == dto.HotelId && x.RoomTypeId == dto.RoomTypeId);
+
+            if (existing != null) throw new Exception("Aynı otel ve oda tipi için zaten kayıt mevcut.");
+
+            var entity = new HotelRoom
             {
                 HotelId = dto.HotelId,
                 RoomTypeId = dto.RoomTypeId,
@@ -31,8 +43,11 @@ namespace HotelApp.Domain.Services
 
         public async Task DeleteRoomsAsync(int id)
         {
-            var rooms = await _unitOfWork.HotelRoomRepository.GetByIdAsync(id);
-            if (rooms == null) throw new Exception("Oda bulunamadı.");
+            var rooms = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(id);
+            if (rooms == null) throw new Exception("Oda bulunamdı.");
+
+            if (rooms.Reservations.Any())
+                throw new InvalidOperationException("Rezervasyonu olan oda silinemez.");
 
             _unitOfWork.HotelRoomRepository.Delete(rooms);
             await _unitOfWork.SaveChangesAsync();
@@ -52,9 +67,9 @@ namespace HotelApp.Domain.Services
             });
         }
 
-        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
+        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
-            return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(checkIn, checkOut);
+            return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(city, checkIn, checkOut, guestCount);
         }
 
         public async Task<DetailHotelRoomDto?> GetRoomByIdAsync(int id)
@@ -107,9 +122,27 @@ namespace HotelApp.Domain.Services
         public async Task UpdateRoomsAsync(UpdateHotelRoomDto dto)
         {
             var entity = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(dto.Id);
-
             if (entity == null)
-                throw new Exception("Oda bulunamadı");
+                throw new KeyNotFoundException("Oda bulunamadı");
+
+            var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.HotelId);
+            if (hotel == null)
+                throw new KeyNotFoundException("Hotel bulunamadı.");
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIdAsync(dto.RoomTypeId);
+            if (roomType == null)
+                throw new KeyNotFoundException("Oda tipi bulunamadı.");
+
+            var duplicate = await _unitOfWork.HotelRoomRepository.FindAsync(x =>
+                x.Id != dto.Id &&
+                x.HotelId == dto.HotelId &&
+                x.RoomTypeId == dto.RoomTypeId);
+
+            if (duplicate != null)
+                throw new InvalidOperationException("Bu otelde bu oda tipi zaten mevcut.");
+
+            if (entity.Reservations.Any() && entity.TotalRooms != dto.TotalRooms)
+                throw new InvalidOperationException("Rezervasyon varken oda sayısı değiştirilemez.");
 
             entity.HotelId = dto.HotelId;
             entity.RoomTypeId = dto.RoomTypeId;

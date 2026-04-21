@@ -25,8 +25,7 @@ namespace HotelApp.Domain.Services
                 Id = r.Id,
                 Name = r.Name,
                 Description = r.Description,
-                MaxGuests = r.MaxGuests,
-                HotelRoomCount = r.HotelRooms.Count.ToString()
+                MaxGuests = r.MaxGuests
             });
 
         }
@@ -102,9 +101,12 @@ namespace HotelApp.Domain.Services
 
         public async Task DeleteRoomTypeAsync(int id)
         {
-            var entity = await _unitOfWork.RoomTypeRepository.GetByIdAsync(id);
+            var entity = await _unitOfWork.RoomTypeRepository.GetRoomTypeWithRoomsAsync(id);
+            if (entity == null) 
+                throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
-            if (entity == null) throw new KeyNotFoundException("Oda tipi bulunamadı.");
+            if(entity.HotelRooms.Any())
+                throw new InvalidOperationException("Kullanımda olan oda tipi silinemez.");
 
             _unitOfWork.RoomTypeRepository.Delete(entity);
             await _unitOfWork.SaveChangesAsync();

@@ -1,5 +1,7 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.API.Controllers
@@ -70,12 +72,12 @@ namespace HotelApp.API.Controllers
         /// <returns></returns>
 
         [HttpGet("available")]
-        public async Task<IActionResult> GetAvailableRooms(DateTime checkIn, DateTime checkOut)
+        public async Task<IActionResult> GetAvailableRooms(string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
             if (checkIn >= checkOut)
                 return BadRequest("CheckIn tarihi CheckOut'tan küçük olmalı");
 
-            var rooms = await _service.GetAvailableRoomsAsync(checkIn, checkOut);
+            var rooms = await _service.GetAvailableRoomsAsync(city, checkIn, checkOut, guestCount);
             return Ok(rooms);
         }
 
@@ -85,7 +87,7 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-
+        [Authorize(Roles="Admin")]
         [HttpPost]
         public async Task<IActionResult> AddRoom([FromBody] CreateHotelRoomDto dto)
         {
@@ -113,7 +115,7 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

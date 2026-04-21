@@ -1,6 +1,7 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.API.Controllers
@@ -70,7 +71,7 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateRoomTypeDto dto)
         {
@@ -83,7 +84,7 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateRoomTypeDto dto)
         {
@@ -97,7 +98,7 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
