@@ -15,11 +15,11 @@ namespace HotelApp.Domain.Services
 
         Task<HotelImageDto?> GetMainImageAsync(int hotelId);
 
-        Task AddAsync(int hotelId, HotelImageCreateDto dto);
+        Task AddAsync(HotelImageCreateDto dto);
 
         Task UpdateAsync(HotelImageUpdateDto dto);
 
-        Task DeleteAsync(int hotelId, int imageId);
+        Task DeleteAsync(int id);
 
         Task SetMainImageAsync(int hotelId, int imageId);
     }

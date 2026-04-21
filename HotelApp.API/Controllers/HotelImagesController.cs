@@ -29,42 +29,31 @@ public class HotelImagesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddImage(int hotelId, [FromBody] HotelImageCreateDto dto)
     {
-        try
-        {
-            await _service.AddAsync(hotelId, dto);
-            return StatusCode(201);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        if (dto.HotelId != hotelId)
+            return BadRequest("HotelId uyumsuz.");
+
+        await _service.AddAsync(dto);
+        return Ok("Görsel eklendi.");
     }
 
     // E18 - PUT: /api/hotels/{id}/images/{imgId}/cover
-    [HttpPut("{imageId}")]
+    [HttpPut("{imgId}/cover")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateImage(int hotelId, int imageId, [FromBody] HotelImageUpdateDto dto)
+    public async Task<IActionResult> SetMainImage(int hotelId, int imgId)
     {
-        if (imageId != dto.Id)
-            return BadRequest("Id uyumsuz");
-
-        await _service.UpdateAsync(dto);
-
-        return NoContent();
+        await _service.SetMainImageAsync(hotelId, imgId);
+        return Ok("Kapak görseli güncellendi.");
     }
 
     // E19 - DELETE: /api/hotels/{id}/images/{imgId}
-    [HttpDelete("{imageId}")]
+    [HttpDelete("{imgId}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteImage(int hotelId, int imageId)
+    public async Task<IActionResult> DeleteImage(int imgId)
     {
-        var image = await _service.GetByIdAsync(imageId);
-
-        if (image == null)
-            return NotFound();
-
-        await _service.DeleteAsync(hotelId, imageId);
-
-        return NoContent();
+        await _service.DeleteAsync(imgId);
+        return Ok("Görsel silindi.");
     }
 }

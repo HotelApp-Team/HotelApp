@@ -27,6 +27,7 @@ namespace HotelApp.Domain.DTOs
 
         public bool IsActive { get; set; }
 
-        public List<AmenityDto> Amenities { get; set; } = new();
+        public List<string> ImageUrls { get; set; } = new();
+        public List<string> Amenities { get; set; } = new();
     }
 }

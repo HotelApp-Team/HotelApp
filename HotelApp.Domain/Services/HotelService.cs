@@ -43,12 +43,8 @@ namespace HotelApp.Domain.Services
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
                 IsActive = hotel.IsActive,
-                Amenities = hotel.Amenities.Select(a => new AmenityDto
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Icon = a.Icon
-                }).ToList()
+                ImageUrls = hotel.HotelImages.Select(i => i.ImageUrl).ToList(),
+                Amenities = hotel.Amenities.Select(a => a.Name).ToList()
             };
         }
 
@@ -92,7 +88,7 @@ namespace HotelApp.Domain.Services
 
             if (hotel == null)
             {
-                throw new KeyNotFoundException("Otel bulunamadı");
+                throw new Exception("Otel bulunamadı");
             }
 
             hotel.Name = dto.Name;
@@ -117,10 +113,9 @@ namespace HotelApp.Domain.Services
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(id);
 
             if (hotel == null)
-                throw new KeyNotFoundException("Otel bulunamadı");
-
-            if (!hotel.IsActive)
-                throw new InvalidOperationException("Otel zaten pasif");
+            {
+                throw new Exception("Otel bulunamadı");
+            }
 
             hotel.IsActive = false;
             hotel.UpdatedAt = DateTime.UtcNow;
@@ -139,23 +134,8 @@ namespace HotelApp.Domain.Services
                 Country = hotel.Country,
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
-                IsActive = hotel.IsActive,
-                MainImageUrl = hotel.HotelImages
-                 .FirstOrDefault(x => x.IsMain)?.ImageUrl
+                IsActive = hotel.IsActive
             };
-        }
-
-        public async Task<List<string>> GetCitiesAsync()
-        {
-            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
-
-            return hotels
-                .Select(x => x.City)
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => x.Trim())
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
         }
     }
 }

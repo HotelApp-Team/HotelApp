@@ -12,5 +12,4 @@ public interface IHotelImageRepository : IRepository<HotelImage>
 
     // Ana resmi değiştir (tek main garanti eder)
     Task SetMainImageAsync(int hotelId, int imageId);
-    Task<HotelImage?> GetByHotelAndImageIdAsync(int hotelId, int imageId);
 }

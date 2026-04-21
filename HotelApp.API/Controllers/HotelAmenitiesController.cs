@@ -19,14 +19,16 @@ public class HotelAmenitiesController : Controller
     // E34 - POST
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> AddAmenities(int hotelId, [FromBody] HotelAmenityAssignDto dto)
+    public async Task<IActionResult> AddAmenity(int hotelId, [FromBody] HotelAmenityAssignDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        await _service.AddAmenitiesToHotelAsync(hotelId, dto.AmenityIds);
+        if (dto.HotelId != hotelId)
+            return BadRequest("HotelId uyumsuz.");
 
-        return NoContent();
+        await _service.AddAmenityToHotelAsync(dto.HotelId, dto.AmenityId);
+        return Ok("Olanak otele eklendi.");
     }
 
     // E35 - DELETE
@@ -34,14 +36,7 @@ public class HotelAmenitiesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RemoveAmenity(int hotelId, int amenityId)
     {
-        try
-        {
-            await _service.RemoveAmenityFromHotelAsync(hotelId, amenityId);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        await _service.RemoveAmenityFromHotelAsync(hotelId, amenityId);
+        return Ok("Olanak kaldırıldı.");
     }
 }

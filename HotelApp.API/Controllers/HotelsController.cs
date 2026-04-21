@@ -18,19 +18,9 @@ public class HotelsController : ControllerBase
 
     // E04 - GET /api/hotels (Pagination)
     [HttpGet]
-    public async Task<IActionResult> GetAll(
-    [FromQuery] string? city,
-    [FromQuery] byte? star,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
     {
-        var hotels = await _hotelService.GetActiveAsync(); // sadece aktif
-
-        if (!string.IsNullOrEmpty(city))
-            hotels = hotels.Where(x => x.City.ToLower() == city.ToLower());
-
-        if (star.HasValue)
-            hotels = hotels.Where(x => x.StarRating == star);
+        var hotels = await _hotelService.GetAllAsync();
 
         var totalCount = hotels.Count();
 
@@ -61,11 +51,12 @@ public class HotelsController : ControllerBase
 
     // E06 - GET /api/hotels/cities?city=Ankara
     [HttpGet("cities")]
-    public async Task<IActionResult> GetCities()
+    public async Task<IActionResult> GetByCity([FromQuery] string city)
     {
-        var cities = await _hotelService.GetCitiesAsync();
-        return Ok(cities);
+        var hotels = await _hotelService.GetByCityAsync(city);
+        return Ok(hotels);
     }
+
 
     // E07 - GET /api/hotels/search
     [HttpGet("search")]
@@ -112,48 +103,24 @@ public class HotelsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] HotelCreateDto dto)
     {
         await _hotelService.CreateAsync(dto);
-        return StatusCode(201);
+        return Ok("Otel oluşturuldu");
     }
 
     // E09 - PUT /api/hotels
-    [HttpPut("{id}")]
+    [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(int id, [FromBody] HotelUpdateDto dto)
+    public async Task<IActionResult> Update([FromBody] HotelUpdateDto dto)
     {
-        if (id != dto.Id)
-            return BadRequest("Id uyumsuz");
-
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        try
-        {
-            await _hotelService.UpdateAsync(dto);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
+        await _hotelService.UpdateAsync(dto);
+        return Ok("Otel güncellendi");
     }
+
     // E10 - DELETE /api/hotels/{id}
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
-            await _hotelService.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        await _hotelService.DeleteAsync(id);
+        return Ok("Otel silindi (soft delete)");
     }
 }

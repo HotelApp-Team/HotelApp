@@ -39,7 +39,10 @@ namespace HotelApp.Domain.DTOs
     // Otel detayında amenity listelemek için
     public class HotelAmenityAssignDto
     {
-        [Required(ErrorMessage = "AmenityId listesi zorunludur")]
-        public List<int> AmenityIds { get; set; } = new();
+        [Required(ErrorMessage = "HotelId zorunludur")]
+        public int HotelId { get; set; }
+
+        [Required(ErrorMessage = "AmenityId zorunludur")]
+        public int AmenityId { get; set; }
     }
 }
