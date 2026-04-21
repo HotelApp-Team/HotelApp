@@ -157,34 +157,5 @@ namespace HotelApp.Domain.Services
                 .OrderBy(x => x)
                 .ToList();
         }
-
-        public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
-        {
-            var query = await _unitOfWork.HotelRepository.GetAllAsync();
-
-            // filtering
-            if (!string.IsNullOrEmpty(dto.City))
-                query = query.Where(x => x.City.ToLower() == dto.City.ToLower());
-
-            if (dto.StarRating.HasValue)
-                query = query.Where(x => x.StarRating == dto.StarRating);
-
-            if (dto.MinRating.HasValue)
-                query = query.Where(x => x.AvgRating >= dto.MinRating);
-
-            var totalCount = query.Count();
-
-            var paged = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(MapToListDto)
-                .ToList();
-
-            return new HotelSearchResponseDto
-            {
-                TotalCount = totalCount,
-                Hotels = paged
-            };
-        }
     }
 }

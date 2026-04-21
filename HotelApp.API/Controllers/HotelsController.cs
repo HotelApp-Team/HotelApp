@@ -70,14 +70,42 @@ public class HotelsController : ControllerBase
     // E07 - GET /api/hotels/search
     [HttpGet("search")]
     public async Task<IActionResult> Search(
-      [FromQuery] HotelSearchRequestDto dto,
-      [FromQuery] int page = 1,
-      [FromQuery] int pageSize = 10)
+        [FromQuery] string? city,
+        [FromQuery] byte? star,
+        [FromQuery] decimal? minRating,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _hotelService.SearchAsync(dto, page, pageSize);
-        return Ok(result);
-    }
+        var hotels = await _hotelService.GetAllAsync();
 
+        // Filtering
+        if (!string.IsNullOrEmpty(city))
+            hotels = hotels.Where(x => x.City.ToLower() == city.ToLower());
+
+        if (star.HasValue)
+            hotels = hotels.Where(x => x.StarRating == star);
+
+        if (minRating.HasValue)
+            hotels = hotels.Where(x => x.AvgRating >= minRating);
+
+        // Total count (filter sonrası)
+        var totalCount = hotels.Count();
+
+        // Pagination
+        var pagedData = hotels
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return Ok(new
+        {
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            Data = pagedData
+        });
+    }
+   
     // E08 - POST /api/hotels
     [HttpPost]
     [Authorize(Roles = "Admin")]

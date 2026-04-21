@@ -17,6 +17,5 @@ namespace HotelApp.Domain.Services
         Task UpdateAsync(HotelUpdateDto dto);
         Task DeleteAsync(int id);
         Task<List<string>> GetCitiesAsync();
-        Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize);
     }
 }
