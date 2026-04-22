@@ -186,9 +186,11 @@ public class ApiService
         return CreateSuccessResponse(true, response);
     }
 
-    // Eski isimlendirme ile uyum icin bir sure daha tutulabilir.
+    // Eski kodda GetTAsync/PostTAsync kullaniliyordu (o imza Task<T?> donuyordu).
+    // Simdiki imza Task<ApiResponse<T>> oldugu icin tam geriye donuk uyumluluk SAGLAMAZ;
+    // sadece eski cagri isimleri bulunabilsin diye alias olarak tutuluyor.
+    // Yeni yazilan kod GetAsync/PostAsync kullanmali.
     public Task<ApiResponse<T>> GetTAsync<T>(string endpoint) => GetAsync<T>(endpoint);
 
-    // Eski isimlendirme ile uyum icin bir sure daha tutulabilir.
     public Task<ApiResponse<T>> PostTAsync<T>(string endpoint, object data) => PostAsync<T>(endpoint, data);
 }

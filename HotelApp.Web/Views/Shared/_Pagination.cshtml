@@ -2,10 +2,23 @@
 
 @if (Model.TotalPages > 1)
 {
+    // Ilk ve son sayfadayken Onceki/Sonraki linklerinin tiklanmasi gerekmiyor.
+    // Disabled gorunse bile eski haliyle href uretiyordu ve 0'inci / TotalPages+1 gibi
+    // gecersiz sayfalara gidilebiliyordu. Bu yuzden o durumda <a> yerine <span> kullaniyoruz.
+    var isFirst = Model.CurrentPage == 1;
+    var isLast = Model.CurrentPage == Model.TotalPages;
+
     <nav>
         <ul class="pagination justify-content-center">
-            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage - 1)">Onceki</a>
+            <li class="page-item @(isFirst ? "disabled" : "")">
+                @if (isFirst)
+                {
+                    <span class="page-link">Önceki</span>
+                }
+                else
+                {
+                    <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage - 1)">Önceki</a>
+                }
             </li>
 
             @for (int i = 1; i <= Model.TotalPages; i++)
@@ -15,8 +28,15 @@
                 </li>
             }
 
-            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage + 1)">Sonraki</a>
+            <li class="page-item @(isLast ? "disabled" : "")">
+                @if (isLast)
+                {
+                    <span class="page-link">Sonraki</span>
+                }
+                else
+                {
+                    <a class="page-link" href="@Model.BaseUrl?page=@(Model.CurrentPage + 1)">Sonraki</a>
+                }
             </li>
         </ul>
     </nav>

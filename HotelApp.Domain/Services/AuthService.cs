@@ -121,8 +121,10 @@ public class AuthService : IAuthService
         if (!user.IsActive)
             throw new UnauthorizedAccessException("Hesabınız aktif değil.");
 
-        // Email dogrulandi mi?
-        if (!user.IsEmailVerified)
+        // Email dogrulama acikken dogrulanmamis hesap giremez.
+        // _useEmailVerification false oldugunda (Faz 1 fallback) bu kontrol atlanir ki
+        // dogrulama zorunlulugu eklenmeden once kayit olmus kullanicilar kilitli kalmasin.
+        if (_useEmailVerification && !user.IsEmailVerified)
             throw new UnauthorizedAccessException("Email adresiniz henüz doğrulanmamış. Lütfen emailinizi doğrulayın.");
 
         // Lockout suresi devam ediyor mu?
