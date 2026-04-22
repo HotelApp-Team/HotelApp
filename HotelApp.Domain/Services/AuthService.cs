@@ -12,13 +12,15 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtService _jwtService;
     private readonly IEmailService _emailService;
+    private readonly ILoggerService _logger;
     private readonly bool _useEmailVerification;
 
-    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, bool useEmailVerification)
+    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, ILoggerService logger, bool useEmailVerification)
     {
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _emailService = emailService;
+        _logger = logger;
         _useEmailVerification = useEmailVerification;
     }
 
@@ -60,29 +62,18 @@ public class AuthService : IAuthService
             await _unitOfWork.AuthRepository.AddAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
-            // Dogrulama mailini gondermeyi dene.
-            // Mail gonderimi basarisiz olursa (SMTP kapali, baglanti hatasi vs.) kullanicinin
-            // DB kaydi zaten olustu; bu yuzden kaydi basarili sayip "mail su an gonderilemedi,
-            // tekrar denemeyi bekliyoruz" mesaji donuyoruz. Aksi halde kullanici ayni email ile
-            // yeniden Register denerse "Bu email zaten mevcut" hatasi alip kilitlenir.
-            try
-            {
-                await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
+            // Mail gonderimi denenir; hata olursa kayit basarili kalir.
+            // Kullanici daha sonra "Maili tekrar gonder" ile yeniden deneyebilir.
+            var emailSent = await TrySendVerificationEmailAsync(user, nameof(RegisterAsync));
 
-                return new RegisterResponseDto
-                {
-                    RequiresEmailVerification = true,
-                    Message = "Kayıt başarılı! Lütfen emailinizi doğrulayın."
-                };
-            }
-            catch
+            return new RegisterResponseDto
             {
-                return new RegisterResponseDto
-                {
-                    RequiresEmailVerification = true,
-                    Message = "Kayıt başarılı, ancak doğrulama maili şu an gönderilemedi. Lütfen birkaç dakika sonra 'Maili tekrar gönder' ile yeniden deneyin."
-                };
-            }
+                RequiresEmailVerification = true,
+                Message = emailSent
+                    ? "Kayıt başarılı! Lütfen emailinizi doğrulayın."
+                    : "Kayıt başarılı, ancak doğrulama maili şu an gönderilemedi. Lütfen birkaç dakika sonra 'Maili tekrar gönder' ile yeniden deneyin."
+            };
+
         }
 
         // Faz 1 fallback akisinda email verify beklenmez
@@ -237,8 +228,34 @@ public class AuthService : IAuthService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendVerificationEmailAsync(user.Email, user.FirstName, user.EmailVerificationToken!);
+        await TrySendVerificationEmailAsync(user, nameof(ResendVerificationAsync));
 
         return genericMessage;
+    }
+
+    // Mail gonderimini dener; hata olursa loglar ve false doner.
+    private async Task<bool> TrySendVerificationEmailAsync(User user, string actionName)
+    {
+        try
+        {
+            await _emailService.SendVerificationEmailAsync(
+                user.Email,
+                user.FirstName,
+                user.EmailVerificationToken!);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _logger.LogErrorAsync(
+                message: "Doğrulama maili gönderilemedi.",
+                userId: user.Id,
+                userEmail: user.Email,
+                controller: nameof(AuthService),
+                action: actionName,
+                exceptionDetail: ex.ToString());
+
+            return false;
+        }
     }
 }

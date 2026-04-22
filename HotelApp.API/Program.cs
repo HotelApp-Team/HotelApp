@@ -55,6 +55,7 @@ builder.Services.AddScoped<IAuthService>(sp =>
         sp.GetRequiredService<IUnitOfWork>(),
         sp.GetRequiredService<IJwtService>(),
         sp.GetRequiredService<IEmailService>(),
+        sp.GetRequiredService<ILoggerService>(),
         bool.Parse(authSettings["UseEmailVerification"] ?? "true")
     ));
 builder.Services.AddScoped<IUserService, UserService>();
