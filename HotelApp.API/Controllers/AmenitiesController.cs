@@ -7,7 +7,7 @@ namespace HotelApp.API.Controllers;
 
 [ApiController]
 [Route("api/amenities")]
-public class AmenitiesController : Controller
+public class AmenitiesController : ControllerBase
 {
     private readonly IAmenityService _service;
 
@@ -27,26 +27,19 @@ public class AmenitiesController : Controller
     // E33 - POST
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create([FromBody] CreateAmenityDto dto)
+    public async Task<IActionResult> Create([FromBody] AmenityCreateDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        try
-        {
-            await _service.AddAsync(dto);
-            return StatusCode(201);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        await _service.AddAsync(dto);
+        return StatusCode(201);
     }
 
     // E49 - PUT
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateAmenityDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] AmenityUpdateDto dto)
     {
         if (id != dto.Id)
             return BadRequest("Id uyumsuz.");
@@ -54,19 +47,8 @@ public class AmenitiesController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        try
-        {
-            await _service.UpdateAsync(dto);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        await _service.UpdateAsync(dto);
+        return NoContent();
     }
 
     // E50 - DELETE
@@ -74,18 +56,7 @@ public class AmenitiesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
-            await _service.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        await _service.DeleteAsync(id);
+        return NoContent();
     }
 }

@@ -147,16 +147,9 @@ namespace HotelApp.Domain.Services
 
         public async Task<List<string>> GetCitiesAsync()
         {
-            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
-
-            return hotels
-                .Select(x => x.City)
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => x.Trim())
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+            return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
+        
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {

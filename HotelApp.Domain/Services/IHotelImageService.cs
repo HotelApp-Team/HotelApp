@@ -17,7 +17,7 @@ namespace HotelApp.Domain.Services
 
         Task AddAsync(int hotelId, HotelImageCreateDto dto);
 
-        Task UpdateAsync(HotelImageUpdateDto dto);
+        Task UpdateAsync(int hotelId, HotelImageUpdateDto dto);
 
         Task DeleteAsync(int hotelId, int imageId);
 

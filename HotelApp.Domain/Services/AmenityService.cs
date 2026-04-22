@@ -31,10 +31,10 @@ namespace HotelApp.Domain.Services
             return MapToDto(amenity);
         }
 
-        public async Task AddAsync(CreateAmenityDto dto)
+        public async Task AddAsync(AmenityCreateDto dto)
         {
             var exists = await _unitOfWork.AmenityRepository
-         .ExistsAsync(x => x.Name.ToLower() == dto.Name.ToLower());
+                .ExistsAsync(x => x.Name.ToLower() == dto.Name.ToLower());
 
             if (exists)
                 throw new InvalidOperationException("Bu olanak zaten mevcut");
@@ -49,13 +49,13 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(UpdateAmenityDto dto)
+        public async Task UpdateAsync(AmenityUpdateDto dto)
         {
             var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(dto.Id);
 
             if (amenity == null)
             {
-                throw new Exception("Olanak bulunamadı");
+                throw new KeyNotFoundException("Olanak bulunamadı");
             }
 
             var exists = await _unitOfWork.AmenityRepository
@@ -79,7 +79,7 @@ namespace HotelApp.Domain.Services
 
             if (amenity == null)
             {
-                throw new Exception("Olanak bulunamadı");
+                throw new KeyNotFoundException("Olanak bulunamadı");
             }
 
             var isUsed = await _unitOfWork.HotelRepository
@@ -99,7 +99,7 @@ namespace HotelApp.Domain.Services
             return amenities.Select(MapToDto).ToList();
         }
 
-        public async Task AddAmenitiesToHotelAsync(int hotelId, List<int> amenityIds)
+        public async Task<HotelAmenityAssignResponseDto> AddAmenitiesToHotelAsync(int hotelId, List<int> amenityIds)
         {
             var hotel = await _unitOfWork.HotelRepository
                 .GetWithDetailsAsync(hotelId);
@@ -107,21 +107,36 @@ namespace HotelApp.Domain.Services
             if (hotel == null)
                 throw new KeyNotFoundException("Otel bulunamadı");
 
+            int added = 0;
+            int notFound = 0;
+            var notFoundIds = new List<int>();
+
             foreach (var amenityId in amenityIds)
             {
                 var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(amenityId);
 
                 if (amenity == null)
+                {
+                    notFound++;
+                    notFoundIds.Add(amenityId);
                     continue;
+                }
 
-                // duplicate prevent
                 if (!hotel.Amenities.Any(a => a.Id == amenityId))
                 {
                     hotel.Amenities.Add(amenity);
+                    added++;
                 }
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            return new HotelAmenityAssignResponseDto
+            {
+                AddedCount = added,
+                NotFoundCount = notFound,
+                NotFoundIds = notFoundIds
+            };
         }
         public async Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId)
         {

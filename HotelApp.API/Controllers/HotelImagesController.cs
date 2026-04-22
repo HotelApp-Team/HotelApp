@@ -7,7 +7,7 @@ namespace HotelApp.API.Controllers;
 
 [ApiController]
 [Route("api/hotels/{hotelId}/images")]
-public class HotelImagesController : Controller
+public class HotelImagesController : ControllerBase
 {
     private readonly IHotelImageService _service;
 
@@ -29,15 +29,8 @@ public class HotelImagesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddImage(int hotelId, [FromBody] HotelImageCreateDto dto)
     {
-        try
-        {
-            await _service.AddAsync(hotelId, dto);
-            return StatusCode(201);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        await _service.AddAsync(hotelId, dto);
+        return StatusCode(201);
     }
 
     // E18 - PUT: /api/hotels/{id}/images/{imgId}/cover
@@ -48,7 +41,7 @@ public class HotelImagesController : Controller
         if (imageId != dto.Id)
             return BadRequest("Id uyumsuz");
 
-        await _service.UpdateAsync(dto);
+        await _service.UpdateAsync(hotelId, dto);
 
         return NoContent();
     }
@@ -58,13 +51,7 @@ public class HotelImagesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteImage(int hotelId, int imageId)
     {
-        var image = await _service.GetByIdAsync(imageId);
-
-        if (image == null)
-            return NotFound();
-
         await _service.DeleteAsync(hotelId, imageId);
-
         return NoContent();
     }
 }

@@ -7,7 +7,7 @@ namespace HotelApp.API.Controllers;
 
 [ApiController]
 [Route("api/hotels/{hotelId}/amenities")]
-public class HotelAmenitiesController : Controller
+public class HotelAmenitiesController : ControllerBase
 {
     private readonly IAmenityService _service;
 
@@ -24,9 +24,9 @@ public class HotelAmenitiesController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        await _service.AddAmenitiesToHotelAsync(hotelId, dto.AmenityIds);
+        var result = await _service.AddAmenitiesToHotelAsync(hotelId, dto.AmenityIds);
 
-        return NoContent();
+        return Ok(result);
     }
 
     // E35 - DELETE
@@ -34,14 +34,7 @@ public class HotelAmenitiesController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RemoveAmenity(int hotelId, int amenityId)
     {
-        try
-        {
-            await _service.RemoveAmenityFromHotelAsync(hotelId, amenityId);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        await _service.RemoveAmenityFromHotelAsync(hotelId, amenityId);
+        return NoContent();
     }
 }

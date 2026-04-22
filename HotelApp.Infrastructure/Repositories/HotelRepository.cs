@@ -24,6 +24,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     public async Task<IEnumerable<Hotel>> GetByCityAsync(string city)
     {
         return await _context.Hotels
+            .Include(x => x.HotelImages)
             .Where(x => x.City.ToLower() == city.ToLower())
             .AsNoTracking()
             .ToListAsync();

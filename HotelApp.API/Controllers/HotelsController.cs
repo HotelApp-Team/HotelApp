@@ -21,6 +21,8 @@ public class HotelsController : ControllerBase
     public async Task<IActionResult> GetAll(
     [FromQuery] string? city,
     [FromQuery] byte? star,
+    [FromQuery] string? sortBy = "name",
+    [FromQuery] string? sortOrder = "asc",
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10)
     {
@@ -31,6 +33,21 @@ public class HotelsController : ControllerBase
 
         if (star.HasValue)
             hotels = hotels.Where(x => x.StarRating == star);
+
+        hotels = sortBy?.ToLower() switch
+        {
+            "star" => sortOrder == "desc"
+                ? hotels.OrderByDescending(x => x.StarRating)
+                : hotels.OrderBy(x => x.StarRating),
+
+            "rating" => sortOrder == "desc"
+                ? hotels.OrderByDescending(x => x.AvgRating)
+                : hotels.OrderBy(x => x.AvgRating),
+
+            _ => sortOrder == "desc"
+                ? hotels.OrderByDescending(x => x.Name)
+                : hotels.OrderBy(x => x.Name),
+        };
 
         var totalCount = hotels.Count();
 
@@ -98,15 +115,7 @@ public class HotelsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        try
-        {
-            await _hotelService.UpdateAsync(dto);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-
+        await _hotelService.UpdateAsync(dto);
         return NoContent();
     }
     // E10 - DELETE /api/hotels/{id}
@@ -114,18 +123,7 @@ public class HotelsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
-            await _hotelService.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        await _hotelService.DeleteAsync(id);
+        return NoContent();
     }
 }
