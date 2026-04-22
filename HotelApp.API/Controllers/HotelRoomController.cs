@@ -51,6 +51,13 @@ namespace HotelApp.API.Controllers
             return Ok(rooms);
         }
 
+        [HttpGet("/api/hotels/{hotelId}/rooms")]
+        public async Task<IActionResult> GetHotelRooms(int hotelId)
+        {
+            var rooms = await _service.GetRoomsByHotelAsync(hotelId);
+            return Ok(rooms);
+        }
+
         /// <summary>
         /// Oda tipi Id'sine göre odaya ait tüm odaları getirir. Her oda için otel adı ve oda tipi adı da dahil edilir.
         /// </summary>
@@ -87,12 +94,29 @@ namespace HotelApp.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [Authorize(Roles="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddRoom([FromBody] CreateHotelRoomDto dto)
         {
             await _service.AddRoomsAsync(dto);
             return Ok();
+        }
+
+        [HttpPost("/api/hotels/{hotelId}/rooms/search")]
+        public async Task<IActionResult> SearchAvailableRooms(int hotelId, [FromBody] SearchAvailableRoomsRequestDto request)
+        {
+            if (request.CheckIn >= request.CheckOut)
+                return BadRequest("CheckIn tarihi CheckOut'tan küçük olmalı.");
+
+            var rooms = await _service.GetAvailableRoomsAsync(
+                request.City,
+                request.CheckIn,
+                request.CheckOut,
+                request.GuestCount);
+
+            var filteredRooms = rooms.Where(r => r.HotelId == hotelId);
+
+            return Ok(filteredRooms);
         }
 
         /// <summary>
@@ -101,7 +125,7 @@ namespace HotelApp.API.Controllers
         /// <param name="id"></param>
         /// <param name="dto"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRoom(int id ,[FromBody] UpdateHotelRoomDto dto)
         {
