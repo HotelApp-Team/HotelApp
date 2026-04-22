@@ -1,7 +1,6 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.API.Controllers
@@ -79,12 +78,12 @@ namespace HotelApp.API.Controllers
         /// <returns></returns>
 
         [HttpGet("available")]
-        public async Task<IActionResult> GetAvailableRooms(string city, DateTime checkIn, DateTime checkOut, int guestCount)
+        public async Task<IActionResult> GetAvailableRooms(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
             if (checkIn >= checkOut)
                 return BadRequest("CheckIn tarihi CheckOut'tan küçük olmalı");
 
-            var rooms = await _service.GetAvailableRoomsAsync(city, checkIn, checkOut, guestCount);
+            var rooms = await _service.GetAvailableRoomsAsync(hotelId, city, checkIn, checkOut, guestCount);
             return Ok(rooms);
         }
 
@@ -109,14 +108,13 @@ namespace HotelApp.API.Controllers
                 return BadRequest("CheckIn tarihi CheckOut'tan küçük olmalı.");
 
             var rooms = await _service.GetAvailableRoomsAsync(
+                hotelId,
                 request.City,
                 request.CheckIn,
                 request.CheckOut,
                 request.GuestCount);
 
-            var filteredRooms = rooms.Where(r => r.HotelId == hotelId);
-
-            return Ok(filteredRooms);
+            return Ok(rooms);
         }
 
         /// <summary>
@@ -127,7 +125,7 @@ namespace HotelApp.API.Controllers
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRoom(int id ,[FromBody] UpdateHotelRoomDto dto)
+        public async Task<IActionResult> UpdateRoom(int id, [FromBody] UpdateHotelRoomDto dto)
         {
             dto.Id = id;
             await _service.UpdateRoomsAsync(dto);
@@ -135,7 +133,7 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
-        /// Oda siler. Oda Id'si URL parametresi olarak sağlanır. Başarılı bir silme işleminden sonra 200 OK döner.
+        /// Oda siler. Oda Id'si URL parametresi olarak sağlanır. Başarılı bir silme işleminden sonra 204 NoContent döner.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>

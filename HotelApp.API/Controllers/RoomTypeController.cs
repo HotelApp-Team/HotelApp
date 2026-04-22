@@ -54,7 +54,8 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
-        /// Max Guests sayısına göre oda tiplerini getirir. Oda tipi bulunamazsa NotFound döner.
+        /// MaxGuests değerine uygun oda tiplerini getirir.
+        /// Sonuç bulunamazsa boş liste döner.
         /// </summary>
         /// <param name="maxGuests"></param>
         /// <returns></returns>

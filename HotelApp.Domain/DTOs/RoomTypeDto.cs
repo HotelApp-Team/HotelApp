@@ -17,7 +17,7 @@ namespace HotelApp.Domain.DTOs
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
 
-        [Range(1, int.MaxValue, ErrorMessage = "Lütfen kişi saysını giriniz.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Lütfen kişi sayısını giriniz.")]
         public int MaxGuests { get; set; }
     }
     // Oda tipi oluşturmak için Dto
@@ -39,12 +39,12 @@ namespace HotelApp.Domain.DTOs
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Oda tipi adı zorunludur.")]
-        [StringLength(100, ErrorMessage = "En fazla 100 kaarakter olabilir.")]
+        [StringLength(100, ErrorMessage = "En fazla 100 karakter olabilir.")]
 
         public string Name { get; set; } = null!;
 
         [Required(ErrorMessage = "Açıklama zorunludur.")]
-        [StringLength(500, ErrorMessage = "En fazla 500 kaarakter olabilir.")]
+        [StringLength(500, ErrorMessage = "En fazla 500 karakter olabilir.")]
         public string Description { get; set; } = null!;
 
         [Range(1,20,ErrorMessage ="Kişi sayısı 1 ile 20 arasında olmalıdır.")]

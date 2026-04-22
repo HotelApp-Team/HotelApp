@@ -71,9 +71,9 @@ namespace HotelApp.Infrastructure.Repositories
         {
             return await _dbSet
                 .Where(x => x.HotelId == hotelId)
-                .Include(x=>x.Hotel)
+                .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
-                .Include(x=>x.Reservations)
+                .Include(x => x.Reservations)
                 .ToListAsync();
         }
 
@@ -82,16 +82,17 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Where(x => x.RoomTypeId == roomTypeId)
                 .Include(x => x.Hotel)
-                .Include(x=>x.RoomType)
-                .Include(x=>x.Reservations)
+                .Include(x => x.RoomType)
+                .Include(x => x.Reservations)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount)
+        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
             var result = await _context.Database
                 .SqlQueryRaw<AvailableRoomDto>(
-                "EXEC sp_SearchAvailableRooms @City, @CheckInDate, @CheckOutDate, @GuestCount",
+                "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
+                new SqlParameter("@HotelId", hotelId),
                 new SqlParameter("@City", city),
                 new SqlParameter("@CheckInDate", checkIn.Date),
                 new SqlParameter("@CheckOutDate", checkOut.Date),

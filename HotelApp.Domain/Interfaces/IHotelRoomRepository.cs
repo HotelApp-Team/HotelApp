@@ -19,7 +19,7 @@ namespace HotelApp.Domain.Interfaces
         //Belirli bir oda tipine sahip odalar
         Task<IEnumerable<HotelRoom>> GetRoomsByRoomTypeAsync(int roomTypeId);
 
-        Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city,DateTime checkIn, DateTime checkOut , int guestCount);
+        Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount);
 
     }
 }

@@ -9,8 +9,6 @@ namespace HotelApp.Domain.Interfaces
 {
     public interface IRoomTypeRepository : IRepository<RoomType>
     {
-        Task<RoomType?> GetByIdAsync(int id);
-        Task<IEnumerable<RoomType>> GetAllAsync();
         Task<RoomType?> GetRoomTypeWithRoomsAsync(int id);
         Task<IEnumerable<RoomType>> GetAllWithRoomsAsync();
         Task<IEnumerable<RoomType>> GetByMaxGuestsAsync(int maxGuests);

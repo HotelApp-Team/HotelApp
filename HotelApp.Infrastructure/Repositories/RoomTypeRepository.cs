@@ -40,9 +40,10 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<RoomType?> GetByNameAsync(string name)
         {
+            var normalizedName = name.Trim().ToLower();
             return await _dbSet
                 .Include(x => x.HotelRooms)
-                .FirstOrDefaultAsync(x => x.Name.Contains(name));
+                .FirstOrDefaultAsync(x => x.Name == normalizedName);
         }
 
     }

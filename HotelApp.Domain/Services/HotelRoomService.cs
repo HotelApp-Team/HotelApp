@@ -67,9 +67,9 @@ namespace HotelApp.Domain.Services
             });
         }
 
-        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount)
+        public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
-            return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(city, checkIn, checkOut, guestCount);
+            return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(hotelId, city, checkIn, checkOut, guestCount);
         }
 
         public async Task<DetailHotelRoomDto?> GetRoomByIdAsync(int id)

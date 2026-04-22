@@ -1,4 +1,4 @@
-﻿-- =============================================
+-- =============================================
 -- HotelApp Veritabani Semasi
 -- Otel Rezervasyon Sistemi - Final Projesi
 -- Tarih: 2026-04-06
@@ -39,7 +39,7 @@ CREATE TABLE RoomTypes(
 Id INT PRIMARY KEY IDENTITY(1,1),
 Name NVARCHAR(100) NOT NULL ,      
 Description NVARCHAR(500) NOT NULL,
-MaxGuests INT NOT NULL DEFAULT 2,    ---- Max misafir say�s�
+MaxGuests INT NOT NULL DEFAULT 2,    ---- Max misafir sayısı
 
 CONSTRAINT UQ_RoomTypes_Name UNIQUE(Name),
 CONSTRAINT CHK_RoomTypes_MaxGuests CHECK (MaxGuests > 0)
@@ -159,11 +159,11 @@ GO
 
 CREATE TABLE Reviews(
 Id INT PRIMARY KEY IDENTITY(1,1),
-HotelId INT NOT NULL,    --- Hotel Kimlik Numaras�
-UserId INT NOT NULL,    --- Kullan�c� Kimlik Numaras�
-Rating TINYINT NOT NULL CHECK (Rating >= 1 AND Rating <= 5), --- Yorum puanlar 1 ila 5 aras�nda
+HotelId INT NOT NULL,    --- Hotel Kimlik Numarası
+UserId INT NOT NULL,    --- Kullanıcı Kimlik Numarası
+Rating TINYINT NOT NULL CHECK (Rating >= 1 AND Rating <= 5), --- Yorum puanları 1 ila 5 arasında
 Comment NVARCHAR(1000),                 --- Yorum
-CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,    --- Olu�turma tarihi
+CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,    --- Oluşturma tarihi
 
 CONSTRAINT UQ_Reviews_UserHotel UNIQUE (UserId, HotelId),
 
@@ -247,19 +247,19 @@ GO
 -- Sik sorgulanan alanlarda arama hizini arttirir.
 -- =============================================
 
---- �ehire g�re otel sorgulama
+--- Şehire göre otel sorgulama
 CREATE INDEX IX_Hotels_City ON  Hotels(City);
 
---- Otel odalar� h�zl� bulmak i�in
+--- Otel odaları hızlı bulmak için
 CREATE INDEX IX_HotelRooms_HotelId ON HotelRooms(HotelId);
 CREATE INDEX IX_HotelRooms_RoomTypeId ON HotelRooms(RoomTypeId);
 
----Rezervasyonlarda tarih aral���na g�re sorgulama
+---Rezervasyonlarda tarih aralığına göre sorgulama
 CREATE INDEX IX_Reservations_Dates ON Reservations(CheckInDate,CheckOutDate);
 CREATE INDEX IX_Reservations_UserId ON Reservations(UserId);
 CREATE INDEX IX_Reservations_HotelRoomId ON Reservations(HotelRoomId);
 
---- Yoruma g�re filtreleme
+--- Yoruma göre filtreleme
 CREATE INDEX IX_Reviews_HotelId ON Reviews(HotelId);
 
 -- Users: Email ile giris sorgularini hizlandirir
@@ -277,7 +277,7 @@ GO
 
 
 --=====================================================================
---- VIEW: Otelin ad�, �ehir , y�ld�z, ortalama puan, yorum say�s�
+--- VIEW: Otelin adı, şehir, yıldız, ortalama puan, yorum sayısı
 --=====================================================================
 
 CREATE VIEW vw_HotelSummary AS 
@@ -296,7 +296,7 @@ GROUP BY h.Id, h.Name, h.City, h.StarRating, h.IsActive;
 GO
 
 --=====================================================================
---- VIEW: Belirli bir tarih aral��� bo� olan odalar
+--- VIEW: Belirli bir tarih aralığı boş olan odalar
 --=====================================================================
 
 CREATE VIEW vw_RoomDetails AS
@@ -318,7 +318,7 @@ GO
 
 
 --=====================================================================
--- STORED PROCEDURE: �ehir ve tarih aral���na g�re m�sait odalar
+-- STORED PROCEDURE: Şehir ve tarih aralığına göre müsait odalar
 --=====================================================================
 
 CREATE PROCEDURE sp_SearchAvailableRooms
@@ -361,7 +361,7 @@ GO
 
 
 --=====================================================================
--- STORED PROCEDURE: Rezervasyon Olu�turur(m�saitlik durumu ile)
+-- STORED PROCEDURE: Rezervasyon Oluşturur (müsaitlik durumu ile)
 --=====================================================================
 
 CREATE PROCEDURE sp_MakeReservation
@@ -394,7 +394,7 @@ SET @ReservationId = 0;
 ROLLBACK;
 RETURN;
 END
---- 2.Misafir say�s� kontrolu
+--- 2.Misafir sayısı kontrolü
 IF @GuestCount > @MaxGuests
 BEGIN 
 SET @ResultMessage = 'Misafir say�s� oda kapastesini a��yor';
@@ -402,7 +402,7 @@ SET @ReservationId = 0;
 ROLLBACK;
 RETURN;
 END
---- 3.M�siatlik kontrolu
+--- 3.Müsaitlik kontrolü
 DECLARE @ReservedCount INT;
 SELECT @ReservedCount = Count(*)
 FROM Reservations
@@ -421,7 +421,7 @@ END
 --- 4.Toplam fiyat hesaplama
 DECLARE @Nights INT = DATEDIFF(DAY, @CheckInDate , @CheckOutDate);
 DECLARE @TotalPrice DECIMAL(10,2) = @Nights * @PricePerNight;
---- 5.Reservasyon olu�turma
+--- 5.Rezervasyon oluşturma
 INSERT INTO Reservations (UserId, HotelRoomId, CheckInDate, CheckOutDate, GuestCount, TotalPrice, PaymentMethod, Status)
 VALUES (@UserId, @HotelRoomId, @CheckInDate, @CheckOutDate, @GuestCount, @TotalPrice, @PaymentMethod, 'Confirmed');
 SET @ReservationId = SCOPE_IDENTITY();
@@ -447,7 +447,7 @@ INSERT INTO @AffectedHotels (HotelId)
 SELECT DISTINCT HotelId FROM inserted
 UNION
 SELECT DISTINCT HotelId FROM deleted;
---- Ortalama puan� g��ncelleme
+--- Ortalama puanı güncelleme
 UPDATE h
 SET h.AvgRating = ISNULL(
 (SELECT AVG(CAST(R.Rating AS DECIMAL(3,1)))
