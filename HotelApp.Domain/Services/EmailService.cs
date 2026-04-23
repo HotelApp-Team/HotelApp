@@ -53,17 +53,19 @@ public class EmailService : IEmailService
         var body = $@"
         Merhaba {firstName},
 
-        Hesabınızı doğrulamak için aşağıdaki linke tıklayın:
+        HesabÄ±nÄ±zÄ± doÄŸrulamak iÃ§in aÅŸaÄŸÄ±daki linke tÄ±klayÄ±n:
         {verificationLink}
 
-        Eğer bu işlemi siz yapmadıysanız bu maili dikkate almayın.";
+        EÄŸer bu iÅŸlemi siz yapmadÄ±ysanÄ±z bu maili dikkate almayÄ±n.";
 
         using var message = new MailMessage
         {
             From = new MailAddress(_senderEmail, _senderName),
             Subject = subject,
             Body = body,
-            IsBodyHtml = false
+            IsBodyHtml = false,
+            BodyEncoding = System.Text.Encoding.UTF8,
+            SubjectEncoding = System.Text.Encoding.UTF8
         };
 
         message.To.Add(toEmail);
@@ -76,4 +78,20 @@ public class EmailService : IEmailService
 
         await client.SendMailAsync(message);
     }
+
+    // Auth akisinin kirilmamasi gereken yerlerde kullanilir.
+    // Teknik hatayi disariya firlatmak yerine sadece basari durumunu doner.
+    public async Task<bool> SendVerificationEmailSafelyAsync(string toEmail, string firstName, string token)
+    {
+        try
+        {
+            await SendVerificationEmailAsync(toEmail, firstName, token);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

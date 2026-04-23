@@ -28,15 +28,16 @@ public class UnitOfWork : IUnitOfWork
         _authRepository ??= new AuthRepository(_context);
 
     public IHotelRepository HotelRepository =>
-       _hotelRepository ??= new HotelRepository(_context);
+        _hotelRepository ??= new HotelRepository(_context);
 
     public IHotelImageRepository HotelImageRepository =>
-    _hotelImageRepository ??= new HotelImageRepository(_context);
+        _hotelImageRepository ??= new HotelImageRepository(_context);
 
     public IAmenityRepository AmenityRepository =>
-           _amenityRepository ??= new AmenityRepository(_context);
+        _amenityRepository ??= new AmenityRepository(_context);
+
     public IUserRepository UserRepository =>
-    _userRepository ??= new UserRepository(_context);
+        _userRepository ??= new UserRepository(_context);
 
 
     /// Tüm değişiklikleri veritabanına kaydeder.
@@ -49,6 +50,13 @@ public class UnitOfWork : IUnitOfWork
     /// Birden fazla işlemi atomik olarak yapmak için kullanılır.
     public async Task BeginTransactionAsync()
     {
+        // Zaten acik bir transaction varsa ustune yazmayiz: onceki transaction
+        // dispose edilmeden kaybolacagi icin resource leak olusur ve ic ice
+        // transaction gibi beklenmedik davranislara yol acar.
+        // Once mevcut transaction commit veya rollback ile kapatilmali.
+        if (_transaction != null)
+            throw new InvalidOperationException("Aktif bir transaction zaten var. Once onu commit veya rollback ile kapatin.");
+
         _transaction = await _context.Database.BeginTransactionAsync();
     }
 
@@ -78,7 +86,10 @@ public class UnitOfWork : IUnitOfWork
     /// Kaynakları serbest bırakır.
     public void Dispose()
     {
+        // DbContext'i burada dispose ETMIYORUZ. Program.cs'te AddDbContext ile
+        // scoped kaydedildigi icin DI container istek bitince context'i kendisi dispose eder.
+        // Burada tekrar dispose cagirmak double-dispose hatasina yol acabilir.
+        // UnitOfWork sadece kendi olusturdugu kaynagi (transaction) temizler.
         _transaction?.Dispose();
-        _context.Dispose();
     }
 }

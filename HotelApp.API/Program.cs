@@ -1,4 +1,5 @@
 using HotelApp.API.Middleware;
+using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Domain.Services;
 using HotelApp.Infrastructure;
@@ -152,6 +153,28 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// Role seed: yeni bir ortamda Roles tablosu bos ise register akisi patlamasin diye
+// uygulama baslarken "Admin" ve "User" rollerini garanti ediyoruz.
+// Idempotent: zaten varsa dokunmaz, yoksa ekler. DB First ile uyumlu, sadece veri ekler.
+// DbContext scoped oldugu icin app.Services'den direkt alamayiz, bu yuzden CreateScope() kullaniyoruz.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HotelAppDbContext>();
+
+    string[] requiredRoles = { "Admin", "User" };
+
+    foreach (var roleName in requiredRoles)
+    {
+        bool exists = db.Roles.Any(r => r.Name == roleName);
+        if (!exists)
+        {
+            db.Roles.Add(new Role { Name = roleName });
+        }
+    }
+
+    db.SaveChanges();
+}
+
 // Exception handler EN BASTA olmali ki sonraki tum middleware/controller hatalarini yakalasin
 app.UseExceptionHandler();
 
@@ -162,7 +185,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("DevelopmentPolicy");
+if (app.Environment.IsDevelopment())
+    app.UseCors("DevelopmentPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
