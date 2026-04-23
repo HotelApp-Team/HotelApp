@@ -1,6 +1,7 @@
 ﻿using HotelApp.Domain.Services;
-using Microsoft.AspNetCore.Diagnostics;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Diagnostics;
 
 // GlobalExceptionHandler, yakalanmayan hatalari tek yerde toplar.
 // Hata oldugunda hem log yazar hem de kullaniciya standart bir 500 cevabi doner.
@@ -34,9 +35,12 @@ public class GlobalExceptionHandler : IExceptionHandler
             _ => StatusCodes.Status500InternalServerError // diger tum hatalar icin genel sunucu hatasi
         };
 
-        if (statusCode == StatusCodes.Status500InternalServerError)
+        if (statusCode == StatusCodes.Status500InternalServerError
+            || exception is InvalidOperationException)
         {
-            // Sadece 500 hatalarini logluyoruz, cunku digerleri genellikle istemci hatasi ve beklenen durumlar olabilir.
+            // 500 hatalarini ve InvalidOperationException'i logluyoruz.
+            // InvalidOperationException is kurali gibi gorunse de framework icinden de gelebilir (orn: LINQ Single bos liste).
+            // Yanlis yerden gelirse fark edebilmek icin log'a dusurelim.
             await LogExceptionAsync(httpContext, exception);
         }
 
@@ -53,16 +57,25 @@ public class GlobalExceptionHandler : IExceptionHandler
         }, cancellationToken);
 
         return true;
-
     }
 
     // Log icin gerekli ek bilgileri topla ve logger'a gonder
     private async Task LogExceptionAsync(HttpContext context, Exception ex)
     {
-        // Hatanin hangi controller ve action'da oldugunu al
-        var routeValues = context.Request.RouteValues;
-        var controller = routeValues["controller"]?.ToString() ?? "UnknownController";
-        var action = routeValues["action"]?.ToString() ?? $"{context.Request.Method} {context.Request.Path}";
+        // Exception handler middleware pipeline'i re-execute ettigi icin context.GetEndpoint() null doner.
+        // Orijinal endpoint bilgisi IExceptionHandlerFeature icinde saklanir, oradan okuyoruz.
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var endpoint = exceptionFeature?.Endpoint ?? context.GetEndpoint();
+        var routeValues = exceptionFeature?.RouteValues ?? context.Request.RouteValues;
+
+        var actionDescriptor = endpoint?.Metadata.GetMetadata<ControllerActionDescriptor>();
+
+        var controller = actionDescriptor?.ControllerName
+            ?? routeValues?["controller"]?.ToString()
+            ?? "UnknownController";
+        var action = actionDescriptor?.ActionName
+            ?? routeValues?["action"]?.ToString()
+            ?? $"{context.Request.Method} {context.Request.Path}";
 
         // Istek yapan kullanicinin IP bilgisini al
         var ipAddress = context.Connection.RemoteIpAddress?.ToString();
