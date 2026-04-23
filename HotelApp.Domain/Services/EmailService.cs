@@ -78,4 +78,20 @@ public class EmailService : IEmailService
 
         await client.SendMailAsync(message);
     }
+
+    // Auth akisinin kirilmamasi gereken yerlerde kullanilir.
+    // Teknik hatayi disariya firlatmak yerine sadece basari durumunu doner.
+    public async Task<bool> SendVerificationEmailSafelyAsync(string toEmail, string firstName, string token)
+    {
+        try
+        {
+            await SendVerificationEmailAsync(toEmail, firstName, token);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

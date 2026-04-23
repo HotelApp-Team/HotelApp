@@ -12,15 +12,13 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtService _jwtService;
     private readonly IEmailService _emailService;
-    private readonly ILoggerService _logger;
     private readonly bool _useEmailVerification;
 
-    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, ILoggerService logger, bool useEmailVerification)
+    public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, bool useEmailVerification)
     {
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _emailService = emailService;
-        _logger = logger;
         _useEmailVerification = useEmailVerification;
     }
 
@@ -64,11 +62,16 @@ public class AuthService : IAuthService
 
             // Mail gonderimi denenir; hata olursa kayit basarili kalir.
             // Kullanici daha sonra "Maili tekrar gonder" ile yeniden deneyebilir.
-            var emailSent = await TrySendVerificationEmailAsync(user, nameof(RegisterAsync));
+            // Controller bu sonucu log seviyesini secmek icin kullanir.
+            var emailSent = await _emailService.SendVerificationEmailSafelyAsync(
+                user.Email,
+                user.FirstName,
+                user.EmailVerificationToken!);
 
             return new RegisterResponseDto
             {
                 RequiresEmailVerification = true,
+                VerificationEmailSent = emailSent,
                 Message = emailSent
                     ? "Kayıt başarılı! Lütfen emailinizi doğrulayın."
                     : "Kayıt başarılı, ancak doğrulama maili şu an gönderilemedi. Lütfen birkaç dakika sonra 'Maili tekrar gönder' ile yeniden deneyin."
@@ -208,7 +211,7 @@ public class AuthService : IAuthService
     // Dogrulama mailini yeniden gonderir.
     // Guvenlik notu: Saldirgan hangi email'lerin sistemde kayitli oldugunu ogrenmesin diye
     // her durumda (kullanici var/yok, dogrulanmis/dogrulanmamis) ayni mesaji donuyoruz.
-    public async Task<string> ResendVerificationAsync(ResendVerificationDto dto)
+    public async Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto)
     {
         const string genericMessage = "Eğer bu email adresi kayıtlı ve doğrulanmamışsa, doğrulama maili gönderildi.";
 
@@ -216,11 +219,21 @@ public class AuthService : IAuthService
 
         // Kullanici yoksa sessizce basarili gibi don (email kayitli mi bilgisi sizdirilmasin)
         if (user == null)
-            return genericMessage;
+            return new ResendVerificationResultDto
+            {
+                Message = genericMessage,
+                EmailSent = false,
+                EmailSendAttempted = false
+            };
 
         // Email zaten dogrulanmissa da ayni mesaji don (bu bilgi de disariya verilmemeli)
         if (user.IsEmailVerified)
-            return genericMessage;
+            return new ResendVerificationResultDto
+            {
+                Message = genericMessage,
+                EmailSent = false,
+                EmailSendAttempted = false
+            };
 
         // Yeni dogrulama token'i uret ve 24 saat gecerli yap
         user.EmailVerificationToken = Guid.NewGuid().ToString();
@@ -228,34 +241,17 @@ public class AuthService : IAuthService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await TrySendVerificationEmailAsync(user, nameof(ResendVerificationAsync));
+        // Mail sonucu disa generic message ile cikilsa da controller warning/info log ayrimini bu alanla yapar.
+        var emailSent = await _emailService.SendVerificationEmailSafelyAsync(
+            user.Email,
+            user.FirstName,
+            user.EmailVerificationToken!);
 
-        return genericMessage;
-    }
-
-    // Mail gonderimini dener; hata olursa loglar ve false doner.
-    private async Task<bool> TrySendVerificationEmailAsync(User user, string actionName)
-    {
-        try
+        return new ResendVerificationResultDto
         {
-            await _emailService.SendVerificationEmailAsync(
-                user.Email,
-                user.FirstName,
-                user.EmailVerificationToken!);
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await _logger.LogErrorAsync(
-                message: "Doğrulama maili gönderilemedi.",
-                userId: user.Id,
-                userEmail: user.Email,
-                controller: nameof(AuthService),
-                action: actionName,
-                exceptionDetail: ex.ToString());
-
-            return false;
-        }
+            Message = genericMessage,
+            EmailSent = emailSent,
+            EmailSendAttempted = true
+        };
     }
 }
