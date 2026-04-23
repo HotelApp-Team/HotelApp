@@ -24,6 +24,15 @@ namespace HotelApp.Infrastructure.Services
         // Private constructor: disaridan new ile uretilemez
         private LoggerService() { }
 
+        // DB'deki Message ve ExceptionDetail kolonlarinin en fazla kac karakter tutabildigi.
+        // Log yazmadan once uzun metinleri bu degerlere gore kisaltiyoruz ki DB hata vermesin.
+        private const int MessageMaxLength = 2000;
+        private const int ExceptionDetailMaxLength = 4000;
+
+        // Sayfalama icin guvenlik sinirlari - hatali veya kotu niyetli parametrelere karsi koruma.
+        private const int DefaultPageSize = 20;
+        private const int MaxPageSize = 100;
+
         // Program.cs'den connection string'i bir kez set eder
         public static void Initialize(string connectionString)
         {
@@ -53,11 +62,17 @@ namespace HotelApp.Infrastructure.Services
         }
 
         // Sayfalama ile log listesi - admin panelinde gosterim icin
-        public async Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = 20)
+        public async Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = DefaultPageSize)
         {
             if (string.IsNullOrEmpty(_connectionString))
                 throw new InvalidOperationException(
                     "LoggerService.Initialize(connectionString) cagrilmadi. Program.cs'i kontrol et.");
+
+            // Sayfalama parametrelerini guvenli araliga cekiyoruz.
+            // pageNumber 0 veya negatif gelirse Skip negatif olur ve sorgu patlar;
+            // cok buyuk pageSize (orn. 99999) ise DB'den devasa sonuc cekip sunucuyu yorar.
+            pageNumber = Math.Max(1, pageNumber);
+            pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
             var options = new DbContextOptionsBuilder<HotelAppDbContext>()
                 .UseSqlServer(_connectionString)
@@ -129,18 +144,28 @@ namespace HotelApp.Infrastructure.Services
             var log = new Log
             {
                 Level = level,
-                Message = message,
+                // Cok uzun mesaj/exception DB'ye yazilirken hata verebilir
+                // (kolon limitini asar). Bu yuzden kayit oncesi kisaltiyoruz.
+                Message = Truncate(message, MessageMaxLength)!,
                 Timestamp = DateTime.UtcNow,
                 UserId = userId,
                 UserEmail = userEmail,
                 Controller = controller,
                 Action = action,
                 IpAddress = ipAddress,
-                ExceptionDetail = exceptionDetail
+                ExceptionDetail = Truncate(exceptionDetail, ExceptionDetailMaxLength)
             };
 
             await context.Logs.AddAsync(log);
             await context.SaveChangesAsync();
+        }
+
+        // Metni maxLength'ten uzunsa keser, degilse oldugu gibi birakir. Null/bos girdi dokunmadan donulur.
+        private static string? Truncate(string? value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+                return value;
+            return value.Substring(0, maxLength);
         }
     }
 }

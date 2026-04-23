@@ -16,7 +16,8 @@ namespace HotelApp.Domain.Services
         // Email dogrulama token'ini kontrol eder, kullaniciyi dogrular ve otomatik giris icin JWT dondurur
         Task<LoginResponseDto> VerifyEmailAsync(string token);
 
-        // Email dogrulama mailini yeniden gondermek icin yeni verification token uretir ve sonucunda bilgilendirme mesaji dondurur
-        Task<string> ResendVerificationAsync(ResendVerificationDto dto);
+        // Email dogrulama mailini yeniden gondermek icin yeni verification token uretir.
+        // Controller'in log seviyesi secebilmesi icin hem generic mesaji hem de mail sonucunu doner.
+        Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto);
     }
 }

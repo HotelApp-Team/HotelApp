@@ -46,7 +46,8 @@ cd HotelApp
 
 ### 2. Kendi branch'ine gec
 ```bash
-git checkout sevde-dev   # veya hilal-dev
+git checkout <kendi-branch>   # ornegin: alper-dev, sevde-dev, hilal-dev
+# Takim disindan klonluyorsan: git checkout dev
 ```
 
 ### 3. SQL Server

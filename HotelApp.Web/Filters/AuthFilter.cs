@@ -18,8 +18,17 @@ public class AuthFilter : ActionFilterAttribute
             return;
         }
 
-        // 3. Token'i oku
+        // 3. Token okumaya gecmeden once "bu metin JWT formatinda mi?" diye kontrol et.
+        //    Bozuk bir metin direkt ReadJwtToken'a verilirse hata firlatir ve kullanici
+        //    500 sayfasiyla karsilasir. CanReadToken bu kontrolu hatasiz (true/false) yapar.
         var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(token))
+        {
+            context.HttpContext.Session.Remove("JWToken");
+            context.Result = new RedirectToActionResult("Login", "Auth", null);
+            return;
+        }
+
         var jwttoken = handler.ReadJwtToken(token);
 
         //4. Token suresi dolmussa sessionu temizle ve Login sayfasına yönlendir

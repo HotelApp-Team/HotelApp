@@ -22,22 +22,39 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    //POST api/auth/register
+    // POST api/auth/register
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
     {
         var result = await _authService.RegisterAsync(userRegisterDto);
 
-        await LogInfoAsync(
-            result.RequiresEmailVerification
-                ? $"Yeni kullanıcı kaydı oluşturuldu, email doğrulaması bekleniyor: {userRegisterDto.Email}"
-                : $"Yeni kullanıcı kaydı oluşturuldu: {userRegisterDto.Email}",
-            userEmail: userRegisterDto.Email);
+        // Kayit basarili ama verify maili gidemediyse warning log atiyoruz.
+        // Boylece kullaniciya kontrollu cevap donerken operasyonel kayit da tutuluyor.
+        if (result.RequiresEmailVerification && !result.VerificationEmailSent)
+        {
+            await _logger.LogWarningAsync(
+                message: $"Kullanıcı kaydı oluşturuldu fakat doğrulama maili gönderilemedi: {userRegisterDto.Email}",
+                userEmail: userRegisterDto.Email,
+                controller: nameof(AuthController),
+                action: $"{Request.Method} {Request.Path}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+        else
+        {
+            await _logger.LogInfoAsync(
+                message: result.RequiresEmailVerification
+                    ? $"Yeni kullanıcı kaydı oluşturuldu, email doğrulaması bekleniyor: {userRegisterDto.Email}"
+                    : $"Yeni kullanıcı kaydı oluşturuldu: {userRegisterDto.Email}",
+                userEmail: userRegisterDto.Email,
+                controller: nameof(AuthController),
+                action: $"{Request.Method} {Request.Path}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
 
         return Ok(result);
     }
 
-    //POST api/auth/login
+    // POST api/auth/login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto)
     {
@@ -85,11 +102,31 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.ResendVerificationAsync(dto);
 
-        await LogInfoAsync(
-            $"Email doğrulama maili yeniden gönderildi: {dto.Email}",
-            userEmail: dto.Email);
+        // Disariya her durumda generic mesaj donuyoruz.
+        // Ic tarafta ise mailin denenip denenmedigine ve sonucuna gore uygun log atiyoruz.
+        if (result.EmailSendAttempted && !result.EmailSent)
+        {
+            await _logger.LogWarningAsync(
+                message: $"Doğrulama maili yeniden gönderme denendi fakat mail gönderilemedi: {dto.Email}",
+                userEmail: dto.Email,
+                controller: nameof(AuthController),
+                action: $"{Request.Method} {Request.Path}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+        else if (result.EmailSendAttempted)
+        {
+            await LogInfoAsync(
+                $"Email doğrulama maili yeniden gönderildi: {dto.Email}",
+                userEmail: dto.Email);
+        }
+        else
+        {
+            await LogInfoAsync(
+                $"Email doğrulama maili yeniden gönderme isteği işlendi: {dto.Email}",
+                userEmail: dto.Email);
+        }
 
-        return Ok(new { Message = result });
+        return Ok(new { Message = result.Message });
     }
 
     // PUT api/auth/profile
