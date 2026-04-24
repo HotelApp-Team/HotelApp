@@ -14,7 +14,7 @@ namespace HotelApp.API.Controllers
         public RoomTypeController(IRoomTypeService service) => _service = service;
 
         /// <summary>
-        /// Tüm oda tiplerini getirir. Her oda tipi için, odaya ait otel odası sayısı da dahil edilir.
+        /// Tüm oda tiplerini getirir.
         /// </summary>
         /// <returns></returns>
 
@@ -40,7 +40,7 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
-        /// İsime göre oda tipi getirir. Oda tipi bulunamazsa NotFound döner.
+        /// İsme göre oda tipi getirir. Oda tipi bulunamazsa NotFound döner.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>

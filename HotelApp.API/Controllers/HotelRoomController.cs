@@ -38,18 +38,10 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
-        /// Otel Id'sine göre otele ait tüm odaları getirir. Her oda için otel adı ve oda tipi adı da dahil edilir.
+        /// Belirtilen otele ait tüm odaları getirir. Her oda için otel adı ve oda tipi adı bilgileri de döndürülür.
         /// </summary>
-        /// <param name="hotelId"></param>
-        /// <returns></returns>
-
-        [HttpGet("hotel/{hotelId}")]
-        public async Task<IActionResult> GetRoomsByHotel(int hotelId)
-        {
-            var rooms = await _service.GetRoomsByHotelAsync(hotelId);
-            return Ok(rooms);
-        }
-
+        /// <param name="hotelId">Odaları listelenecek otelin kimliği.</param>
+        /// <returns>Otele ait oda listesi.</returns>
         [HttpGet("/api/hotels/{hotelId}/rooms")]
         public async Task<IActionResult> GetHotelRooms(int hotelId)
         {

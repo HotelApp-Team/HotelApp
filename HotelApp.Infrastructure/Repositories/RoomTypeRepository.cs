@@ -2,10 +2,8 @@
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HotelApp.Infrastructure.Repositories
@@ -40,10 +38,11 @@ namespace HotelApp.Infrastructure.Repositories
 
         public async Task<RoomType?> GetByNameAsync(string name)
         {
-            var normalizedName = name.Trim().ToLower();
+            var normalizedName = name.Trim();
             return await _dbSet
                 .Include(x => x.HotelRooms)
-                .FirstOrDefaultAsync(x => x.Name == normalizedName);
+                .FirstOrDefaultAsync(x =>
+                EF.Functions.Collate(x.Name, "Turkish_CI_AS") == normalizedName);
         }
 
     }

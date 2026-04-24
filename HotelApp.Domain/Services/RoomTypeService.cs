@@ -1,7 +1,6 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
-using Microsoft.IdentityModel.Tokens.Experimental;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,11 +48,11 @@ namespace HotelApp.Domain.Services
         {
             var roomTypes = await _unitOfWork.RoomTypeRepository.GetByMaxGuestsAsync(maxGuests);
 
-            return roomTypes.Where(x => x.MaxGuests <= maxGuests)
-                .Select(x => new RoomTypeDto
+            return roomTypes.Select(x => new RoomTypeDto
                 {
                     Id = x.Id,
                     Name = x.Name,
+                    Description = x.Description,
                     MaxGuests = x.MaxGuests,
                 });
         }
@@ -68,6 +67,7 @@ namespace HotelApp.Domain.Services
             {
                 Id = entity.Id,
                 Name = entity.Name,
+                Description = entity.Description,
                 MaxGuests = entity.MaxGuests,
             };
         }

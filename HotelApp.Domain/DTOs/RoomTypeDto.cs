@@ -24,9 +24,9 @@ namespace HotelApp.Domain.DTOs
     public class CreateRoomTypeDto
     {
         [Required(ErrorMessage = "Oda tipi adı zorunludur.")]
-        [StringLength(100, ErrorMessage = "En fazla 100 kaarakter olabilir.")]
+        [StringLength(100, ErrorMessage = "En fazla 100 karakter olabilir.")]
         public string Name { get; set; } = null!;
-        [Required(ErrorMessage = "Oda tipi açıklaması zornludur.")]
+        [Required(ErrorMessage = "Oda tipi açıklaması zorunludur.")]
         [StringLength(500, ErrorMessage = "En fazla 500 karakter olabilir.")]
         public string Description { get; set; } = null!;
         [Range(1, 20, ErrorMessage ="Lütfen geçerli bir kişi sayısı giriniz.")]

@@ -4,8 +4,6 @@ using HotelApp.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
@@ -18,15 +16,15 @@ namespace HotelApp.Domain.Services
         public async Task AddRoomsAsync(CreateHotelRoomDto dto)
         {
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.HotelId);
-            if (hotel == null) throw new Exception("Hotel bulunamadı.");
+            if (hotel == null) throw new KeyNotFoundException("Hotel bulunamadı.");
 
             var roomType = await _unitOfWork.RoomTypeRepository.GetByIdAsync(dto.RoomTypeId);
-            if (roomType == null) throw new Exception("Oda tipi bulunamdı.");
+            if (roomType == null) throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
             var existing = await _unitOfWork.HotelRoomRepository
                 .FindAsync(x => x.HotelId == dto.HotelId && x.RoomTypeId == dto.RoomTypeId);
 
-            if (existing != null) throw new Exception("Aynı otel ve oda tipi için zaten kayıt mevcut.");
+            if (existing != null) throw new InvalidOperationException("Aynı otel ve oda tipi için zaten kayıt mevcut.");
 
             var entity = new HotelRoom
             {
@@ -44,7 +42,7 @@ namespace HotelApp.Domain.Services
         public async Task DeleteRoomsAsync(int id)
         {
             var rooms = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(id);
-            if (rooms == null) throw new Exception("Oda bulunamdı.");
+            if (rooms == null) throw new KeyNotFoundException("Oda bulunamadı.");
 
             if (rooms.Reservations.Any())
                 throw new InvalidOperationException("Rezervasyonu olan oda silinemez.");
@@ -62,8 +60,8 @@ namespace HotelApp.Domain.Services
                 Id = x.Id,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
-                HotelName = x.Hotel.Name,
-                RoomTypeName = x.RoomType.Name
+                HotelName = x.Hotel?.Name ?? string.Empty,
+                RoomTypeName = x.RoomType?.Name ?? string.Empty
             });
         }
 
@@ -86,8 +84,8 @@ namespace HotelApp.Domain.Services
                 PricePerNight = room.PricePerNight,
                 TotalRooms = room.TotalRooms,
                 IsActive = room.IsActive,
-                HotelName = room.Hotel.Name,
-                RoomTypeName = room.RoomType.Name,
+                HotelName = room.Hotel?.Name ?? string.Empty,
+                RoomTypeName = room.RoomType?.Name ?? string.Empty,
                 ReservationCount = room.Reservations.Count
             };
         }
@@ -101,8 +99,8 @@ namespace HotelApp.Domain.Services
                 Id = x.Id,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
-                HotelName = x.Hotel?.Name,
-                RoomTypeName = x.RoomType?.Name
+                HotelName = x.Hotel?.Name ?? string.Empty,
+                RoomTypeName = x.RoomType?.Name ?? string.Empty
             });
         }
 
@@ -114,8 +112,8 @@ namespace HotelApp.Domain.Services
                 Id = x.Id,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
-                HotelName = x.Hotel?.Name,
-                RoomTypeName = x.RoomType?.Name
+                HotelName = x.Hotel?.Name ?? string.Empty,
+                RoomTypeName = x.RoomType?.Name ?? string.Empty
             });
         }
 
