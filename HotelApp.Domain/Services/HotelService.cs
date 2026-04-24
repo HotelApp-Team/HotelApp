@@ -158,8 +158,9 @@ namespace HotelApp.Domain.Services
             // CheckIn, CheckOut ve GuestCount gerçek müsaitlik kontrolüne bağlanacak.
             // Şu an bu alanlar sadece placeholder olarak duruyor.
 
-            var query = (await _unitOfWork.HotelRepository.GetActiveAsync())
-                .AsQueryable();
+            ValidatePaging(page, pageSize);
+
+            var query = _unitOfWork.HotelRepository.Query();
 
             // filtering
             if (!string.IsNullOrEmpty(dto.City))
@@ -189,9 +190,9 @@ namespace HotelApp.Domain.Services
         public async Task<object> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
         {
             // 1. data çek
-            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
+            ValidatePaging(page, pageSize);
 
-            var query = hotels.AsQueryable();
+            var query = _unitOfWork.HotelRepository.Query();
 
             // 2. FILTER
             if (!string.IsNullOrEmpty(city))
@@ -243,6 +244,17 @@ namespace HotelApp.Domain.Services
                 PageSize = pageSize,
                 Data = data
             };
+        }
+        private void ValidatePaging(int page, int pageSize)
+        {
+            if (page < 1)
+                throw new ArgumentException("Page 1 veya daha büyük olmalıdır.");
+
+            if (pageSize < 1)
+                throw new ArgumentException("PageSize 1 veya daha büyük olmalıdır.");
+
+            if (pageSize > 100)
+                throw new ArgumentException("PageSize en fazla 100 olabilir.");
         }
     }
 }

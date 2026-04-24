@@ -13,4 +13,5 @@ public interface IHotelRepository : IRepository<Hotel>
     // Aktif oteller
     Task<IEnumerable<Hotel>> GetActiveAsync();
     Task<List<string>> GetActiveCitiesAsync();
+    IQueryable<Hotel> Query();
 }

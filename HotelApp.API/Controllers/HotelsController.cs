@@ -64,12 +64,22 @@ public class HotelsController : ControllerBase
     // E07 - GET /api/hotels/search
     [HttpGet("search")]
     public async Task<IActionResult> Search(
-      [FromQuery] HotelSearchRequestDto dto,
-      [FromQuery] int page = 1,
-      [FromQuery] int pageSize = 10)
+    [FromQuery] HotelSearchRequestDto dto,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var result = await _hotelService.SearchAsync(dto, page, pageSize);
-        return Ok(result);
+        try
+        {
+            var result = await _hotelService.SearchAsync(dto, page, pageSize);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new
+            {
+                Message = ex.Message
+            });
+        }
     }
 
     // E08 - POST /api/hotels

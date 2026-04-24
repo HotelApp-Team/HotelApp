@@ -48,4 +48,11 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .OrderBy(x => x)
             .ToListAsync();
     }
+    public IQueryable<Hotel> Query()
+    {
+        return _context.Hotels
+            .Where(x => x.IsActive)
+            .Include(x => x.HotelImages)
+            .AsNoTracking();
+    }
 }
