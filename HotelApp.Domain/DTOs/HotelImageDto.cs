@@ -19,9 +19,6 @@ namespace HotelApp.Domain.DTOs
     // Yeni otel resmi eklemek için kullanılır
     public class HotelImageCreateDto
     {
-        [Required(ErrorMessage = "HotelId zorunludur")]
-        public int HotelId { get; set; }
-
         [Required(ErrorMessage = "Resim URL zorunludur")]
         public string ImageUrl { get; set; } = null!;
 

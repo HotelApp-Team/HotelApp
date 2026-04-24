@@ -34,6 +34,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .Where(x => x.IsActive)
+            .Include(x => x.HotelImages)
             .AsNoTracking()
             .ToListAsync();
     }

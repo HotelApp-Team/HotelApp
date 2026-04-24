@@ -153,7 +153,13 @@ namespace HotelApp.Domain.Services
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {
-            var query = await _unitOfWork.HotelRepository.GetAllAsync();
+            // TODO (E07 - Availability Search):
+            // Sevde'nin sp_SearchAvailableRooms PR'i merge edildikten sonra
+            // CheckIn, CheckOut ve GuestCount gerçek müsaitlik kontrolüne bağlanacak.
+            // Şu an bu alanlar sadece placeholder olarak duruyor.
+
+            var query = (await _unitOfWork.HotelRepository.GetActiveAsync())
+                .AsQueryable();
 
             // filtering
             if (!string.IsNullOrEmpty(dto.City))
@@ -177,6 +183,65 @@ namespace HotelApp.Domain.Services
             {
                 TotalCount = totalCount,
                 Hotels = paged
+            };
+        }
+
+        public async Task<object> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+        {
+            // 1. data çek
+            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
+
+            var query = hotels.AsQueryable();
+
+            // 2. FILTER
+            if (!string.IsNullOrEmpty(city))
+                query = query.Where(x => x.City.ToLower() == city.ToLower());
+
+            if (star.HasValue)
+                query = query.Where(x => x.StarRating == star);
+
+            // 3. SORT
+            query = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
+            {
+                ("star", "desc") => query.OrderByDescending(x => x.StarRating),
+                ("star", _) => query.OrderBy(x => x.StarRating),
+
+                ("rating", "desc") => query.OrderByDescending(x => x.AvgRating),
+                ("rating", _) => query.OrderBy(x => x.AvgRating),
+
+                (_, "desc") => query.OrderByDescending(x => x.Name),
+                _ => query.OrderBy(x => x.Name)
+            };
+
+            // 4. COUNT
+            var totalCount = query.Count();
+
+            // 5. PAGING
+            var data = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new HotelListDto
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    City = x.City,
+                    Country = x.Country,
+                    StarRating = x.StarRating,
+                    AvgRating = x.AvgRating,
+                    IsActive = x.IsActive,
+                    MainImageUrl = x.HotelImages
+                    .Where(i => i.IsMain)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault()
+                })
+                .ToList();
+
+            return new
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = data
             };
         }
     }

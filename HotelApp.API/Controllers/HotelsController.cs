@@ -26,42 +26,19 @@ public class HotelsController : ControllerBase
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10)
     {
-        var hotels = await _hotelService.GetActiveAsync(); // sadece aktif
+        if (page < 1)
+            page = 1;
 
-        if (!string.IsNullOrEmpty(city))
-            hotels = hotels.Where(x => x.City.ToLower() == city.ToLower());
+        if (pageSize < 1)
+            pageSize = 10;
 
-        if (star.HasValue)
-            hotels = hotels.Where(x => x.StarRating == star);
+        if (pageSize > 100)
+            pageSize = 100;
 
-        hotels = sortBy?.ToLower() switch
-        {
-            "star" => sortOrder == "desc"
-                ? hotels.OrderByDescending(x => x.StarRating)
-                : hotels.OrderBy(x => x.StarRating),
+        var result = await _hotelService.GetAllFilteredAsync(
+            city, star, sortBy, sortOrder, page, pageSize);
 
-            "rating" => sortOrder == "desc"
-                ? hotels.OrderByDescending(x => x.AvgRating)
-                : hotels.OrderBy(x => x.AvgRating),
-
-            _ => sortOrder == "desc"
-                ? hotels.OrderByDescending(x => x.Name)
-                : hotels.OrderBy(x => x.Name),
-        };
-
-        var totalCount = hotels.Count();
-
-        var paged = hotels
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize);
-
-        return Ok(new
-        {
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize,
-            Data = paged
-        });
+        return Ok(result);
     }
 
     // E05 - GET /api/hotels/{id}
