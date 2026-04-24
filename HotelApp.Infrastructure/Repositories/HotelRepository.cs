@@ -59,8 +59,9 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
     {
         var query = _context.Hotels
-        .Include(x => x.HotelImages)
-        .AsQueryable();
+            .Where(x => x.IsActive)
+            .Include(x => x.HotelImages)
+            .AsQueryable();
 
         if (!string.IsNullOrEmpty(city))
             query = query.Where(x => x.City.ToLower() == city.ToLower());
