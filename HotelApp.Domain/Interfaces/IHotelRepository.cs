@@ -14,4 +14,5 @@ public interface IHotelRepository : IRepository<Hotel>
     Task<IEnumerable<Hotel>> GetActiveAsync();
     Task<List<string>> GetActiveCitiesAsync();
     IQueryable<Hotel> Query();
+    Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
 }

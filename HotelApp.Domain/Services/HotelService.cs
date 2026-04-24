@@ -187,62 +187,31 @@ namespace HotelApp.Domain.Services
             };
         }
 
-        public async Task<object> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+        public async Task<object> GetAllFilteredAsync(string? city,byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
         {
-            // 1. data çek
-            ValidatePaging(page, pageSize);
+            var (data, totalCount) =
+                await _unitOfWork.HotelRepository.GetPagedFilteredAsync(
+                    city, star, sortBy, sortOrder, page, pageSize);
 
-            var query = _unitOfWork.HotelRepository.Query();
-
-            // 2. FILTER
-            if (!string.IsNullOrEmpty(city))
-                query = query.Where(x => x.City.ToLower() == city.ToLower());
-
-            if (star.HasValue)
-                query = query.Where(x => x.StarRating == star);
-
-            // 3. SORT
-            query = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
+            var mapped = data.Select(x => new HotelListDto
             {
-                ("star", "desc") => query.OrderByDescending(x => x.StarRating),
-                ("star", _) => query.OrderBy(x => x.StarRating),
-
-                ("rating", "desc") => query.OrderByDescending(x => x.AvgRating),
-                ("rating", _) => query.OrderBy(x => x.AvgRating),
-
-                (_, "desc") => query.OrderByDescending(x => x.Name),
-                _ => query.OrderBy(x => x.Name)
-            };
-
-            // 4. COUNT
-            var totalCount = query.Count();
-
-            // 5. PAGING
-            var data = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => new HotelListDto
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    City = x.City,
-                    Country = x.Country,
-                    StarRating = x.StarRating,
-                    AvgRating = x.AvgRating,
-                    IsActive = x.IsActive,
-                    MainImageUrl = x.HotelImages
-                    .Where(i => i.IsMain)
-                    .Select(i => i.ImageUrl)
-                    .FirstOrDefault()
-                })
-                .ToList();
+                Id = x.Id,
+                Name = x.Name,
+                City = x.City,
+                Country = x.Country,
+                StarRating = x.StarRating,
+                AvgRating = x.AvgRating,
+                IsActive = x.IsActive,
+                MainImageUrl = x.HotelImages
+                    .FirstOrDefault(i => i.IsMain)?.ImageUrl
+            }).ToList();
 
             return new
             {
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize,
-                Data = data
+                Data = mapped
             };
         }
         private void ValidatePaging(int page, int pageSize)

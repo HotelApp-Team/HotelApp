@@ -27,13 +27,10 @@ public class HotelsController : ControllerBase
     [FromQuery] int pageSize = 10)
     {
         if (page < 1)
-            page = 1;
+            return BadRequest(new { Message = "Page 1 veya daha büyük olmalıdır" });
 
-        if (pageSize < 1)
-            pageSize = 10;
-
-        if (pageSize > 100)
-            pageSize = 100;
+        if (pageSize < 1 || pageSize > 100)
+            return BadRequest(new { Message = "PageSize 1 ile 100 arasında olmalıdır" });
 
         var result = await _hotelService.GetAllFilteredAsync(
             city, star, sortBy, sortOrder, page, pageSize);
