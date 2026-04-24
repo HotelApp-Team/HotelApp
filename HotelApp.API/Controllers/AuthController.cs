@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    // POST api/auth/register
+    // E01 - POST api/auth/register
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
     {
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST api/auth/login
+    // E02 - POST api/auth/login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto)
     {
@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // GET api/auth/profile
+    // E03 - GET api/auth/profile
     [Authorize]
     [HttpGet("profile")]
     public async Task<ActionResult<UserDto>> GetProfile()
@@ -79,7 +79,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // GET api/auth/verify-email?token=abc123
+    // E42 - GET api/auth/verify-email?token=abc123
     // Email doğrulama linkinden gelen token'ı alır, service'e gönderir ve sonucu döndürür
     [AllowAnonymous]
     [HttpGet("verify-email")]
@@ -95,7 +95,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST api/auth/resend-verification
+    // E43 - POST api/auth/resend-verification
     [AllowAnonymous]
     [HttpPost("resend-verification")]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationDto dto)
@@ -129,7 +129,7 @@ public class AuthController : ControllerBase
         return Ok(new { Message = result.Message });
     }
 
-    // PUT api/auth/profile
+    // E46 - PUT api/auth/profile
     [Authorize]
     [HttpPut("profile")]
     public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] ProfileDto profileDto)
@@ -147,6 +147,8 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    // Ortak bilgi logu atmak icin kullanilir.
+    // Mesaj, kullanici bilgisi, controller/action ve IP bilgisini tek yerden logger servisine yollar.
     private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
     {
         await _logger.LogInfoAsync(
@@ -158,6 +160,8 @@ public class AuthController : ControllerBase
             ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
     }
 
+    // Token icindeki kullanici id bilgisini okumayi dener.
+    // Id bulunur ve int'e cevrilirse true doner, bulunamazsa false doner.
     private bool TryGetCurrentUserId(out int userId)
     {
         userId = 0;
