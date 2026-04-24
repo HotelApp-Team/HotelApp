@@ -31,8 +31,14 @@ namespace HotelApp.Domain.Services
             return MapToDto(amenity);
         }
 
-        public async Task AddAsync(CreateAmenityDto dto)
+        public async Task AddAsync(AmenityCreateDto dto)
         {
+            var exists = await _unitOfWork.AmenityRepository
+                .ExistsAsync(x => x.Name.ToLower() == dto.Name.ToLower());
+
+            if (exists)
+                throw new InvalidOperationException("Bu olanak zaten mevcut");
+
             var entity = new Amenity
             {
                 Name = dto.Name,
@@ -43,14 +49,22 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(UpdateAmenityDto dto)
+        public async Task UpdateAsync(AmenityUpdateDto dto)
         {
             var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(dto.Id);
 
             if (amenity == null)
             {
-                throw new Exception("Olanak bulunamadı");
+                throw new KeyNotFoundException("Olanak bulunamadı");
             }
+
+            var exists = await _unitOfWork.AmenityRepository
+                .ExistsAsync(x => x.Name.ToLower() == dto.Name.ToLower()
+                               && x.Id != dto.Id);
+
+            if (exists)
+                throw new InvalidOperationException("Bu isimde bir olanak zaten var");
+
 
             amenity.Name = dto.Name;
             amenity.Icon = dto.Icon;
@@ -65,8 +79,15 @@ namespace HotelApp.Domain.Services
 
             if (amenity == null)
             {
-                throw new Exception("Olanak bulunamadı");
+                throw new KeyNotFoundException("Olanak bulunamadı");
             }
+
+            var isUsed = await _unitOfWork.HotelRepository
+                .ExistsAsync(h => h.Amenities.Any(a => a.Id == id));
+
+
+            if (isUsed)
+                throw new InvalidOperationException("Bu olanak oteller tarafından kullanılıyor, silinemez");
 
             _unitOfWork.AmenityRepository.Delete(amenity);
             await _unitOfWork.SaveChangesAsync();
@@ -78,15 +99,60 @@ namespace HotelApp.Domain.Services
             return amenities.Select(MapToDto).ToList();
         }
 
-        public async Task AddAmenityToHotelAsync(int hotelId, int amenityId)
+        public async Task<HotelAmenityAssignResponseDto> AddAmenitiesToHotelAsync(int hotelId, List<int> amenityIds)
         {
-            await _unitOfWork.AmenityRepository.AddAmenityToHotelAsync(hotelId, amenityId);
-            await _unitOfWork.SaveChangesAsync();
-        }
+            var hotel = await _unitOfWork.HotelRepository
+                .GetWithDetailsAsync(hotelId);
 
+            if (hotel == null)
+                throw new KeyNotFoundException("Otel bulunamadı");
+
+            int added = 0;
+            int notFound = 0;
+            var notFoundIds = new List<int>();
+
+            foreach (var amenityId in amenityIds)
+            {
+                var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(amenityId);
+
+                if (amenity == null)
+                {
+                    notFound++;
+                    notFoundIds.Add(amenityId);
+                    continue;
+                }
+
+                if (!hotel.Amenities.Any(a => a.Id == amenityId))
+                {
+                    hotel.Amenities.Add(amenity);
+                    added++;
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new HotelAmenityAssignResponseDto
+            {
+                AddedCount = added,
+                NotFoundCount = notFound,
+                NotFoundIds = notFoundIds
+            };
+        }
         public async Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId)
         {
-            await _unitOfWork.AmenityRepository.RemoveAmenityFromHotelAsync(hotelId, amenityId);
+            var hotel = await _unitOfWork.HotelRepository
+                .GetWithDetailsAsync(hotelId);
+
+            if (hotel == null)
+                throw new KeyNotFoundException("Otel bulunamadı");
+
+            var amenity = hotel.Amenities.FirstOrDefault(a => a.Id == amenityId);
+
+            if (amenity == null)
+                throw new KeyNotFoundException("Olanak bu otele ait değil");
+
+            hotel.Amenities.Remove(amenity);
+
             await _unitOfWork.SaveChangesAsync();
         }
 

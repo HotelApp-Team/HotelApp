@@ -43,8 +43,12 @@ namespace HotelApp.Domain.Services
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
                 IsActive = hotel.IsActive,
-                ImageUrls = hotel.HotelImages.Select(i => i.ImageUrl).ToList(),
-                Amenities = hotel.Amenities.Select(a => a.Name).ToList()
+                Amenities = hotel.Amenities.Select(a => new AmenityDto
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    Icon = a.Icon
+                }).ToList()
             };
         }
 
@@ -88,7 +92,7 @@ namespace HotelApp.Domain.Services
 
             if (hotel == null)
             {
-                throw new Exception("Otel bulunamadı");
+                throw new KeyNotFoundException("Otel bulunamadı");
             }
 
             hotel.Name = dto.Name;
@@ -113,9 +117,10 @@ namespace HotelApp.Domain.Services
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(id);
 
             if (hotel == null)
-            {
-                throw new Exception("Otel bulunamadı");
-            }
+                throw new KeyNotFoundException("Otel bulunamadı");
+
+            if (!hotel.IsActive)
+                throw new InvalidOperationException("Otel zaten pasif");
 
             hotel.IsActive = false;
             hotel.UpdatedAt = DateTime.UtcNow;
@@ -134,8 +139,79 @@ namespace HotelApp.Domain.Services
                 Country = hotel.Country,
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
-                IsActive = hotel.IsActive
+                IsActive = hotel.IsActive,
+                MainImageUrl = hotel.HotelImages
+                 .FirstOrDefault(x => x.IsMain)?.ImageUrl
             };
+        }
+
+        public async Task<List<string>> GetCitiesAsync()
+        {
+            return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
+        }
+
+
+        public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
+        {
+            // TODO (E07 - Availability Search):
+            // Sevde'nin sp_SearchAvailableRooms PR'i merge edildikten sonra
+            // CheckIn, CheckOut ve GuestCount gerçek müsaitlik kontrolüne bağlanacak.
+            // Şu an bu alanlar sadece placeholder olarak duruyor.
+
+            ValidatePaging(page, pageSize);
+
+            var (data, totalCount) =
+                await _unitOfWork.HotelRepository.SearchPagedAsync(
+                    dto.City,
+                    dto.StarRating,
+                    dto.MinRating,
+                    page,
+                    pageSize);
+
+            return new HotelSearchResponseDto
+            {
+                TotalCount = totalCount,
+                Hotels = data.Select(MapToListDto).ToList()
+            };
+        }
+
+        public async Task<object> GetAllFilteredAsync(string? city,byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+        {
+            var (data, totalCount) =
+                await _unitOfWork.HotelRepository.GetPagedFilteredAsync(
+                    city, star, sortBy, sortOrder, page, pageSize);
+
+            var mapped = data.Select(x => new HotelListDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                City = x.City,
+                Country = x.Country,
+                StarRating = x.StarRating,
+                AvgRating = x.AvgRating,
+                IsActive = x.IsActive,
+                MainImageUrl = x.HotelImages
+                    .FirstOrDefault(i => i.IsMain)?.ImageUrl
+            }).ToList();
+
+            return new
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = mapped
+            };
+        }
+        private void ValidatePaging(int page, int pageSize)
+        {
+            if (page < 1)
+                throw new ArgumentException("Page 1 veya daha büyük olmalıdır.");
+
+            if (pageSize < 1)
+                throw new ArgumentException("PageSize 1 veya daha büyük olmalıdır.");
+
+            if (pageSize > 100)
+                throw new ArgumentException("PageSize en fazla 100 olabilir.");
         }
     }
 }
