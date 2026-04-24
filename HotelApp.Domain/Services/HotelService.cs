@@ -149,7 +149,7 @@ namespace HotelApp.Domain.Services
         {
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
-        
+
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {
@@ -160,30 +160,18 @@ namespace HotelApp.Domain.Services
 
             ValidatePaging(page, pageSize);
 
-            var query = _unitOfWork.HotelRepository.Query();
-
-            // filtering
-            if (!string.IsNullOrEmpty(dto.City))
-                query = query.Where(x => x.City.ToLower() == dto.City.ToLower());
-
-            if (dto.StarRating.HasValue)
-                query = query.Where(x => x.StarRating == dto.StarRating);
-
-            if (dto.MinRating.HasValue)
-                query = query.Where(x => x.AvgRating >= dto.MinRating);
-
-            var totalCount = query.Count();
-
-            var paged = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(MapToListDto)
-                .ToList();
+            var (data, totalCount) =
+                await _unitOfWork.HotelRepository.SearchPagedAsync(
+                    dto.City,
+                    dto.StarRating,
+                    dto.MinRating,
+                    page,
+                    pageSize);
 
             return new HotelSearchResponseDto
             {
                 TotalCount = totalCount,
-                Hotels = paged
+                Hotels = data.Select(MapToListDto).ToList()
             };
         }
 

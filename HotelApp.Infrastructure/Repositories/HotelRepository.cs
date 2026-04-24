@@ -89,4 +89,30 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
 
         return (data, totalCount);
     }
+
+    public async Task<(List<Hotel> Data, int TotalCount)> SearchPagedAsync(string? city, byte? starRating, decimal? minRating, int page, int pageSize)
+    {
+        var query = _context.Hotels
+        .Where(x => x.IsActive)
+        .Include(x => x.HotelImages)
+        .AsNoTracking();
+
+        if (!string.IsNullOrEmpty(city))
+            query = query.Where(x => x.City.ToLower() == city.ToLower());
+
+        if (starRating.HasValue)
+            query = query.Where(x => x.StarRating == starRating);
+
+        if (minRating.HasValue)
+            query = query.Where(x => x.AvgRating >= minRating);
+
+        var totalCount = await query.CountAsync();
+
+        var data = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (data, totalCount);
+    }
 }
