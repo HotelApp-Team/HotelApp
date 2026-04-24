@@ -23,7 +23,7 @@ namespace HotelApp.Domain.Services
         {
             var hotel = await _unitOfWork.HotelRepository.GetWithDetailsAsync(id);
 
-            if (hotel == null)
+            if (hotel == null || !hotel.IsActive)
             {
                 return null;
             }
