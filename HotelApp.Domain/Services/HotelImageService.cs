@@ -99,7 +99,7 @@ namespace HotelApp.Domain.Services
                 throw new KeyNotFoundException("Resim bulunamadı");
 
             if (image.HotelId != hotelId)
-                throw new InvalidOperationException("Bu resim belirtilen otele ait değil");
+                throw new KeyNotFoundException("Resim bu otele ait değil");
 
             image.ImageUrl = dto.ImageUrl;
             image.IsMain = dto.IsMain;
@@ -124,7 +124,7 @@ namespace HotelApp.Domain.Services
                 throw new KeyNotFoundException("Resim bulunamadı");
 
             if (image.HotelId != hotelId)
-                throw new InvalidOperationException("Bu resim bu otele ait değil");
+                throw new KeyNotFoundException("Resim bu otele ait değil");
 
             _unitOfWork.HotelImageRepository.Delete(image);
 

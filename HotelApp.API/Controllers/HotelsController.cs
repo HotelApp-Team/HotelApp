@@ -50,7 +50,7 @@ public class HotelsController : ControllerBase
         return Ok(hotel);
     }
 
-    // E06 - GET /api/hotels/cities?city=Ankara
+    // E06 - GET /api/hotels/cities
     [HttpGet("cities")]
     public async Task<IActionResult> GetCities()
     {

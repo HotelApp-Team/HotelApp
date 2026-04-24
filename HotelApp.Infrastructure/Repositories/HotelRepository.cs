@@ -11,6 +11,16 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
     }
 
+    // Liste cagirimlarinda kapak resmi (MainImageUrl) bos gelmesin diye
+    // HotelImages'i include ederek donuyoruz.
+    public override async Task<IEnumerable<Hotel>> GetAllAsync()
+    {
+        return await _context.Hotels
+            .Include(x => x.HotelImages)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<Hotel?> GetWithDetailsAsync(int id)
     {
         return await _context.Hotels

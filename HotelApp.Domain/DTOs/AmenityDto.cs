@@ -15,7 +15,7 @@ namespace HotelApp.Domain.DTOs
         public string? Icon { get; set; }
     }
 
-    // Olanak güncelleme DTO'su
+    // Olanak oluşturma DTO'su
     public class AmenityCreateDto
     {
         [Required(ErrorMessage = "Olanak adı zorunludur")]
@@ -24,7 +24,7 @@ namespace HotelApp.Domain.DTOs
         public string? Icon { get; set; }
     }
 
-    // Otele amenity ekleme/kaldırma işlemleri için DTO
+    // Olanak güncelleme DTO'su
     public class AmenityUpdateDto
     {
         [Required(ErrorMessage = "Id zorunludur")]

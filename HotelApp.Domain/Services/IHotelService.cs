@@ -18,6 +18,6 @@ namespace HotelApp.Domain.Services
         Task DeleteAsync(int id);
         Task<List<string>> GetCitiesAsync();
         Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize);
-        Task<object> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
+        Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
     }
 }

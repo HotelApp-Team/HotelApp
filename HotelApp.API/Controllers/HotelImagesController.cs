@@ -33,7 +33,7 @@ public class HotelImagesController : ControllerBase
         return StatusCode(201);
     }
 
-    // E18 - PUT: /api/hotels/{id}/images/{imgId}/cover
+    // E18 - PUT: /api/hotels/{hotelId}/images/{imageId}
     [HttpPut("{imageId}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateImage(int hotelId, int imageId, [FromBody] HotelImageUpdateDto dto)
