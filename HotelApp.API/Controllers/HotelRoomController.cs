@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/hotels/{hotelId}/rooms")]
     [ApiController]
     public class HotelRoomController : ControllerBase
     {
@@ -13,36 +13,11 @@ namespace HotelApp.API.Controllers
         public HotelRoomController(IHotelRoomService service) => _service = service;
 
         /// <summary>
-        /// Tüm otel odalarını getirir. Her oda için otel adı ve oda tipi adı da dahil edilir.
-        /// </summary>
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllRooms()
-        {
-            var rooms = await _service.GetAllRoomsAsync();
-            return Ok(rooms);
-        }
-
-        /// <summary>
-        /// Id'ye göre belirli bir otel odasını getirir. Oda bilgileri, otel adı ve oda tipi adı ile birlikte döndürülür.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetRoomById(int id)
-        {
-            var room = await _service.GetRoomByIdAsync(id);
-            if (room == null) return NotFound();
-            return Ok(room);
-        }
-
-        /// <summary>
         /// Belirtilen otele ait tüm odaları getirir. Her oda için otel adı ve oda tipi adı bilgileri de döndürülür.
         /// </summary>
         /// <param name="hotelId">Odaları listelenecek otelin kimliği.</param>
         /// <returns>Otele ait oda listesi.</returns>
-        [HttpGet("/api/hotels/{hotelId}/rooms")]
+        [HttpGet]
         public async Task<IActionResult> GetHotelRooms(int hotelId)
         {
             var rooms = await _service.GetRoomsByHotelAsync(hotelId);
@@ -50,50 +25,28 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
-        /// Oda tipi Id'sine göre odaya ait tüm odaları getirir. Her oda için otel adı ve oda tipi adı da dahil edilir.
-        /// </summary>
-        /// <param name="roomTypeId"></param>
-        /// <returns></returns>
-
-        [HttpGet("room-type/{roomTypeId}")]
-        public async Task<IActionResult> GetRoomsByType(int roomTypeId)
-        {
-            var rooms = await _service.GetRoomsByTypeAsync(roomTypeId);
-            return Ok(rooms);
-        }
-
-        /// <summary>
-        /// Müsait tarih aralığına göre müsait odaları getirir. Her oda için otel adı, oda tipi adı ve müsait oda sayısı da dahil edilir.
-        /// </summary>
-        /// <param name="checkIn"></param>
-        /// <param name="checkOut"></param>
-        /// <returns></returns>
-
-        [HttpGet("available")]
-        public async Task<IActionResult> GetAvailableRooms(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount)
-        {
-            if (checkIn >= checkOut)
-                return BadRequest("CheckIn tarihi CheckOut'tan küçük olmalı");
-
-            var rooms = await _service.GetAvailableRoomsAsync(hotelId, city, checkIn, checkOut, guestCount);
-            return Ok(rooms);
-        }
-
-
-        /// <summary>
         /// Oda ekler. Gerekli bilgiler CreateHotelRoomDto içinde sağlanır. Başarılı bir ekleme işleminden sonra 200 OK döner.
         /// </summary>
-        /// <param name="dto"></param>
+        /// <param name="hotelId"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> AddRoom([FromBody] CreateHotelRoomDto dto)
+        public async Task<IActionResult> AddRoom(int hotelId, [FromBody] CreateHotelRoomRequestDto request)
         {
+            var dto = new CreateHotelRoomDto
+            {
+                HotelId = hotelId,
+                RoomTypeId = request.RoomTypeId,
+                PricePerNight = request.PricePerNight,
+                TotalRooms = request.TotalRooms
+            };
+
             await _service.AddRoomsAsync(dto);
             return Ok();
         }
 
-        [HttpPost("/api/hotels/{hotelId}/rooms/search")]
+        [HttpPost("search")]
         public async Task<IActionResult> SearchAvailableRooms(int hotelId, [FromBody] SearchAvailableRoomsRequestDto request)
         {
             if (request.CheckIn >= request.CheckOut)
@@ -112,14 +65,28 @@ namespace HotelApp.API.Controllers
         /// <summary>
         /// Oda günceller. Oda Id'si URL parametresi olarak sağlanır ve güncellenecek bilgiler UpdateHotelRoomDto içinde sağlanır. Başarılı bir güncelleme işleminden sonra 200 OK döner.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="dto"></param>
+        /// <param name="hotelId"></param>
+        /// <param name="roomId"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRoom(int id, [FromBody] UpdateHotelRoomDto dto)
+        [HttpPut("{roomId}")]
+        public async Task<IActionResult> UpdateRoom(int hotelId, int roomId, [FromBody] UpdateHotelRoomRequestDto request)
         {
-            dto.Id = id;
+            var room = await _service.GetRoomByIdAsync(roomId);
+            if (room == null || room.HotelId != hotelId)
+                return NotFound();
+
+            var dto = new UpdateHotelRoomDto
+            {
+                Id = roomId,
+                HotelId = hotelId,
+                RoomTypeId = request.RoomTypeId,
+                PricePerNight = request.PricePerNight,
+                TotalRooms = request.TotalRooms,
+                IsActive = request.IsActive
+            };
+
             await _service.UpdateRoomsAsync(dto);
             return Ok();
         }
@@ -127,13 +94,18 @@ namespace HotelApp.API.Controllers
         /// <summary>
         /// Oda siler. Oda Id'si URL parametresi olarak sağlanır. Başarılı bir silme işleminden sonra 204 NoContent döner.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="hotelId"></param>
+        /// <param name="roomId"></param>
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{roomId}")]
+        public async Task<IActionResult> Delete(int hotelId, int roomId)
         {
-            await _service.DeleteRoomsAsync(id);
+            var room = await _service.GetRoomByIdAsync(roomId);
+            if (room == null || room.HotelId != hotelId)
+                return NotFound();
+
+            await _service.DeleteRoomsAsync(roomId);
             return NoContent();
         }
     }
