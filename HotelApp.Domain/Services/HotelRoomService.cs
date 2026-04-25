@@ -1,10 +1,6 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
 {
@@ -58,6 +54,8 @@ namespace HotelApp.Domain.Services
             return rooms.Select(x => new HotelRoomDto
             {
                 Id = x.Id,
+                HotelId = x.HotelId,
+                RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
@@ -97,6 +95,8 @@ namespace HotelApp.Domain.Services
             return rooms.Select(x => new HotelRoomDto
             {
                 Id = x.Id,
+                HotelId = x.HotelId,
+                RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
@@ -110,6 +110,8 @@ namespace HotelApp.Domain.Services
             return rooms.Select(x => new HotelRoomDto
             {
                 Id = x.Id,
+                HotelId = x.HotelId,
+                RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,

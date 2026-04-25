@@ -74,6 +74,10 @@ namespace HotelApp.Domain.Services
 
         public async Task AddRoomTypeAsync(CreateRoomTypeDto dto)
         {
+            var existing = await _unitOfWork.RoomTypeRepository.GetByNameAsync(dto.Name);
+            if (existing != null)
+                throw new InvalidOperationException("Bu isimde bir oda tipi zaten mevcut.");
+
             var entity = new RoomType
             {
                 Name = dto.Name,

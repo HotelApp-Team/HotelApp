@@ -12,8 +12,8 @@ namespace HotelApp.Domain.DTOs
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Oda tipi zorunludur.")]
-        [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+        public int HotelId { get; set; }
+
         public int RoomTypeId { get; set; }
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
