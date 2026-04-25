@@ -82,6 +82,11 @@ appsettings.Local.json
 CLAUDE.md
 
 # =====================
+# Database scripts
+# =====================
+HotelAppDB.sql
+
+# =====================
 # Misc
 # =====================
 *.log
