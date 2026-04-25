@@ -58,6 +58,21 @@ namespace HotelApp.Domain.DTOs
         public int TotalRooms { get; set; }
     }
 
+    public class CreateHotelRoomRequestDto
+    {
+        [Required(ErrorMessage = "RoomTypeId zorunludur.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+        public int RoomTypeId { get; set; }
+
+        [Required(ErrorMessage = "Fiyat zorunludur.")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
+        public decimal PricePerNight { get; set; }
+
+        [Required(ErrorMessage = "Oda sayısı zorunludur.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
+        public int TotalRooms { get; set; }
+    }
+
     public class UpdateHotelRoomDto
     {
         public int Id { get; set; }
@@ -66,6 +81,23 @@ namespace HotelApp.Domain.DTOs
         [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir HotelId giriniz.")]
         public int HotelId { get; set; }
 
+        [Required(ErrorMessage = "RoomTypeId zorunludur.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
+        public int RoomTypeId { get; set; }
+
+        [Required(ErrorMessage = "Fiyat zorunludur.")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
+        public decimal PricePerNight { get; set; }
+
+        [Required(ErrorMessage = "Oda sayısı zorunludur.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
+        public int TotalRooms { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+
+    public class UpdateHotelRoomRequestDto
+    {
         [Required(ErrorMessage = "RoomTypeId zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Geçerli bir RoomTypeId giriniz.")]
         public int RoomTypeId { get; set; }
