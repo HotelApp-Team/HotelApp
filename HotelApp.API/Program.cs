@@ -48,6 +48,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IHotelRoomRepository, HotelRoomRepository>();
+builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+
 
 // Service kayitlari
 builder.Services.AddScoped<IAuthService>(sp =>
@@ -61,6 +64,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IHotelImageService, HotelImageService>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 // Yardimci service kayitlari
 builder.Services.AddScoped<IJwtService>(sp =>
