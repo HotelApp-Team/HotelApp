@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/roomtypes")]
     [ApiController]
     public class RoomTypeController : ControllerBase
     {
@@ -86,9 +86,17 @@ namespace HotelApp.API.Controllers
         /// <param name="dto"></param>
         /// <returns></returns>
         [Authorize(Roles = "Admin")]
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateRoomTypeDto dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateRoomTypeRequestDto request)
         {
+            var dto = new UpdateRoomTypeDto
+            {
+                Id = id,
+                Name = request.Name,
+                Description = request.Description,
+                MaxGuests = request.MaxGuests
+            };
+
             await _service.UpdateRoomTypeAsync(dto);
             return Ok("Oda tipi güncellendi");
 

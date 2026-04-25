@@ -50,4 +50,18 @@ namespace HotelApp.Domain.DTOs
         [Range(1,20,ErrorMessage ="Kişi sayısı 1 ile 20 arasında olmalıdır.")]
         public int MaxGuests { get; set; }
     }
+
+    public class UpdateRoomTypeRequestDto
+    {
+        [Required(ErrorMessage = "Oda tipi adı zorunludur.")]
+        [StringLength(100, ErrorMessage = "En fazla 100 karakter olabilir.")]
+        public string Name { get; set; } = null!;
+
+        [Required(ErrorMessage = "Açıklama zorunludur.")]
+        [StringLength(500, ErrorMessage = "En fazla 500 karakter olabilir.")]
+        public string Description { get; set; } = null!;
+
+        [Range(1, 20, ErrorMessage = "Kişi sayısı 1 ile 20 arasında olmalıdır.")]
+        public int MaxGuests { get; set; }
+    }
 }
