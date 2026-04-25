@@ -42,7 +42,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.HotelRooms)
                 .FirstOrDefaultAsync(x =>
-                EF.Functions.Collate(x.Name, "Turkish_CI_AS") == normalizedName);
+                EF.Functions.Collate(x.Name, "Latin1_General_CI_AI") == normalizedName);
         }
 
     }

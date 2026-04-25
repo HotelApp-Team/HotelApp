@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace HotelApp.Domain.Entities;
+﻿namespace HotelApp.Domain.Entities;
 
 public partial class HotelRoom
 {

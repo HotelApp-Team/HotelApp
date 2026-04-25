@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HotelApp.Domain.Entities;
+﻿namespace HotelApp.Domain.Entities;
 
 public partial class VwRoomDetail
 {
