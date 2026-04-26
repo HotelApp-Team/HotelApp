@@ -1,0 +1,58 @@
+﻿@* Bu sayfa LoginViewModel adinda bir veri kutusu bekliyor. Controller bos da olsa bir tane gonderir. *@
+@model HotelApp.Web.Models.LoginViewModel
+
+@{
+    @* Tarayici sekmesinde gorunecek baslik (Layout otomatik aliyor). *@
+    ViewData["Title"] = "Giriş Yap";
+}
+
+@* Form'u ortalamak icin Bootstrap grid sistemi: 5 sutunluk dar bir kutu. *@
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        <h1 class="mb-4">Giriş Yap</h1>
+
+        <form asp-action="Login" asp-controller="Auth" method="post">
+            @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
+            @Html.AntiForgeryToken()
+
+            @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @* Kullaniciya gorunmeyen alan — geri donus adresini POST'a tasir. *@
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            @* Checkbox icin Bootstrap'in form-check yapisi farkli. *@
+            <div class="mb-3 form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+
+            @* Kayit sayfasina yonlendiren alt link (UX icin guzel). *@
+            <div class="text-center mt-3">
+                <span>Hesabın yok mu?</span>
+                <a asp-action="Register">Kayıt Ol</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@* Validation'in tarayicida da (sen submit'e basmadan) calismasi icin gerekli. *@
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
