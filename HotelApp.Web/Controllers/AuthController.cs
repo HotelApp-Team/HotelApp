@@ -23,14 +23,15 @@ public class AuthController : Controller
     public IActionResult Login(string? returnUrl = null)
     {
         // Zaten giriş yapmışsa ReturnUrl varsa oraya, yoksa ana sayfaya yönlendir.
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
-        {
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
+        if(!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
             return RedirectToAction("Index", "Home");
+
+        // Register'dan gelen başarı mesajı varsa view'e taşıyalım.
+        if (TempData["SuccessMessage"] is string successMessage)
+        {
+            ViewBag.SuccessMessage = successMessage;
         }
 
-        // ReturnUrl ViewModel içinde taşınıyor.
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
@@ -79,5 +80,63 @@ public class AuthController : Controller
             return Redirect(model.ReturnUrl);
 
         return RedirectToAction("Index", "Home");
+    }
+
+    // Kayıt sayfasını açar.
+    [HttpGet]
+    public IActionResult Register()
+    {
+        // Zaten giriş yapmışsa ana sayfaya yönlendir.
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
+            return RedirectToAction("Index", "Home");
+
+        return View(new RegisterViewModel());
+    }
+
+    // Kayıt formu gönderildiğinde çalışır.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        // Validation kuralları sağlanmıyorsa formu hata mesajıyla geri göster.
+        if (!ModelState.IsValid)
+            return View(model);
+
+        // API'ye göndermek için sadece backend'in beklediği alanları paketliyoruz.
+        // ConfirmPassword UI için var, API'ye gönderilmez.
+        var registerData = new
+        {
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Email = model.Email,
+            Password = model.Password,
+            Phone = model.Phone
+        };
+
+        // API'ye POST isteği gönderiyoruz.
+        var response = await _apiService.PostAsync<RegisterResponse>("auth/register", registerData);
+
+        // Başarısızsa hata mesajı ile formu geri gösterir.
+        if (!response.Success)
+        {
+            ModelState.AddModelError(string.Empty, response.Message);
+            return View(model);
+        }
+
+        var data = response.Data!;
+
+        // FAZ 1 davranışı: API token döndüyse otomatik giriş yapar.
+        if (!string.IsNullOrEmpty(data.Token))
+        {
+            HttpContext.Session.SetString("JWToken", data.Token);
+            HttpContext.Session.SetString("UserEmail", data.Email!);
+            HttpContext.Session.SetString("UserFullName", data.FullName!);
+            return RedirectToAction("Index", "Home");
+        }
+
+        // FAZ 2 davranışı: API token döndürmüyse email doğrulama gerekiyor.
+        // Mesajı TempDataya koy, Login sayfasına yönlendir
+        TempData["SuccessMessage"] = data.Message;
+        return RedirectToAction("Login");
     }
 }

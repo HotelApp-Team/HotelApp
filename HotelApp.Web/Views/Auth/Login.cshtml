@@ -8,9 +8,14 @@
 
 @* Form'u ortalamak icin Bootstrap grid sistemi: 5 sutunluk dar bir kutu. *@
 <div class="row justify-content-center">
-    <div class="col-md-5">
+    <div class="col-md-6">
 
         <h1 class="mb-4">Giriş Yap</h1>
+
+        @if (ViewBag.SuccessMessage != null)
+        {
+            <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+        }
 
         <form asp-action="Login" asp-controller="Auth" method="post">
             @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
@@ -24,13 +29,13 @@
 
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
+                <input asp-for="Email" autocomplete="username" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input asp-for="Password" autocomplete="current-password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
