@@ -5,10 +5,10 @@ namespace HotelApp.Domain.DTOs;
 public class UserLoginDto
 {
     [Required(ErrorMessage = "Email zorunludur.")]
-    [EmailAddress(ErrorMessage = "Geçerli bir email giriniz.")]
+    [EmailAddress(ErrorMessage = "GeÃ§erli bir email giriniz.")]
     public string Email { get; set; } = null!;
 
-    [Required(ErrorMessage = "Þifre zorunludur.")]
+    [Required(ErrorMessage = "Åžifre zorunludur.")]
     public string Password { get; set; } = null!;
 
     public bool RememberMe { get; set; } = false;
