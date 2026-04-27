@@ -1,0 +1,14 @@
+﻿@* Resend (tekrar doğrulama maili gönder) formu - partial view.*@
+@* VerifyEmail sayfasi gibi yerlere dahil edilir.*@
+@model HotelApp.Web.Models.ResendVerificationViewModel
+<form asp-action="ResendVerification" asp-controller="Auth" method="post" class="mt-4">
+@Html.AntiForgeryToken()
+@* Backend'den gelen genel hatalari gostermek icin (orn: "Bu mail kayitli degil"). *@
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="mb-3">
+    <label asp-for="Email" class="form-label"></label>
+    <input asp-for="Email" autocomplete="email" class="form-control" />
+    <span asp-validation-for="Email" class="text-danger"></span>
+</div>
+<button type="submit" class="btn btn-warning w-100">Tekrar Doğrulama Maili Gönder</button>
+</form>

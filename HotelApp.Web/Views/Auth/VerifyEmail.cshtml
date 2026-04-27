@@ -1,0 +1,39 @@
+﻿@* Bu sayfa VerifyEmailViewModel ile gelir, duruma gore basari/hata gosteririr. *@
+@model HotelApp.Web.Models.VerifyEmailViewModel
+@{
+    ViewData["Title"] = "Email Doğrulama";
+}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        @if (Model.IsSuccess)
+        {
+            @* Basarili durumu: yesil alert + anasayfa butonu*@
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Email Doğrulama Başarılı!</h4>
+                <p class="mb-0">@Model.Message</p>
+            </div>
+            <div class="d-grid">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Anasayfaya Git</a>
+            </div>
+        }
+        else
+        {
+            @*Basarisiz durumu: kirmizi alert + (Madde 7'de Resend formu buraya)*@
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Email Doğrulama Başarısız</h4>
+                <p class="mb-0">@Model.Message</p>
+            </div>
+            @* Resend formu - kullanici email girip tekrar dogrulama maili isteyebilir.*@
+            <partial name="_ResendVerificationForm"
+                model="@(new HotelApp.Web.Models.ResendVerificationViewModel { Email = Model.Email})" />   
+            <div class="text-center mt-3">
+                <a asp-action="Login">Giriş sayfasına dön</a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @* Client-side validation için gerekli scriptler*@
+    <partial name="_ValidationScriptsPartial" />
+}

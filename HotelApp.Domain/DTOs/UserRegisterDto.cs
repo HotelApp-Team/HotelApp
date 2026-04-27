@@ -18,6 +18,7 @@ public class UserRegisterDto
 
     [Required(ErrorMessage = "Sifre zorunludur.")]
     [StringLength(100, MinimumLength = 6, ErrorMessage = "Sifre en az 6 karakter olmalidir.")]
+    [DataType(DataType.Password)]
     public string Password { get; set; } = null!;
 
     [Required(ErrorMessage = "Telefon zorunludur")]
