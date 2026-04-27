@@ -40,7 +40,7 @@ Akis: dev branch -> PR -> code review -> dev merge -> main merge
 
 ### 1. Repo'yu klonla
 ```bash
-git clone https://github.com/alprclbi/HotelApp.git
+git clone https://github.com/HotelApp-Team/HotelApp.git
 cd HotelApp
 ```
 
