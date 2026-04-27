@@ -47,13 +47,14 @@
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" autocomplete="new-password" class="form-control" value="@Model?.Password" />
+                @* Guvenlik: Password input'larina value verilmez (DOM'da plaintext sifre gozukmesin diye). *@
+                <input asp-for="Password" autocomplete="new-password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" autocomplete="new-password" class="form-control" value="@Model?.ConfirmPassword" />
+                <input asp-for="ConfirmPassword" autocomplete="new-password" class="form-control" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
 

@@ -22,9 +22,15 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
-        // Zaten giriş yapmışsa ReturnUrl varsa oraya, yoksa ana sayfaya yönlendir.
+        // Zaten giriş yapmışsa: ReturnUrl varsa oraya (sadece site içi adresse), yoksa ana sayfaya yönlendir.
         if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
+        {
+            // Url.IsLocalUrl: Open redirect saldirisi engeli (https://kotusite.com gibi disari yonlendirilmesin).
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
             return RedirectToAction("Index", "Home");
+        }
 
         // Register'dan gelen başarı mesajı varsa view'e taşıyalım.
         if (TempData["SuccessMessage"] is string successMessage)
@@ -157,7 +163,10 @@ public class AuthController : Controller
 
         // API'ye token'i gonder dogrulama islmeinin sonucunu bekle
         // Basari donerse LoginResponse (token + mail + isim) alir.
-        var response = await _apiService.GetAsync<LoginResponse>($"auth/verify-email?token={token}");
+        // Uri.EscapeDataString: token icindeki ozel karakterleri (+, =, &, /) URL-safe hale getirir.
+        // Boylece query string parse hatalari ve parametre enjeksiyonu engellenir.
+        var encodedToken = Uri.EscapeDataString(token);
+        var response = await _apiService.GetAsync<LoginResponse>($"auth/verify-email?token={encodedToken}");
 
         // Basarisizsa (geceresiz token, suresi dolmus vb.) hata sayfasi gosterir.
         if (!response.Success)
