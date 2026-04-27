@@ -23,7 +23,7 @@ public class AuthController : Controller
     public IActionResult Login(string? returnUrl = null)
     {
         // Zaten giriş yapmışsa ReturnUrl varsa oraya, yoksa ana sayfaya yönlendir.
-        if(!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
             return RedirectToAction("Index", "Home");
 
         // Register'dan gelen başarı mesajı varsa view'e taşıyalım.
@@ -137,6 +137,87 @@ public class AuthController : Controller
         // FAZ 2 davranışı: API token döndürmüyse email doğrulama gerekiyor.
         // Mesajı TempDataya koy, Login sayfasına yönlendir
         TempData["SuccessMessage"] = data.Message;
+        return RedirectToAction("Login");
+    }
+
+    // Email dogrulama linkinden gelir
+    // Maildeki link: /Auth/VerifyEmail?token=abc123
+    [HttpGet]
+    public async Task<IActionResult> VerifyEmail(string? token)
+    {
+        // Token yoksa direkt hata sayfasini goster.
+        if (string.IsNullOrEmpty(token))
+        {
+            return View(new VerifyEmailViewModel
+            {
+                IsSuccess = false,
+                Message = "Dogrulama linki eksik veya geçersiz."
+            });
+        }
+
+        // API'ye token'i gonder dogrulama islmeinin sonucunu bekle
+        // Basari donerse LoginResponse (token + mail + isim) alir.
+        var response = await _apiService.GetAsync<LoginResponse>($"auth/verify-email?token={token}");
+
+        // Basarisizsa (geceresiz token, suresi dolmus vb.) hata sayfasi gosterir.
+        if (!response.Success)
+        {
+            return View(new VerifyEmailViewModel
+            {
+                IsSuccess = false,
+                Message = response.Message
+            });
+        }
+
+        // Basarili: API JWT token dondu, otomatik giris yapiyoruz.
+        var data = response.Data!;
+        HttpContext.Session.SetString("JWToken", data.Token);
+        HttpContext.Session.SetString("UserEmail", data.Email);
+        HttpContext.Session.SetString("UserFullName", data.FullName);
+
+        // Basari ekrani - kullanici 'tamam anaysayfaya git' diye tiklayacak.
+        return View(new VerifyEmailViewModel
+        {
+            IsSuccess = true,
+            Message = "Email adresiniz başarıyla doğrulandı! Otomatik giriş yapıldı.",
+            Email = data.Email
+        });
+    }
+
+    // Resend formu gonderildiginde calisi.
+    // Kullanici emal'ini girip "Tekrar Dogrulama Maili Gonder" tikladi.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResendVerification(ResendVerificationViewModel model)
+    {
+        // Emmail validation kurallari saglanmiyorsa VerifyEmail sayfasini hata olarak goster.
+        if (!ModelState.IsValid)
+        {
+            return View("VerifyEmail", new VerifyEmailViewModel
+            {
+                IsSuccess = false,
+                Message = "Lütfen geçerli bir email adresi girin.",
+                Email = model.Email
+            });
+        }
+
+        // API'ye POST. Body: {Email}
+        // Donus tipi onemli degil cunku Success/Message zaten ApiResponse<T>'de var.
+        var response = await _apiService.PostAsync<object>("auth/resend-verification", new { Email = model.Email });
+
+        // Basarisizsa (kullanici yok, mail gonderilemedi vs.) hata sayfasi.
+        if (!response.Success)
+        {
+            return View("VerifyEmail", new VerifyEmailViewModel
+            {
+                IsSuccess = false,
+                Message = response.Message,
+                Email = model.Email
+            });
+        }
+
+        // Basarili: Kullanici yesil mesaj gosterip Login'e yonlendir.
+        TempData["SuccessMessage"] = "Dogrulama maili başarıyla gönderildi! Lütfen gelen kutunuzu kontrol edin.";
         return RedirectToAction("Login");
     }
 }
