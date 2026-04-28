@@ -1,9 +1,9 @@
-﻿@*Navbar'ın sağ tarafında görünecek küçük parça, Kullanıcı girmiş mi? diye bakıp ona göre farklı içerik gösterir*@
+﻿@using HotelApp.Web.Helpers
+@*Navbar'ın sağ tarafında görünecek küçük parça, Kullanıcı girmiş mi? diye bakıp ona göre farklı içerik gösterir*@
 @{
-    // Sessionda JWToken varsa kullanıcı giriş yapmış demektir.
-    var token = Context.Session.GetString("JWToken");
+    // Token varsa, formatı doğruysa ve süresi dolmadıysa kullanıcı giriş yapmış sayılır.
     var fullName = Context.Session.GetString("UserFullName");
-    var isLoggedIn = !string.IsNullOrEmpty(token);
+    var isLoggedIn = Context.Session.IsAuthenticated();
 }
 <ul class="navbar-nav">
     @if (isLoggedIn)
