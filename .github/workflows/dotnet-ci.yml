@@ -1,0 +1,54 @@
+name: .NET CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - alper-dev
+      - hilal-dev
+      - hilal-fix
+      - sevde-dev
+  push:
+    branches:
+      - main
+      - dev
+      - alper-dev
+      - hilal-dev
+      - hilal-fix
+      - sevde-dev
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: HotelApp_CI_Password123!
+        ports:
+          - 1433:1433
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore HotelApp.sln
+
+      - name: Build solution
+        run: dotnet build HotelApp.sln --configuration Release --no-restore
+
+      - name: Run tests
+        env:
+          RUN_DB_TESTS: true
+          HOTELAPP_TEST_CONNECTION_STRING: Server=localhost,1433;Database=HotelApp_Test;User Id=sa;Password=HotelApp_CI_Password123!;TrustServerCertificate=True;Encrypt=False
+        run: dotnet test HotelApp.sln --configuration Release --no-build --verbosity normal
