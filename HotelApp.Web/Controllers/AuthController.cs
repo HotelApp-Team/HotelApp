@@ -229,4 +229,15 @@ public class AuthController : Controller
         TempData["SuccessMessage"] = "Dogrulama maili başarıyla gönderildi! Lütfen gelen kutunuzu kontrol edin.";
         return RedirectToAction("Login");
     }
+
+    // Çıkış işlemini yapar.
+    // Form POST ile gelir, CSRF token kontrolünden geçer.
+    // Sessiondaki tüm auth bilgilerini siler ve anasayfaya yönlendirilir.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear();
+        return RedirectToAction("Index", "Home");
+    }
 }
