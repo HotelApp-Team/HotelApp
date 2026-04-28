@@ -1,0 +1,33 @@
+﻿@*Navbar'ın sağ tarafında görünecek küçük parça, Kullanıcı girmiş mi? diye bakıp ona göre farklı içerik gösterir*@
+@{
+    // Sessionda JWToken varsa kullanıcı giriş yapmış demektir.
+    var token = Context.Session.GetString("JWToken");
+    var fullName = Context.Session.GetString("UserFullName");
+    var isLoggedIn = !string.IsNullOrEmpty(token);
+}
+<ul class="navbar-nav">
+    @if (isLoggedIn)
+    {
+        @*Giriş yapmış kullanıcı için: isim + çıkış butonu*@
+        <li class="nav-item d-flex align-items-center me-2">
+            <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
+        </li>
+        <li class="nav-item">
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-link nav-link text-dark">Çıkış Yap</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        @*Giriş yapmamış kullanıcı için: giriş ve kayıt butonları*@
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Register">Kayıt Ol</a>
+        </li>
+    }
+</ul>
+
