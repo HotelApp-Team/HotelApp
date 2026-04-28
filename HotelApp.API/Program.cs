@@ -197,3 +197,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Integration testlerinde WebApplicationFactory<Program> ile API'yi ayağa kaldırabilmek için gerekir.
+public partial class Program { }
