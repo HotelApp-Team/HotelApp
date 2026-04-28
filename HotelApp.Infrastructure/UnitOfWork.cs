@@ -17,6 +17,8 @@ public class UnitOfWork : IUnitOfWork
 
     private IRoomTypeRepository? _roomTypeRepository;
     private IHotelRoomRepository? _hotelRoomRepository;
+    private IReviewRepository? _reviewRepository;
+    private IReservationRepository? _reservationRepository;
 
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
@@ -51,6 +53,12 @@ public class UnitOfWork : IUnitOfWork
 
     public IUserRepository UserRepository =>
         _userRepository ??= new UserRepository(_context);
+
+    public IReservationRepository ReservationRepository =>
+        _reservationRepository ??= new ReservationRepository(_context);
+
+    public IReviewRepository ReviewRepository =>
+        _reviewRepository ??= new ReviewRepository(_context);
 
 
 

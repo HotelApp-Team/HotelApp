@@ -1,0 +1,134 @@
+﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.Entities;
+using HotelApp.Domain.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace HotelApp.Domain.Services
+{
+    public class ReservationService : IReservationService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+
+        public ReservationService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+
+        public async Task<IEnumerable<ReservationDto>> GetUserReservationsAsync(int userId)
+        {
+            var reservations = await _unitOfWork.ReservationRepository.GetByUserIdAsync(userId);
+
+            return reservations.Select(x => new ReservationDto
+            {
+                Id = x.Id,
+                HotelRoomId = x.HotelRoomId,
+                UserId = x.UserId,
+                CheckInDate = x.CheckInDate,
+                CheckOutDate = x.CheckOutDate,
+                GuestCount = x.GuestCount,
+                TotalPrice = x.TotalPrice,
+                PaymentMethod = x.PaymentMethod,
+                Status = x.Status
+            });
+
+        }
+
+        public async Task<IEnumerable<ReservationDetailDto>> GetUserReservationDetailsAsync(int userId)
+        {
+            var details = await _unitOfWork.ReservationRepository
+                .GetReservationDetailsByUserIdAsync(userId);
+
+            return details.Select(x => new ReservationDetailDto
+            {
+                ReservationId = x.ReservationId,
+                HotelName = x.HotelName,
+                RoomTypeName = x.RoomTypeName,
+                CheckInDate = x.CheckInDate,
+                CheckOutDate = x.CheckOutDate,
+                GuestCount = x.GuestCount,
+                TotalPrice = x.TotalPrice,
+                Status = x.Status
+            });
+        }
+
+        public async Task<ReservationDto?> GetReservationByIdAsync(int id)
+        {
+            var reservation = await _unitOfWork.ReservationRepository.GetWithDetailsAsync(id);
+
+            if (reservation == null)
+                return null;
+
+            return MapToDto(reservation);
+        }
+
+
+        public async Task<ReservationDto> CreateReservationAsync(int userId, CreateReservationDto dto)
+        {
+            if (dto.CheckInDate >= dto.CheckOutDate)
+                throw new InvalidOperationException("Giriş tarihi çıkış tarihinden küçük olmalıdır.");
+
+            if (dto.GuestCount <= 0)
+                throw new InvalidOperationException("Misafir sayısı en az 1 olmalıdır.");
+
+            var room = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(dto.HotelRoomId);
+
+            if (room == null)
+                throw new KeyNotFoundException("Oda bulunamadı.");
+
+            if (!room.IsActive)
+                throw new KeyNotFoundException("Oda aktif değil.");
+
+            if (room.RoomType.MaxGuests < dto.GuestCount)
+                throw new InvalidOperationException("Misafir sayısı bu oda tipi için fazla.");
+
+            var reservation = await _unitOfWork.ReservationRepository.MakeReservationAsync(
+                dto.HotelRoomId,
+                userId,
+                dto.CheckInDate,
+                dto.CheckOutDate,
+                dto.GuestCount,
+                dto.PaymentMethod);
+
+            return MapToDto(reservation);
+        }
+
+        public async Task CancelReservationAsync(int id, int userId)
+        {
+            var reservation = await _unitOfWork.ReservationRepository.GetByIdAsync(id);
+
+            if (reservation == null)
+                throw new KeyNotFoundException("Rezervasyon bulunamadı.");
+
+            if (reservation.UserId != userId)
+                throw new UnauthorizedAccessException("Bu rezervasyonu iptal etme yetkiniz yok.");
+
+            if (reservation.Status == "Cancelled")
+                throw new InvalidOperationException("Bu rezervasyon zaten iptal edilmiş.");
+
+            reservation.Status = "Cancelled";
+
+            _unitOfWork.ReservationRepository.Update(reservation);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public static ReservationDto MapToDto(Reservation reservation)
+        {
+            return new ReservationDto
+            {
+                Id = reservation.Id,
+                HotelRoomId = reservation.HotelRoomId,
+                UserId = reservation.UserId,
+                CheckInDate = reservation.CheckInDate,
+                CheckOutDate = reservation.CheckOutDate,
+                GuestCount = reservation.GuestCount,
+                TotalPrice = reservation.TotalPrice,
+                PaymentMethod = reservation.PaymentMethod,
+                Status = reservation.Status
+            };
+        }
+
+       
+    }
+}

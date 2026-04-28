@@ -1,0 +1,52 @@
+﻿@model AvailableRoomViewModel
+
+@{
+    var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h5 class="card-title mb-1">@Model.RoomTypeName</h5>
+
+                <p class="text-muted mb-2">
+                    Maksimum @Model.MaxGuests kişi
+                </p>
+
+                @if (Model.AvailableRooms > 0)
+                {
+                    <p class="mb-1">
+                        Müsait oda:
+                        <strong>@Model.AvailableRooms</strong>
+                    </p>
+                }
+                else
+                {
+                    <p class="mb-1">
+                        Toplam oda:
+                        <strong>@Model.TotalRooms</strong>
+                    </p>
+                }
+            </div>
+
+            <div class="text-end">
+                <div class="fw-bold fs-5">
+                    @Model.PricePerNight.ToString("C")
+                </div>
+                <small class="text-muted">gecelik</small>
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#bookingModal-@roomId">
+            Rezervasyon Yap
+        </button>
+    </div>
+</div>
+
+@await Html.PartialAsync("_BookingModal", Model)
+
+
