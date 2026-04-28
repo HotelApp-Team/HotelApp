@@ -1,4 +1,5 @@
-﻿using HotelApp.Web.Models;
+﻿using HotelApp.Web.Helpers;
+using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ public class AuthController : Controller
     public IActionResult Login(string? returnUrl = null)
     {
         // Zaten giriş yapmışsa: ReturnUrl varsa oraya (sadece site içi adresse), yoksa ana sayfaya yönlendir.
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
+        if (HttpContext.Session.IsAuthenticated())
         {
             // Url.IsLocalUrl: Open redirect saldirisi engeli (https://kotusite.com gibi disari yonlendirilmesin).
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -93,7 +94,7 @@ public class AuthController : Controller
     public IActionResult Register()
     {
         // Zaten giriş yapmışsa ana sayfaya yönlendir.
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")))
+        if (HttpContext.Session.IsAuthenticated())
             return RedirectToAction("Index", "Home");
 
         return View(new RegisterViewModel());
