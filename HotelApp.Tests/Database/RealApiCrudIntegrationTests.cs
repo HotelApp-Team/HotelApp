@@ -1,6 +1,7 @@
 using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Services;
+using HotelApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using System.Net;
@@ -197,12 +198,18 @@ public class RealApiCrudIntegrationTests
             });
     }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    private HttpClient CreateClient(WebApplicationFactory<Program> factory)
     {
-        return factory.CreateClient(new WebApplicationFactoryClientOptions
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri("https://localhost")
         });
+
+        // Program.cs LoggerService'i appsettings ile baslatabiliyor.
+        // Test HTTP isteklerinden once singleton logger'i test DB connection string'i ile yeniden ayarliyoruz.
+        LoggerService.Initialize(_database.ConnectionString);
+
+        return client;
     }
 
     private static HotelCreateDto CreateHotelDto(string name)

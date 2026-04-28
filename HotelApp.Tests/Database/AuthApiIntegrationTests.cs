@@ -1,4 +1,5 @@
 using HotelApp.Domain.DTOs;
+using HotelApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -211,12 +212,18 @@ public class AuthApiIntegrationTests
             });
     }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    private HttpClient CreateClient(WebApplicationFactory<Program> factory)
     {
-        return factory.CreateClient(new WebApplicationFactoryClientOptions
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri("https://localhost")
         });
+
+        // Program.cs LoggerService'i appsettings ile baslatabiliyor.
+        // Test HTTP isteklerinden once singleton logger'i test DB connection string'i ile yeniden ayarliyoruz.
+        LoggerService.Initialize(_database.ConnectionString);
+
+        return client;
     }
 
     private static string CreateUniqueEmail(string prefix) =>
