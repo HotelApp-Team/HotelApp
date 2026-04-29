@@ -10,7 +10,7 @@ public class Sprint3HomePageContractTests
     [Fact]
     public void HomePageViewModel_ShouldExposeS303HomePageContract()
     {
-        if (!S303ImplementationExists())
+        if (!Sprint3CardGuards.S303_HomePageImplemented())
             return;
 
         var homePageVm = GetRequiredType("HotelApp.Web.Models.HomePageViewModel");
@@ -36,7 +36,7 @@ public class Sprint3HomePageContractTests
     [Fact]
     public void IndexView_ShouldRenderSearchFormAndFeaturedHotelsFromPlan()
     {
-        if (!S303ImplementationExists())
+        if (!Sprint3CardGuards.S303_HomePageImplemented())
             return;
 
         var indexView = ReadWebFile("Views", "Home", "Index.cshtml");
@@ -55,7 +55,7 @@ public class Sprint3HomePageContractTests
     [Fact]
     public void HotelCardPartial_ShouldRenderReusableCardFieldsFromPlan()
     {
-        if (!S303ImplementationExists())
+        if (!Sprint3CardGuards.S303_HomePageImplemented())
             return;
 
         var hotelCard = ReadWebFile("Views", "Shared", "_HotelCard.cshtml");
@@ -77,20 +77,12 @@ public class Sprint3HomePageContractTests
     [Fact]
     public void PublicLayout_ShouldPreserveLoginPartialWhenHomePageWorkTouchesLayout()
     {
-        if (!S303ImplementationExists())
+        if (!Sprint3CardGuards.S303_HomePageImplemented())
             return;
 
         var layout = ReadWebFile("Views", "Shared", "_Layout.cshtml");
 
         Assert.Contains("_LoginPartial", layout);
-    }
-
-    private static bool S303ImplementationExists()
-    {
-        return WebAssembly.GetType("HotelApp.Web.Models.HomePageViewModel") is not null
-            || WebAssembly.GetType("HotelApp.Web.Models.HotelCardViewModel") is not null
-            || File.Exists(Path.Combine(FindWebProjectRoot(), "Views", "Shared", "_HotelCard.cshtml"))
-            || File.ReadAllText(Path.Combine(FindWebProjectRoot(), "Views", "Home", "Index.cshtml")).Contains("FeaturedHotels");
     }
 
     private static Type GetRequiredType(string fullName)

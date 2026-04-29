@@ -11,7 +11,7 @@ public class Sprint3SearchPageContractTests
     [Fact]
     public void HotelsController_ShouldExposePublicSearchActionAndCallE07SearchEndpoint()
     {
-        if (!S304ImplementationExists())
+        if (!Sprint3CardGuards.S304_SearchPageImplemented())
             return;
 
         var controllerType = GetRequiredType("HotelApp.Web.Controllers.HotelsController");
@@ -32,7 +32,7 @@ public class Sprint3SearchPageContractTests
     [Fact]
     public void SearchView_ShouldRenderResultsFiltersSortingAndPaginationFromCard()
     {
-        if (!S304ImplementationExists())
+        if (!Sprint3CardGuards.S304_SearchPageImplemented())
             return;
 
         var searchView = ReadWebFile("Views", "Hotels", "Search.cshtml");
@@ -58,7 +58,7 @@ public class Sprint3SearchPageContractTests
     [Fact]
     public void HotelCardAndStarRatingPartials_ShouldSupportSearchResultCards()
     {
-        if (!S304ImplementationExists())
+        if (!Sprint3CardGuards.S304_SearchPageImplemented())
             return;
 
         var hotelCard = ReadFirstExistingWebFile(
@@ -83,7 +83,7 @@ public class Sprint3SearchPageContractTests
     [Fact]
     public void SearchPage_ShouldHaveSearchSpecificStyling()
     {
-        if (!S304ImplementationExists())
+        if (!Sprint3CardGuards.S304_SearchPageImplemented())
             return;
 
         var searchView = ReadWebFile("Views", "Hotels", "Search.cshtml");
@@ -94,17 +94,6 @@ public class Sprint3SearchPageContractTests
         AssertContainsAny(styleEvidence, "search", "arama");
         AssertContainsAny(styleEvidence, "filter", "filtre");
         AssertContainsAny(styleEvidence, "result", "sonuc", "sonuç", "hotel-card", "otel-card");
-    }
-
-    private static bool S304ImplementationExists()
-    {
-        var webRoot = FindWebProjectRoot();
-
-        return WebAssembly.GetType("HotelApp.Web.Controllers.HotelsController") is not null
-            || WebAssembly.GetTypes().Any(type => type.Namespace == "HotelApp.Web.Models" && type.Name.Contains("Search", StringComparison.OrdinalIgnoreCase))
-            || File.Exists(Path.Combine(webRoot, "Views", "Hotels", "Search.cshtml"))
-            || File.Exists(Path.Combine(webRoot, "Views", "Shared", "_StarRating.cshtml"))
-            || File.Exists(Path.Combine(webRoot, "Views", "Hotels", "_StarRating.cshtml"));
     }
 
     private static Type GetRequiredType(string fullName)

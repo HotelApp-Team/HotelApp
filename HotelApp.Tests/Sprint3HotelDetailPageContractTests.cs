@@ -11,7 +11,7 @@ public class Sprint3HotelDetailPageContractTests
     [Fact]
     public void HotelsController_ShouldExposePublicDetailActionAndRequestHotelDetailData()
     {
-        if (!S305ImplementationExists())
+        if (!Sprint3CardGuards.S305_HotelDetailImplemented())
             return;
 
         var controllerType = GetRequiredType("HotelApp.Web.Controllers.HotelsController");
@@ -36,7 +36,7 @@ public class Sprint3HotelDetailPageContractTests
     [Fact]
     public void HotelDetailPageVm_ShouldExposeS305AndGroupCIntegrationContract()
     {
-        if (!S305ImplementationExists())
+        if (!Sprint3CardGuards.S305_HotelDetailImplemented())
             return;
 
         var vmType = GetRequiredType("HotelApp.Web.Models.HotelDetailPageVm");
@@ -60,7 +60,7 @@ public class Sprint3HotelDetailPageContractTests
     [Fact]
     public void DetailView_ShouldRenderBasicInfoGalleryAndGroupCSkeletonFromCard()
     {
-        if (!S305ImplementationExists())
+        if (!Sprint3CardGuards.S305_HotelDetailImplemented())
             return;
 
         var detailView = ReadWebFile("Views", "Hotels", "Detail.cshtml");
@@ -83,7 +83,7 @@ public class Sprint3HotelDetailPageContractTests
     [Fact]
     public void DetailPage_ShouldHavePageSpecificStyling()
     {
-        if (!S305ImplementationExists())
+        if (!Sprint3CardGuards.S305_HotelDetailImplemented())
             return;
 
         var detailView = ReadWebFile("Views", "Hotels", "Detail.cshtml");
@@ -99,7 +99,7 @@ public class Sprint3HotelDetailPageContractTests
     [Fact]
     public void HotelCard_ShouldNavigateToDetailForHomeSearchDetailFlow()
     {
-        if (!S305ImplementationExists())
+        if (!Sprint3CardGuards.S303_HomePageImplemented())
             return;
 
         var hotelCard = ReadFirstExistingWebFile(
@@ -109,17 +109,6 @@ public class Sprint3HotelDetailPageContractTests
         AssertContainsAny(hotelCard, "asp-controller=\"Hotels\"", "asp-controller='Hotels'", "/Hotels/");
         AssertContainsAny(hotelCard, "asp-action=\"Detail\"", "asp-action='Detail'", "/Hotels/Detail", "Detail");
         AssertContainsAny(hotelCard, "asp-route-id", "Model.Id", "HotelId");
-    }
-
-    private static bool S305ImplementationExists()
-    {
-        var webRoot = FindWebProjectRoot();
-        var hotelsControllerType = WebAssembly.GetType("HotelApp.Web.Controllers.HotelsController");
-
-        return hotelsControllerType?.GetMethod("Detail", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) is not null
-            || WebAssembly.GetType("HotelApp.Web.Models.HotelDetailPageVm") is not null
-            || File.Exists(Path.Combine(webRoot, "Views", "Hotels", "Detail.cshtml"))
-            || File.Exists(Path.Combine(webRoot, "Views", "Hotels", "Details.cshtml"));
     }
 
     private static Type GetRequiredType(string fullName)

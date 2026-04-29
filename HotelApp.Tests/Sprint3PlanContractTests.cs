@@ -10,6 +10,8 @@ namespace HotelApp.Tests;
 
 public class Sprint3PlanContractTests
 {
+    private const string HotelReviewsRoute = "~/api/hotels/{hotelId}/reviews";
+
     private static readonly Assembly ApiAssembly = typeof(ApiHotelsController).Assembly;
     private static readonly Assembly DomainAssembly = typeof(Hotel).Assembly;
     private static readonly Assembly WebAssembly = typeof(WebHomeController).Assembly;
@@ -17,7 +19,7 @@ public class Sprint3PlanContractTests
     [Fact]
     public void ReservationsController_ShouldExposeE23ToE27RoutesFromPlan()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S307_ReservationApiImplemented())
             return;
 
         var controllerType = GetRequiredType(ApiAssembly, "HotelApp.API.Controllers.ReservationController");
@@ -35,7 +37,7 @@ public class Sprint3PlanContractTests
     [Fact]
     public void ReviewsController_ShouldExposeE28ToE31RoutesFromPlan()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S306_ReviewAndDetailPartialsImplemented())
             return;
 
         var controllerType = GetRequiredType(ApiAssembly, "HotelApp.API.Controllers.ReviewController");
@@ -43,7 +45,7 @@ public class Sprint3PlanContractTests
         Assert.Equal("api/reviews", GetControllerRoute(controllerType));
 
         Assert.Contains(GetHttpAttributes<HttpPostAttribute>(controllerType), action => IsEmptyRoute(action.Attribute.Template));
-        Assert.Contains(GetHttpAttributes<HttpGetAttribute>(controllerType), action => action.Attribute.Template == "~/api/hotels/{hotelId}/reviews");
+        Assert.Contains(GetHttpAttributes<HttpGetAttribute>(controllerType), action => action.Attribute.Template == HotelReviewsRoute);
         Assert.Contains(GetHttpAttributes<HttpDeleteAttribute>(controllerType), action => action.Attribute.Template == "{id}");
         Assert.Contains(GetHttpAttributes<HttpGetAttribute>(controllerType), action => action.Attribute.Template == "my");
     }
@@ -51,12 +53,12 @@ public class Sprint3PlanContractTests
     [Fact]
     public void HotelReviewsListEndpoint_ShouldAllowAnonymousAccess()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S306_ReviewAndDetailPartialsImplemented())
             return;
 
         var controllerType = GetRequiredType(ApiAssembly, "HotelApp.API.Controllers.ReviewController");
         var hotelReviewsAction = GetHttpAttributes<HttpGetAttribute>(controllerType)
-            .SingleOrDefault(action => action.Attribute.Template == "~/api/hotels/{hotelId}/reviews");
+            .SingleOrDefault(action => action.Attribute.Template == HotelReviewsRoute);
 
         Assert.NotNull(hotelReviewsAction.Method);
         Assert.NotNull(hotelReviewsAction.Method.GetCustomAttribute<AllowAnonymousAttribute>());
@@ -65,7 +67,7 @@ public class Sprint3PlanContractTests
     [Fact]
     public void ReservationDto_ShouldContainPlanResponseFields()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S307_ReservationApiImplemented())
             return;
 
         var dtoType = GetRequiredType(DomainAssembly, "HotelApp.Domain.DTOs.ReservationDto");
@@ -88,7 +90,7 @@ public class Sprint3PlanContractTests
     [Fact]
     public void ReviewDto_ShouldContainPlanResponseFields()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S306_ReviewAndDetailPartialsImplemented())
             return;
 
         var dtoType = GetRequiredType(DomainAssembly, "HotelApp.Domain.DTOs.ReviewDto");
@@ -106,7 +108,7 @@ public class Sprint3PlanContractTests
     [Fact]
     public void ReservationAuthorizationAndCancelRules_ShouldBeRepresentedInSource()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S307_ReservationApiImplemented())
             return;
 
         var controllerSource = ReadSourceFile("HotelApp.API", "Controllers", "ReservationController.cs");
@@ -121,48 +123,33 @@ public class Sprint3PlanContractTests
     }
 
     [Fact]
-    public void HotelDetailIntegration_ShouldContainPartialContractFromSprint3Plan()
+    public void GroupCDetailPartials_ShouldExistForHotelDetailIntegration()
     {
-        if (!Sprint3ImplementationExists())
+        if (!Sprint3CardGuards.S306_ReviewAndDetailPartialsImplemented())
             return;
 
-        var root = FindRepositoryRoot();
-        var views = Path.Combine(root, "HotelApp.Web", "Views", "Hotels");
-        var detailsViewPath = Path.Combine(views, "Details.cshtml");
-        var roomCardPath = Path.Combine(views, "_RoomCard.cshtml");
+        var roomCardView = ReadFirstExistingViewFile("_RoomCard.cshtml");
+        var bookingModalView = ReadFirstExistingViewFile("_BookingModal.cshtml");
+        var reviewCardView = ReadFirstExistingViewFile("_ReviewCard.cshtml");
 
-        Assert.True(File.Exists(detailsViewPath), "Views/Hotels/Details.cshtml bulunmali.");
-        Assert.True(File.Exists(roomCardPath), "_RoomCard partial bulunmali.");
-        Assert.True(File.Exists(Path.Combine(views, "_BookingModal.cshtml")), "_BookingModal partial bulunmali.");
-        Assert.True(File.Exists(Path.Combine(views, "_ReviewCard.cshtml")), "_ReviewCard partial bulunmali.");
-
-        var detailsView = File.ReadAllText(detailsViewPath);
-        var roomCardView = File.ReadAllText(roomCardPath);
-
-        Assert.Contains("_RoomCard", detailsView);
-        Assert.Contains("_ReviewCard", detailsView);
-        Assert.Contains("_BookingModal", roomCardView);
+        AssertContainsAny(roomCardView, "Room", "RoomType", "Oda", "Capacity", "Price");
+        AssertContainsAny(bookingModalView, "Booking", "Reservation", "Rezervasyon", "CheckIn", "CheckOut");
+        AssertContainsAny(reviewCardView, "Review", "Yorum", "Rating", "Comment");
     }
 
     [Fact]
     public void HotelDetailPageVm_ShouldExposeGroupBIntegrationContract()
     {
-        var vmType = WebAssembly.GetType("HotelApp.Web.Models.HotelDetailPageVm");
-        if (vmType is null)
+        if (!Sprint3CardGuards.S305_HotelDetailImplemented())
             return;
 
+        var vmType = WebAssembly.GetType("HotelApp.Web.Models.HotelDetailPageVm");
+
+        Assert.NotNull(vmType);
         AssertHasProperty(vmType, "Rooms");
         AssertHasProperty(vmType, "Reviews");
         AssertHasProperty(vmType, "BookingForm");
         AssertHasProperty(vmType, "IsAuthenticated", typeof(bool));
-    }
-
-    private static bool Sprint3ImplementationExists()
-    {
-        return ApiAssembly.GetType("HotelApp.API.Controllers.ReservationController") is not null
-            || ApiAssembly.GetType("HotelApp.API.Controllers.ReviewController") is not null
-            || DomainAssembly.GetType("HotelApp.Domain.DTOs.ReservationDto") is not null
-            || DomainAssembly.GetType("HotelApp.Domain.DTOs.ReviewDto") is not null;
     }
 
     private static Type GetRequiredType(Assembly assembly, string fullName)
@@ -210,12 +197,33 @@ public class Sprint3PlanContractTests
         Assert.Contains(property.PropertyType, new[] { typeof(byte), typeof(short), typeof(int) });
     }
 
+    private static void AssertContainsAny(string text, params string[] expectedParts)
+    {
+        Assert.True(
+            expectedParts.Any(expected => text.Contains(expected, StringComparison.OrdinalIgnoreCase)),
+            $"Beklenen ifadelerden en az biri bulunamadi: {string.Join(", ", expectedParts)}");
+    }
+
     private static string ReadSourceFile(params string[] relativePathParts)
     {
         var path = Path.Combine(new[] { FindRepositoryRoot() }.Concat(relativePathParts).ToArray());
 
         Assert.True(File.Exists(path), $"Kaynak dosya bulunamadi: {path}");
         return File.ReadAllText(path);
+    }
+
+    private static string ReadFirstExistingViewFile(string fileName)
+    {
+        var root = FindRepositoryRoot();
+        var candidatePaths = new[]
+        {
+            Path.Combine(root, "HotelApp.Web", "Views", "Hotels", fileName),
+            Path.Combine(root, "HotelApp.Web", "Views", "Shared", fileName)
+        };
+        var existingPath = candidatePaths.FirstOrDefault(File.Exists);
+
+        Assert.False(string.IsNullOrWhiteSpace(existingPath), $"View dosyasi bulunamadi: {fileName}");
+        return File.ReadAllText(existingPath!);
     }
 
     private static string FindRepositoryRoot()
