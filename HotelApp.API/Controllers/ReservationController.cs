@@ -19,7 +19,7 @@ namespace HotelApp.API.Controllers
             _reservationService = reservationService;
         }
 
-        [HttpGet("me")]
+        [HttpGet("my")]
         public async Task<IActionResult> GetMyReservations()
         {
             var userId = GetCurrentUserId();
@@ -33,13 +33,31 @@ namespace HotelApp.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var userId = GetCurrentUserId();
+            var isAdmin = User.IsInRole("Admin");
 
             var reservation = await _reservationService.GetReservationByIdAsync(id);
 
             if (reservation == null)
                 return NotFound("Rezervasyon bulunamadı.");
 
-            if (reservation.UserId != userId)
+            if (reservation.UserId != userId && !isAdmin)
+                return Forbid();
+
+            return Ok(reservation);
+        }
+
+        [HttpGet("{id}/invoice")]
+        public async Task<IActionResult> GetInvoice(int id)
+        {
+            var userId= GetCurrentUserId();
+            var isAdmin = User.IsInRole("Admin");
+
+            var reservation = await _reservationService.GetReservationByIdAsync(id);
+
+            if (reservation == null)
+                return NotFound("Rezervasyon bulunamadı.");
+
+            if (reservation.UserId != userId && !isAdmin)
                 return Forbid();
 
             return Ok(reservation);
@@ -58,7 +76,10 @@ namespace HotelApp.API.Controllers
         public async Task<IActionResult> Cancel(int id)
         {
             var userId = GetCurrentUserId();
-            await _reservationService.CancelReservationAsync(id, userId);
+            var isAdmin = User.IsInRole("Admin");
+            
+            await _reservationService.CancelReservationAsync(id, userId, isAdmin);
+            
             return NoContent();
         }
 

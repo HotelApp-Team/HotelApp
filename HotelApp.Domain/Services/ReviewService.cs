@@ -25,6 +25,13 @@ namespace HotelApp.Domain.Services
             return review.Select(MapToDto);
         }
 
+        public async Task<IEnumerable<ReviewDto>> GetUserReviewsAsync(int userId)
+        {
+            var reviews = await _unitOfWork.ReviewRepository.GetByUserIdAsync(userId);
+
+            return reviews.Select(MapToDto);
+        }
+
         public async Task<ReviewDto> CreateReviewAsync(int userId, CreateReviewDto dto)
         {
             if (dto.Rating < 1 || dto.Rating > 5)
@@ -46,7 +53,7 @@ namespace HotelApp.Domain.Services
                 UserId = userId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             await _unitOfWork.ReviewRepository.AddAsync(review);
@@ -78,8 +85,11 @@ namespace HotelApp.Domain.Services
                 UserId = review.UserId,
                 Rating = review.Rating,
                 Comment = review.Comment,
-                CreatedAt = review.CreatedAt
+                CreatedAt = review.CreatedAt,
+                UserName = $"{review.User?.FirstName} {review.User?.LastName}".Trim(),
+                HotelName = review.Hotel?.Name ?? string.Empty
             };
         }
+
     }
 }

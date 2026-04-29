@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace HotelApp.API.Controllers
 {
-    [Route("api/hotels/{hotelId}/reviews")]
+    [Route("api/reviews")]
     [ApiController]
     public class ReviewController : ControllerBase
     {
@@ -28,12 +28,21 @@ namespace HotelApp.API.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> Create(int hotelId, [FromBody] CreateReviewDto dto)
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyReviews()
         {
             var userId = GetCurrentUserId();
 
-            dto.HotelId = hotelId;
+            var review = await _reviewService.GetUserReviewsAsync(userId);
+
+            return Ok(review);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
+        {
+            var userId = GetCurrentUserId();
 
             var review = await _reviewService.CreateReviewAsync(userId, dto);
 
@@ -42,7 +51,7 @@ namespace HotelApp.API.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id, int hotelId)
+        public async Task<IActionResult> Delete(int id)
         {
             var userId = GetCurrentUserId();
 

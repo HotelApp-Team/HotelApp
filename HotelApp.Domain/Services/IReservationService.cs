@@ -13,6 +13,6 @@ namespace HotelApp.Domain.Services
         Task<IEnumerable<ReservationDetailDto>> GetUserReservationDetailsAsync(int userId);
         Task<ReservationDto?> GetReservationByIdAsync(int id);
         Task<ReservationDto> CreateReservationAsync(int userId, CreateReservationDto dto);
-        Task CancelReservationAsync(int id, int userId);
+        Task CancelReservationAsync(int id, int userId, bool isAdmin);
     }
 }

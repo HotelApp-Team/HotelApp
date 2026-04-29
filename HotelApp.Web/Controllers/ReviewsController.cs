@@ -16,8 +16,10 @@ namespace HotelApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int hotelId, ReviewViewModel model)
         {
+            model.HotelId = hotelId;
+
             var response = await _apiService.PostAsync<object>(
-                $"hotels/{hotelId}/reviews", model);
+                "reviews", model);
 
             if (!response.Success)
             {
@@ -25,7 +27,7 @@ namespace HotelApp.Web.Controllers
             }
             else
             {
-                TempData["Success"] = "Yorum başarıyla eklandi.";
+                TempData["Success"] = "Yorum başarıyla eklendi.";
             }
 
             return RedirectToAction("Details", "Hotels", new { id = hotelId });

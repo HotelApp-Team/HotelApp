@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HotelApp.Infrastructure.Repositories
@@ -17,10 +15,21 @@ namespace HotelApp.Infrastructure.Repositories
         {
         }
 
+        public async Task<IEnumerable<Review>> GetByUserIdAsync(int userId)
+        {
+            return await _dbSet
+                .Include(x => x.User)
+                .Include(x => x.Hotel)
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Review>> GetByHotelIdAsync(int hotelId)
         {
             return await _dbSet
                 .Include(x => x.User)
+                .Include(x => x.Hotel)
                 .Where(x => x.HotelId == hotelId)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();

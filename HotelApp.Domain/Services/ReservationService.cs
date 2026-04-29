@@ -20,18 +20,7 @@ namespace HotelApp.Domain.Services
         {
             var reservations = await _unitOfWork.ReservationRepository.GetByUserIdAsync(userId);
 
-            return reservations.Select(x => new ReservationDto
-            {
-                Id = x.Id,
-                HotelRoomId = x.HotelRoomId,
-                UserId = x.UserId,
-                CheckInDate = x.CheckInDate,
-                CheckOutDate = x.CheckOutDate,
-                GuestCount = x.GuestCount,
-                TotalPrice = x.TotalPrice,
-                PaymentMethod = x.PaymentMethod,
-                Status = x.Status
-            });
+            return reservations.Select(MapToDto);
 
         }
 
@@ -94,18 +83,24 @@ namespace HotelApp.Domain.Services
             return MapToDto(reservation);
         }
 
-        public async Task CancelReservationAsync(int id, int userId)
+        public async Task CancelReservationAsync(int id, int userId, bool isAdmin)
         {
             var reservation = await _unitOfWork.ReservationRepository.GetByIdAsync(id);
 
             if (reservation == null)
                 throw new KeyNotFoundException("Rezervasyon bulunamadı.");
 
-            if (reservation.UserId != userId)
+            if (reservation.UserId != userId && !isAdmin)
                 throw new UnauthorizedAccessException("Bu rezervasyonu iptal etme yetkiniz yok.");
 
             if (reservation.Status == "Cancelled")
                 throw new InvalidOperationException("Bu rezervasyon zaten iptal edilmiş.");
+
+            if (reservation.Status == "Completed")
+                throw new InvalidOperationException("Tamamlanmış rezervasyon iptal edilemez.");
+
+            if (reservation.CheckInDate < DateOnly.FromDateTime(DateTime.Today))
+                throw new InvalidOperationException("Geçmiş tarihli rezervasyon iptal edilemez.");
 
             reservation.Status = "Cancelled";
 
@@ -125,10 +120,14 @@ namespace HotelApp.Domain.Services
                 GuestCount = reservation.GuestCount,
                 TotalPrice = reservation.TotalPrice,
                 PaymentMethod = reservation.PaymentMethod,
-                Status = reservation.Status
+                Status = reservation.Status,
+                UserName = $"{reservation.User?.FirstName} {reservation.User?.LastName}".Trim(),
+                HotelName = reservation.HotelRoom?.Hotel?.Name ?? string.Empty,
+                RoomTypeName = reservation.HotelRoom?.RoomType?.Name ?? string.Empty,
+                CreatedAt = reservation.CreatedAt
             };
         }
 
-       
+
     }
 }

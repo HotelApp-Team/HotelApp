@@ -17,6 +17,10 @@ namespace HotelApp.Domain.DTOs
         public decimal TotalPrice { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string HotelName { get; set; } = string.Empty;
+        public string RoomTypeName { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
     }
 
     public class CreateReservationDto
