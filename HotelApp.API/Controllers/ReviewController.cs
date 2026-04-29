@@ -19,7 +19,7 @@ namespace HotelApp.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("/api/hotels/{hotelId}/reviews")]
         public async Task<IActionResult> GetHotelReviews(int hotelId)
         {
             var review = await _reviewService.GetHotelReviewAsync(hotelId);
