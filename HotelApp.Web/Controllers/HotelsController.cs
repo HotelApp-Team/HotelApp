@@ -17,7 +17,7 @@ namespace HotelApp.Web.Controllers
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
-            var reviewsResponse = await _apiService.GetAsync<List<ReviewViewModel>>($"hotels/{id}/reviews");
+            var reviewsResponse = await _apiService.GetAsync<List<ReviewViewModel>>($"reviews/hotel/{id}");
 
             if (!hotelResponse.Success || hotelResponse.Data == null)
             {

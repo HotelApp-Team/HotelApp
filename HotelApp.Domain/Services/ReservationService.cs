@@ -93,10 +93,15 @@ namespace HotelApp.Domain.Services
             if (reservation.UserId != userId && !isAdmin)
                 throw new UnauthorizedAccessException("Bu rezervasyonu iptal etme yetkiniz yok.");
 
-            if (reservation.Status == "Cancelled")
+            var status = reservation.Status?.Trim();
+
+            if (string.IsNullOrWhiteSpace(status))
+                throw new InvalidOperationException("Rezervasyon durumu geçersiz.");
+
+            if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Bu rezervasyon zaten iptal edilmiş.");
 
-            if (reservation.Status == "Completed")
+            if (status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Tamamlanmış rezervasyon iptal edilemez.");
 
             if (reservation.CheckInDate < DateOnly.FromDateTime(DateTime.Today))
