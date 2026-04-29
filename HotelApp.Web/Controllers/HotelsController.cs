@@ -41,7 +41,7 @@ namespace HotelApp.Web.Controllers
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;
 
-            return View("HotelDetails", model);
+            return View("Details", model);
         }
     }
 }

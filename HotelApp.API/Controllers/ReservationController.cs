@@ -32,10 +32,15 @@ namespace HotelApp.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
+            var userId = GetCurrentUserId();
+
             var reservation = await _reservationService.GetReservationByIdAsync(id);
 
             if (reservation == null)
                 return NotFound("Rezervasyon bulunamadı.");
+
+            if (reservation.UserId != userId)
+                return Forbid();
 
             return Ok(reservation);
         }

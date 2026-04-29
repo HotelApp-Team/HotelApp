@@ -28,7 +28,7 @@ namespace HotelApp.Web.Controllers
                 TempData["Success"] = "Yorum başarıyla eklandi.";
             }
 
-            return RedirectToAction("HotelDetails", "Hotels", new { id = hotelId });
+            return RedirectToAction("Details", "Hotels", new { id = hotelId });
         }
     }
 }

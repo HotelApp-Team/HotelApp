@@ -79,10 +79,28 @@ namespace HotelApp.Infrastructure.Repositories
                     reservationIdParam,
                     resultMessageParam);
 
-            var reservationId = (int)reservationIdParam.Value;
+            var resultMessage = resultMessageParam.Value?.ToString();
 
-            var reservation = await _dbSet
-                   .FirstOrDefaultAsync(x => x.Id == reservationId);
+            if (reservationIdParam.Value == null || reservationIdParam.Value == DBNull.Value)
+            {
+                throw new InvalidOperationException(
+                    string.IsNullOrWhiteSpace(resultMessage)
+                   ? "Rezervasyon oluşturulamadı."
+                    : resultMessage);
+            }
+
+            var reservationId = Convert.ToInt32(reservationIdParam.Value);
+
+            if (reservationId <= 0)
+            {
+                throw new InvalidOperationException(
+                    string.IsNullOrWhiteSpace(resultMessage)
+                    ? "Rezervasyon oluşturulamadı."
+                    : resultMessage);
+            }
+
+                var reservation = await _dbSet
+                       .FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
                 throw new InvalidOperationException("Rezervasyon oluşturuldu fakat kayıt geri okunamadı.");
