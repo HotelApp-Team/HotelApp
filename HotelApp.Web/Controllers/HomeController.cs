@@ -1,4 +1,5 @@
 using HotelApp.Web.Models;
+using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,26 +7,26 @@ namespace HotelApp.Web.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly ApiService _apiService;
     private readonly ILogger<HomeController> _logger;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ApiService apiService, ILogger<HomeController> logger)
     {
+        _apiService = apiService;
         _logger = logger;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
+        var citiesResponse = await _apiService.GetAsync<List<string>>("hotels/cities");
+        var hotelsResponse = await _apiService.GetAsync<PagedHotelListResponse>("hotels?page=1&pageSize=6");
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        var model = new HomePageViewModel
+        {
+            Cities = citiesResponse.Success ? citiesResponse.Data ?? new List<string>() : new List<string>(),
+            FeaturedHotels = hotelsResponse.Success ? hotelsResponse.Data?.Data ?? new List<HotelCardViewModel>() : new List<HotelCardViewModel>()
+        };
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        return View(model);
     }
 }

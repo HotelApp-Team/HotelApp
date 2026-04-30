@@ -1,8 +1,67 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model HotelApp.Web.Models.HomePageViewModel
+@{
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- HERO TEXT -->
+<div class="hero">
+    <div class="container text-center text-white">
+        <h1 class="display-4 fw-bold">Mükemmel oteli bul</h1>
+        <p class="fs-5">Dünyanın en iyi otellerini keşfet</p>
+    </div>
+</div>
+
+<!-- SEARCH FORM -->
+<div class="container search-wrapper">
+    <div class="search-box">
+
+        <form method="get" asp-controller="Hotels" asp-action="Search" class="row g-3">
+
+            <div class="col-md-3">
+                <select name="city" class="form-select">
+                    <option value="">Şehir seçin</option>
+                    @foreach (var city in Model.Cities)
+                    {
+                        <option value="@city">@city</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <input type="date" name="checkIn" class="form-control" />
+            </div>
+
+            <div class="col-md-2">
+                <input type="date" name="checkOut" class="form-control" />
+            </div>
+
+            <div class="col-md-2">
+                <input type="number" name="guests" class="form-control" value="1" min="1" />
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    Ara
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- POPULAR HOTELS -->
+<div class="container mt-5">
+
+    <h3 class="fw-bold mb-4">Popüler Oteller</h3>
+
+    <div class="row g-4">
+        @foreach (var hotel in Model.FeaturedHotels)
+        {
+            <div class="col-md-4">
+                @await Html.PartialAsync("_HotelCard", hotel)
+            </div>
+        }
+    </div>
+
 </div>
