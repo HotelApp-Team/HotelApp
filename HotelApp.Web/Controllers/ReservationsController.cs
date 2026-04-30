@@ -13,6 +13,7 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(CreateReservationViewModel model)
         {

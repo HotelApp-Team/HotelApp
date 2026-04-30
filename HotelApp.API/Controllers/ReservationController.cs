@@ -22,7 +22,8 @@ namespace HotelApp.API.Controllers
         [HttpGet("my")]
         public async Task<IActionResult> GetMyReservations()
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
 
             var reservation = await _reservationService.GetUserReservationDetailsAsync(userId);
 
@@ -32,7 +33,9 @@ namespace HotelApp.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
             var isAdmin = User.IsInRole("Admin");
 
             var reservation = await _reservationService.GetReservationByIdAsync(id);
@@ -49,7 +52,9 @@ namespace HotelApp.API.Controllers
         [HttpGet("{id}/invoice")]
         public async Task<IActionResult> GetInvoice(int id)
         {
-            var userId= GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
             var isAdmin = User.IsInRole("Admin");
 
             var reservation = await _reservationService.GetReservationByIdAsync(id);
@@ -66,7 +71,9 @@ namespace HotelApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateReservationDto dto)
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
             var reservation = await _reservationService.CreateReservationAsync(userId, dto);
 
             return CreatedAtAction(nameof(GetById), new { id = reservation.Id }, reservation);
@@ -75,7 +82,9 @@ namespace HotelApp.API.Controllers
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
             var isAdmin = User.IsInRole("Admin");
             
             await _reservationService.CancelReservationAsync(id, userId, isAdmin);
@@ -83,12 +92,13 @@ namespace HotelApp.API.Controllers
             return NoContent();
         }
 
-        private int GetCurrentUserId()
+        private bool TryGetCurrentUserId(out int userId)
         {
+            userId = 0;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
          ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-            return int.Parse(userIdClaim!);
+            return int.TryParse(userIdClaim, out userId);
         }
     }
 }
