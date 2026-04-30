@@ -1,0 +1,83 @@
+﻿@model AvailableRoomViewModel
+
+@{
+    var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
+}
+
+<div class="modal fade"
+     id="bookingModal-@roomId"
+     tabindex="-1"
+     aria-labelledby="bookingModalLabel-@roomId"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Reservations" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel-@roomId">
+                        @Model.RoomTypeName Rezervasyonu
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Kapat">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="HotelId" value="@Model.HotelId" />
+                    <input type="hidden" name="HotelRoomId" value="@roomId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Giriş Tarihi</label>
+                        <input type="date" name="CheckInDate" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Çıkış Tarihi</label>
+                        <input type="date" name="CheckOutDate" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Misafir Sayısı</label>
+                        <input type="number"
+                               name="GuestCount"
+                               class="form-control"
+                               min="1"
+                               max="@Model.MaxGuests"
+                               value="1"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ödeme Yöntemi</label>
+                        <select name="PaymentMethod" class="form-select" required>
+                            <option value="CreditCard">Kredi Kartı</option>
+                            <option value="Cash">Nakit</option>
+                            <option value="Transfer">Havale/EFT</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-light border mb-0">
+                        Gecelik fiyat:
+                        <strong>@Model.PricePerNight.ToString("C")</strong>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Vazgeç
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        Rezervasyonu Tamamla
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

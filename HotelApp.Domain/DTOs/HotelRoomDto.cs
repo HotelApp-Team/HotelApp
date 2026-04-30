@@ -21,6 +21,8 @@ namespace HotelApp.Domain.DTOs
 
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
+        public int MaxGuests { get; set; }
+
 
         public string HotelName { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;

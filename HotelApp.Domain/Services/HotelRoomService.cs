@@ -100,7 +100,8 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
-                RoomTypeName = x.RoomType?.Name ?? string.Empty
+                RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                MaxGuests = x.RoomType?.MaxGuests ?? 0
             });
         }
 

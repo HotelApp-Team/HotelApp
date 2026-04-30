@@ -1,6 +1,8 @@
 ﻿// IUnitOfWork, repository'leri ve kaydetme islemini tek sozlesmede toplar.
 // Amaci, birden fazla veri islemini tek bir is birimi olarak yonetmektir.
 
+using HotelApp.Domain.Services;
+
 namespace HotelApp.Domain.Interfaces;
 
 public interface IUnitOfWork : IDisposable
@@ -11,6 +13,8 @@ public interface IUnitOfWork : IDisposable
 
     IHotelRoomRepository HotelRoomRepository { get; }
     IRoomTypeRepository RoomTypeRepository { get; }
+    IReservationRepository ReservationRepository { get; }
+    IReviewRepository ReviewRepository { get; }
 
 
     IUserRepository UserRepository { get; }
