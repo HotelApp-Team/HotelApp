@@ -55,11 +55,17 @@ namespace HotelApp.Domain.Services
 
         public async Task<ReservationDto> CreateReservationAsync(int userId, CreateReservationDto dto)
         {
+            if (dto.CheckInDate < DateOnly.FromDateTime(DateTime.Today))
+                throw new InvalidOperationException("Giriş tarihi bugünden önce olamaz.");
+
             if (dto.CheckInDate >= dto.CheckOutDate)
                 throw new InvalidOperationException("Giriş tarihi çıkış tarihinden küçük olmalıdır.");
 
             if (dto.GuestCount <= 0)
                 throw new InvalidOperationException("Misafir sayısı en az 1 olmalıdır.");
+
+            if (string.IsNullOrWhiteSpace(dto.PaymentMethod))
+                throw new InvalidOperationException("Ödeme yöntemi zorunludur.");
 
             var room = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(dto.HotelRoomId);
 
@@ -80,7 +86,12 @@ namespace HotelApp.Domain.Services
                 dto.GuestCount,
                 dto.PaymentMethod);
 
-            return MapToDto(reservation);
+            var reservationWithDetails = await _unitOfWork.ReservationRepository.GetWithDetailsAsync(reservation.Id);
+
+            if (reservationWithDetails == null)
+                throw new InvalidOperationException("Rezervasyon oluşturuldu fakat detayları geri okunamadı.");
+
+            return MapToDto(reservationWithDetails);
         }
 
         public async Task CancelReservationAsync(int id, int userId, bool isAdmin)

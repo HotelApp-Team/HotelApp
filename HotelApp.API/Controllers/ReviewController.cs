@@ -46,7 +46,7 @@ namespace HotelApp.API.Controllers
 
             var review = await _reviewService.CreateReviewAsync(userId, dto);
 
-            return Ok(review);
+            return Created(string.Empty ,review);
         }
 
         [Authorize]

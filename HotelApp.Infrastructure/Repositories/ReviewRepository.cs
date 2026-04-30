@@ -40,5 +40,13 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.HotelId == hotelId);
         }
+
+        public async Task<Review?> GetWithDetailsAsync(int id)
+        {
+            return await _dbSet
+                .Include(x => x.User)
+                .Include(x => x.Hotel)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

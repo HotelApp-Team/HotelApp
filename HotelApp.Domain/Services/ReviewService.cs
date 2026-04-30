@@ -59,7 +59,12 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.ReviewRepository.AddAsync(review);
             await _unitOfWork.SaveChangesAsync();
 
-            return MapToDto(review);
+            var reviewWithDetails = await _unitOfWork.ReviewRepository.GetWithDetailsAsync(review.Id);
+
+            if (reviewWithDetails == null)
+                throw new InvalidOperationException("Yorum oluşturuldu fakat detayları geri okunamadı.");
+
+            return MapToDto(reviewWithDetails);
         }
 
         public async Task DeleteReviewAsync(int id, int userId)

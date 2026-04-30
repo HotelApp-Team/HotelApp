@@ -69,7 +69,7 @@ namespace HotelApp.API.Controllers
             var userId = GetCurrentUserId();
             var reservation = await _reservationService.CreateReservationAsync(userId, dto);
 
-            return Ok(reservation);
+            return CreatedAtAction(nameof(GetById), new { id = reservation.Id }, reservation);
         }
 
         [HttpPut("{id}/cancel")]
