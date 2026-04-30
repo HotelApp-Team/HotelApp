@@ -31,7 +31,8 @@ namespace HotelApp.API.Controllers
         [HttpGet("my")]
         public async Task<IActionResult> GetMyReviews()
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
 
             var review = await _reviewService.GetUserReviewsAsync(userId);
 
@@ -42,7 +43,8 @@ namespace HotelApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
 
             var review = await _reviewService.CreateReviewAsync(userId, dto);
 
@@ -53,19 +55,21 @@ namespace HotelApp.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var userId = GetCurrentUserId();
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
 
             await _reviewService.DeleteReviewAsync(id, userId);
 
             return NoContent();
-        } 
+        }
 
-        private int GetCurrentUserId()
+        private bool TryGetCurrentUserId(out int userId)
         {
+            userId = 0;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
          ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-            return int.Parse(userIdClaim!);
+            return int.TryParse(userIdClaim, out userId);
         }
     }
 }

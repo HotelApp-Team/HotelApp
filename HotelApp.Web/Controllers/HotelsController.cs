@@ -25,6 +25,17 @@ namespace HotelApp.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            if (!roomsResponse.Success)
+            {
+                TempData["Error"] = roomsResponse.Message ?? "Otel odaları alınmadı.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!reviewsResponse.Success)
+            {
+                TempData["Error"] = reviewsResponse.Message ?? "Otel yorumları alınmadı.";
+            }
+
             var model = hotelResponse.Data;
 
             model.HotelId = id;
@@ -41,7 +52,7 @@ namespace HotelApp.Web.Controllers
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;
 
-            return View("Details", model);
+            return View("Detail", model);
         }
     }
 }
