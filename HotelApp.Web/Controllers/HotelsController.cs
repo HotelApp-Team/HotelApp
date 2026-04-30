@@ -16,7 +16,7 @@ namespace HotelApp.Web.Controllers
         public async Task<IActionResult> Search(
             string? city,
             byte? starRating,
-            decimal? minRating,
+            decimal? minStarRating,
             DateTime? checkIn,
             DateTime? checkOut,
             int? guests,
@@ -27,7 +27,7 @@ namespace HotelApp.Web.Controllers
             {
                 ["city"] = city,
                 ["starRating"] = starRating?.ToString(),
-                ["minRating"] = minRating?.ToString(),
+                ["minStarRating"] = minStarRating?.ToString(),
                 ["checkIn"] = checkIn?.ToString("yyyy-MM-dd"),
                 ["checkOut"] = checkOut?.ToString("yyyy-MM-dd"),
                 ["guestCount"] = guests?.ToString(),
@@ -48,7 +48,7 @@ namespace HotelApp.Web.Controllers
             {
                 City = city,
                 StarRating = starRating,
-                MinRating = minRating,
+                MinRating = minStarRating,
                 CheckIn = checkIn,
                 CheckOut = checkOut,
                 GuestCount = guests,
@@ -87,6 +87,7 @@ namespace HotelApp.Web.Controllers
 
             var model = hotelResponse.Data;
 
+            model.Id = id;
             model.HotelId = id;
             model.HotelName = string.IsNullOrWhiteSpace(model.HotelName)
                 ? model.Name
