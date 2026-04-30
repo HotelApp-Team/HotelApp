@@ -50,6 +50,8 @@ builder.Services.AddScoped<IHotelImageRepository, HotelImageRepository>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
 builder.Services.AddScoped<IHotelRoomRepository, HotelRoomRepository>();
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 
 // Service kayitlari
@@ -66,6 +68,8 @@ builder.Services.AddScoped<IHotelImageService, HotelImageService>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
 builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 // Yardimci service kayitlari
 builder.Services.AddScoped<IJwtService>(sp =>
