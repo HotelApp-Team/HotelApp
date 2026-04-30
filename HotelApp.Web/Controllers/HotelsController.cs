@@ -64,6 +64,7 @@ namespace HotelApp.Web.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
+            var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
             var reviewsResponse = await _apiService.GetAsync<List<ReviewViewModel>>($"hotels/{id}/reviews");
 
@@ -90,6 +91,10 @@ namespace HotelApp.Web.Controllers
             model.HotelName = string.IsNullOrWhiteSpace(model.HotelName)
                 ? model.Name
                 : model.HotelName;
+
+            model.Images = imagesResponse.Success
+                ? imagesResponse.Data ?? new List<HotelImageViewModel>()
+                : new List<HotelImageViewModel>();
 
             model.Rooms = roomsResponse.Data ?? new List<AvailableRoomViewModel>();
             model.Reviews = reviewsResponse.Data ?? new List<ReviewViewModel>();
