@@ -12,7 +12,55 @@ namespace HotelApp.Web.Controllers
         {
             _apiService = apiService;
         }
+        [HttpGet]
+        public async Task<IActionResult> Search(
+            string? city,
+            byte? starRating,
+            decimal? minRating,
+            DateTime? checkIn,
+            DateTime? checkOut,
+            int? guests,
+            string? sortBy,
+            int page = 1)
+        {
+            var queryParams = new Dictionary<string, string?>()
+            {
+                ["city"] = city,
+                ["starRating"] = starRating?.ToString(),
+                ["minRating"] = minRating?.ToString(),
+                ["checkIn"] = checkIn?.ToString("yyyy-MM-dd"),
+                ["checkOut"] = checkOut?.ToString("yyyy-MM-dd"),
+                ["guestCount"] = guests?.ToString(),
+                ["sortBy"] = sortBy,
+                ["page"] = page.ToString(),
+                ["pageSize"] = "9"
+            };
 
+            var query = "hotels/search?" +
+                        string.Join("&",
+                            queryParams
+                                .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+                                .Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value!)}"));
+
+            var response = await _apiService.GetAsync<HotelSearchResponseViewModel>(query);
+
+            var model = new HotelSearchPageViewModel
+            {
+                City = city,
+                StarRating = starRating,
+                MinRating = minRating,
+                CheckIn = checkIn,
+                CheckOut = checkOut,
+                GuestCount = guests,
+                SortBy = sortBy,
+                CurrentPage = page,
+                PageSize = 9,
+                TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0,
+                Hotels = response.Success ? response.Data?.Hotels ?? new() : new()
+            };
+
+            return View(model);
+        }
         public async Task<IActionResult> Details(int id)
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
