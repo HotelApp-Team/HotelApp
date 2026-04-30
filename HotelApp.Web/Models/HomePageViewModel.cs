@@ -15,6 +15,8 @@ public class HotelCardViewModel
     public byte StarRating { get; set; }
     public decimal? AvgRating { get; set; }
     public string? MainImageUrl { get; set; }
+
+    public decimal? MinPrice { get; set; }
 }
 
 public class PagedHotelListResponse

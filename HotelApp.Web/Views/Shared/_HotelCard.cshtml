@@ -16,7 +16,7 @@
         <div class="d-flex justify-content-between align-items-center">
 
             <span class="badge bg-primary">
-                @Model.StarRating ⭐
+                @await Html.PartialAsync("_StarRating", Model.StarRating)
             </span>
 
             @if (Model.AvgRating.HasValue)
@@ -27,6 +27,15 @@
             }
 
         </div>
+
+        @if (Model.MinPrice.HasValue)
+        {
+            <div class="mt-2">
+                <span class="fw-bold text-success">
+                    @Model.MinPrice.Value.ToString("0") TL
+                </span>
+            </div>
+        }
 
         <a asp-controller="Hotels"
            asp-action="Detail"
