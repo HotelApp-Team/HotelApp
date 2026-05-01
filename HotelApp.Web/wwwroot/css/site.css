@@ -22,7 +22,7 @@ html {
 body {
     margin: 0;
     background: var(--bg-main);
-    overflow-x: hidden; /* yan scroll hatasýný engeller */
+    overflow-x: hidden; /* yan scroll hatasini engeller */
 }
 
 /* ================= HERO ================= */
@@ -49,7 +49,7 @@ body {
         background: rgba(0,0,0,0.35);
     }
 
-    /* ALT YUMUÞAK GEÇÝÞ */
+    /* ALT YUMUSAK GECIS */
     .hero::after {
         content: "";
         position: absolute;
@@ -151,7 +151,7 @@ body {
         background: rgba(0,0,0,0.4);
     }
 
-    /* ALTTA YUMUÞAK GEÇÝÞ */
+    /* ALTTA YUMUÞAK GECIS */
     .hotel-hero::after {
         content: "";
         position: absolute;
@@ -196,7 +196,7 @@ body {
     border-radius: 12px;
 }
 
-    /* ANA RESÝM */
+    /* ANA RESIM */
     .gallery-item.main {
         grid-column: span 3;
         aspect-ratio: 16 / 8;
@@ -208,14 +208,14 @@ body {
             object-fit: cover;
         }
 
-    /* KÜÇÜK RESÝMLER (ESKÝ HAL) */
+    /* KUCUK RESIMLER  */
     .gallery-item:not(.main) img {
         width: 100%;
-        height: 140px; /* 120 ? 140 yaptýk */
+        height: 140px; 
         object-fit: cover;
     }
 
-    /* HOVER EFEKTÝ */
+    /* HOVER EFEKTI */
     .gallery-item img {
         transition: transform 0.3s ease;
     }

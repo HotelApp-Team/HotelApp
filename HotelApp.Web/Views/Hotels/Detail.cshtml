@@ -60,7 +60,7 @@
                         foreach (var img in Model.Images.OrderBy(x => x.DisplayOrder))
                         {
                             <div class="gallery-item @(img.IsMain ? "main" : "")">
-                                <img src="@img.ImageUrl" alt="hotel image" />
+                                <img src="@img.ImageUrl" alt="@Model.Name" />
                             </div>
                         }
                     }
