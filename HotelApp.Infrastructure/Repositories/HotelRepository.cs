@@ -103,17 +103,17 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return (data, totalCount);
     }
 
-    public async Task<(List<Hotel> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize)
+    public async Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize)
     {
         var availableRooms = await _context.Database
-               .SqlQueryRaw<AvailableRoomDto>(
-                   "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
-                   new SqlParameter("@HotelId", DBNull.Value),
-                   new SqlParameter("@City", city),
-                   new SqlParameter("@CheckInDate", checkIn.Date),
-                   new SqlParameter("@CheckOutDate", checkOut.Date),
-                   new SqlParameter("@GuestCount", guestCount))
-               .ToListAsync();
+        .SqlQueryRaw<AvailableRoomDto>(
+            "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
+            new SqlParameter("@HotelId", DBNull.Value),
+            new SqlParameter("@City", city),
+            new SqlParameter("@CheckInDate", checkIn.Date),
+            new SqlParameter("@CheckOutDate", checkOut.Date),
+            new SqlParameter("@GuestCount", guestCount))
+        .ToListAsync();
 
         var availableHotelIds = availableRooms
             .Select(x => x.HotelId)
@@ -136,6 +136,20 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .OrderBy(h => h.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(h => new HotelListDto
+            {
+                Id = h.Id,
+                Name = h.Name,
+                City = h.City,
+                Country = h.Country,
+                StarRating = h.StarRating,
+                AvgRating = h.AvgRating,
+                IsActive = h.IsActive,
+                MainImageUrl = h.HotelImages
+                    .Where(i => i.IsMain)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault()
+            })
             .ToListAsync();
 
         return (data, totalCount);

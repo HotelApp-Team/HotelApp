@@ -155,13 +155,10 @@ namespace HotelApp.Domain.Services
         {
             ValidatePaging(page, pageSize);
 
-            if (!dto.CheckIn.HasValue || !dto.CheckOut.HasValue || !dto.GuestCount.HasValue)
-                throw new ArgumentException("CheckIn, CheckOut ve GuestCount zorunludur.");
-
-            if (dto.CheckIn.Value >= dto.CheckOut.Value)
+            if (dto.CheckIn >= dto.CheckOut)
                 throw new ArgumentException("CheckIn tarihi CheckOut tarihinden küçük olmalıdır.");
 
-            if (dto.GuestCount.Value < 1)
+            if (dto.GuestCount < 1)
                 throw new ArgumentException("GuestCount en az 1 olmalıdır.");
 
             if (string.IsNullOrWhiteSpace(dto.City))
@@ -169,9 +166,9 @@ namespace HotelApp.Domain.Services
 
             var (data, totalCount) = await _unitOfWork.HotelRepository.SearchAvailableHotelsPagedAsync(
                 dto.City,
-                dto.CheckIn.Value,
-                dto.CheckOut.Value,
-                dto.GuestCount.Value,
+                dto.CheckIn,
+                dto.CheckOut,
+                dto.GuestCount,
                 dto.StarRating,
                 dto.MinRating,
                 page,
@@ -180,7 +177,7 @@ namespace HotelApp.Domain.Services
             return new HotelSearchResponseDto
             {
                 TotalCount = totalCount,
-                Hotels = data.Select(MapToListDto).ToList()
+                Hotels = data
             };
         }
 
