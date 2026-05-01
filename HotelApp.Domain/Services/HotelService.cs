@@ -153,25 +153,91 @@ namespace HotelApp.Domain.Services
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {
-            // TODO (E07 - Availability Search):
-            // Sevde'nin sp_SearchAvailableRooms PR'i merge edildikten sonra
-            // CheckIn, CheckOut ve GuestCount gerçek müsaitlik kontrolüne bağlanacak.
-            // Şu an bu alanlar sadece placeholder olarak duruyor.
-
             ValidatePaging(page, pageSize);
 
-            var (data, totalCount) =
-                await _unitOfWork.HotelRepository.SearchPagedAsync(
+            var hasAvailabilityFilter =
+                dto.CheckIn.HasValue ||
+                dto.CheckOut.HasValue ||
+                dto.GuestCount.HasValue;
+
+            if (!hasAvailabilityFilter)
+            {
+                var (data, totalCount) =
+                    await _unitOfWork.HotelRepository.SearchPagedAsync(
+                        dto.City,
+                        dto.StarRating,
+                        dto.MinRating,
+                        page,
+                        pageSize);
+
+                return new HotelSearchResponseDto
+                {
+                    TotalCount = totalCount,
+                    Hotels = data.Select(MapToListDto).ToList()
+                };
+            }
+
+            if (!dto.CheckIn.HasValue || !dto.CheckOut.HasValue || !dto.GuestCount.HasValue)
+                throw new ArgumentException("Müsaitlik araması için CheckIn, CheckOut ve GuestCount zorunludur.");
+
+            if (dto.CheckIn.Value >= dto.CheckOut.Value)
+                throw new ArgumentException("CheckIn tarihi CheckOut tarihinden küçük olmalıdır.");
+
+            if (dto.GuestCount.Value < 1)
+                throw new ArgumentException("GuestCount en az 1 olmalıdır.");
+
+            if (string.IsNullOrWhiteSpace(dto.City))
+                throw new ArgumentException("Müsaitlik araması için şehir bilgisi zorunludur.");
+
+            var candidateHotels = _unitOfWork.HotelRepository.Query()
+                .Where(h => h.IsActive)
+                .Where(h => h.City == dto.City)
+                .Where(h => !dto.StarRating.HasValue || h.StarRating == dto.StarRating.Value)
+                .Where(h => !dto.MinRating.HasValue || (h.AvgRating.HasValue && h.AvgRating.Value >= dto.MinRating.Value))
+                .Select(h => new HotelListDto
+                {
+                    Id = h.Id,
+                    Name = h.Name,
+                    City = h.City,
+                    Country = h.Country,
+                    StarRating = h.StarRating,
+                    AvgRating = h.AvgRating,
+                    IsActive = h.IsActive,
+                    MainImageUrl = h.HotelImages
+                        .Where(i => i.IsMain)
+                        .Select(i => i.ImageUrl)
+                        .FirstOrDefault()
+                })
+                .ToList();
+
+            var availableHotels = new List<HotelListDto>();
+
+            foreach (var hotel in candidateHotels)
+            {
+                var availableRooms = await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(
+                    hotel.Id,
                     dto.City,
-                    dto.StarRating,
-                    dto.MinRating,
-                    page,
-                    pageSize);
+                    dto.CheckIn.Value,
+                    dto.CheckOut.Value,
+                    dto.GuestCount.Value);
+
+                if (availableRooms.Any())
+                {
+                    availableHotels.Add(hotel);
+                }
+            }
+
+            var availableTotalCount = availableHotels.Count;
+
+            var pagedHotels = availableHotels
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             return new HotelSearchResponseDto
             {
-                TotalCount = totalCount,
-                Hotels = data.Select(MapToListDto).ToList()
+                TotalCount = availableTotalCount,
+                Hotels = pagedHotels
             };
         }
 
