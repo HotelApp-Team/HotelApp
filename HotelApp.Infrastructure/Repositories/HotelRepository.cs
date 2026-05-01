@@ -1,6 +1,8 @@
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories;
@@ -101,25 +103,37 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return (data, totalCount);
     }
 
-    public async Task<(List<Hotel> Data, int TotalCount)> SearchPagedAsync(string? city, byte? starRating, decimal? minRating, int page, int pageSize)
+    public async Task<(List<Hotel> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize)
     {
-        var query = _context.Hotels
-        .Where(x => x.IsActive)
-        .Include(x => x.HotelImages)
-        .AsNoTracking();
+        var availableRooms = await _context.Database
+               .SqlQueryRaw<AvailableRoomDto>(
+                   "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
+                   new SqlParameter("@HotelId", DBNull.Value),
+                   new SqlParameter("@City", city),
+                   new SqlParameter("@CheckInDate", checkIn.Date),
+                   new SqlParameter("@CheckOutDate", checkOut.Date),
+                   new SqlParameter("@GuestCount", guestCount))
+               .ToListAsync();
 
-        if (!string.IsNullOrEmpty(city))
-            query = query.Where(x => x.City.ToLower() == city.ToLower());
+        var availableHotelIds = availableRooms
+            .Select(x => x.HotelId)
+            .Distinct()
+            .ToList();
+
+        var query = _dbSet
+            .Include(h => h.HotelImages)
+            .Where(h => h.IsActive && availableHotelIds.Contains(h.Id));
 
         if (starRating.HasValue)
-            query = query.Where(x => x.StarRating == starRating);
+            query = query.Where(h => h.StarRating == starRating.Value);
 
         if (minRating.HasValue)
-            query = query.Where(x => x.AvgRating >= minRating);
+            query = query.Where(h => h.AvgRating.HasValue && h.AvgRating.Value >= minRating.Value);
 
         var totalCount = await query.CountAsync();
 
         var data = await query
+            .OrderBy(h => h.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
