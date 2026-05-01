@@ -22,7 +22,7 @@ html {
 body {
     margin: 0;
     background: var(--bg-main);
-    overflow-x: hidden; /* yan scroll hatasýný engeller */
+    overflow-x: hidden; /* yan scroll hatasini engeller */
 }
 
 /* ================= HERO ================= */
@@ -49,7 +49,7 @@ body {
         background: rgba(0,0,0,0.35);
     }
 
-    /* ALT YUMUÞAK GEÇÝÞ */
+    /* ALT YUMUSAK GECIS */
     .hero::after {
         content: "";
         position: absolute;
@@ -120,3 +120,106 @@ body {
 .text-muted {
     color: var(--text-secondary);
 }
+
+.search-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #2563EB;
+    border-color: #2563EB;
+}
+/* HERO DETAIL */
+.hotel-hero {
+    position: relative;
+    height: 45vh;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+    /* KARARTMA */
+    .hotel-hero .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+    }
+
+    /* ALTTA YUMUÞAK GECIS */
+    .hotel-hero::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 140px;
+        background: linear-gradient( to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 50%, #EFF6FF 100% );
+    }
+
+/* HERO CONTENT */
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* CARD BOX */
+.card-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* INFO GRID */
+.info-grid {
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+}
+
+/* GALLERY */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+/* ITEM */
+.gallery-item {
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+    /* ANA RESIM */
+    .gallery-item.main {
+        grid-column: span 3;
+        aspect-ratio: 16 / 8;
+    }
+
+        .gallery-item.main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* KUCUK RESIMLER  */
+    .gallery-item:not(.main) img {
+        width: 100%;
+        height: 140px; 
+        object-fit: cover;
+    }
+
+    /* HOVER EFEKTI */
+    .gallery-item img {
+        transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.08);
+    }

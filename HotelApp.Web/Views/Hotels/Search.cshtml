@@ -1,0 +1,113 @@
+﻿@model HotelApp.Web.Models.HotelSearchPageViewModel
+
+@{
+    ViewData["Title"] = "Otel Arama";
+}
+
+<div class="container mt-4">
+
+    <!-- FILTER -->
+    <form method="get" class="search-box mb-4">
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <input name="city" value="@Model.City" class="form-control" placeholder="Şehir" />
+            </div>
+
+            <div class="col-md-2">
+                <select name="starRating" class="form-select">
+                    <option value="">Yıldız</option>
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <option value="@i" selected="@(Model.StarRating == i)">
+                            @i yıldız
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <input name="minStarRating" value="@Model.MinRating" class="form-control" placeholder="Min Puan" />
+            </div>
+
+            <div class="col-md-2">
+                <input type="date" name="checkIn"
+                       value="@Model.CheckIn?.ToString("yyyy-MM-dd")"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-2">
+                <input type="date" name="checkOut"
+                       value="@Model.CheckOut?.ToString("yyyy-MM-dd")"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-1">
+                <input name="guests" value="@Model.GuestCount" class="form-control" placeholder="Kişi" />
+            </div>
+
+        </div>
+
+        <!-- SORT -->
+        <div class="row mt-3">
+
+            <div class="col-md-3">
+                <select name="sortBy" class="form-select">
+                    <option value="">Sırala</option>
+                    <option value="price_asc" selected="@(Model.SortBy == "price_asc")">Fiyat ↑</option>
+                    <option value="price_desc" selected="@(Model.SortBy == "price_desc")">Fiyat ↓</option>
+                    <option value="rating_desc" selected="@(Model.SortBy == "rating_desc")">Puan ↓</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Ara</button>
+            </div>
+
+        </div>
+
+    </form>
+
+    <!-- RESULTS -->
+    <div class="row g-3">
+        @foreach (var hotel in Model.Hotels)
+        {
+            <div class="col-md-4">
+                @await Html.PartialAsync("_HotelCard", hotel)
+            </div>
+        }
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="mt-4 d-flex justify-content-center">
+
+        @{
+            var totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
+        }
+
+        <ul class="pagination">
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Search"
+                       asp-route-city="@Model.City"
+                       asp-route-starRating="@Model.StarRating"
+                       asp-route-minStarRating="@Model.MinRating"
+                       asp-route-checkIn="@Model.CheckIn?.ToString("yyyy-MM-dd")"
+                       asp-route-checkOut="@Model.CheckOut?.ToString("yyyy-MM-dd")"
+                       asp-route-guests="@Model.GuestCount"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-page="@i">
+                        @i
+                    </a>
+                </li>
+            }
+
+        </ul>
+
+    </div>
+
+</div>
