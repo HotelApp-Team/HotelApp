@@ -136,7 +136,9 @@ body {
 .hotel-hero {
     position: relative;
     height: 45vh;
-    background: url('https://www.kucukoteller.com.tr/storage/images/2019/05/31/1559303064248882.webp') center/cover;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     display: flex;
     align-items: center;
     color: white;

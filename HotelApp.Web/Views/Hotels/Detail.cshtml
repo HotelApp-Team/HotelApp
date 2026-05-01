@@ -3,10 +3,10 @@
     ViewData["Title"] = Model.Name;
 }
 
-<link rel="stylesheet" href="~/css/hotel-detail.css" />
 
 <!-- ================= HERO ================= -->
-<div class="hotel-hero">
+<div class="hotel-hero"
+    style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
     <div class="overlay"></div>
 
     <div class="container hero-content">
@@ -40,7 +40,7 @@
             <section class="card-box">
                 <h3>Otel Hakkında</h3>
                 <p>
-                    @Model.Description
+                    @(Model.Description ?? "Otel açıklaması henüz eklenmemiş.")
                 </p>
 
                 <div class="info-grid">

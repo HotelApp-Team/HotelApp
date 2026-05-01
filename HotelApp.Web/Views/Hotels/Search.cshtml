@@ -28,7 +28,7 @@
             </div>
 
             <div class="col-md-2">
-                <input name="minRating" value="@Model.MinRating" class="form-control" placeholder="Min Puan" />
+                <input name="minStarRating" value="@Model.MinRating" class="form-control" placeholder="Min Puan" />
             </div>
 
             <div class="col-md-2">
@@ -95,7 +95,7 @@
                        asp-action="Search"
                        asp-route-city="@Model.City"
                        asp-route-starRating="@Model.StarRating"
-                       asp-route-minRating="@Model.MinRating"
+                       asp-route-minStarRating="@Model.MinRating"
                        asp-route-checkIn="@Model.CheckIn?.ToString("yyyy-MM-dd")"
                        asp-route-checkOut="@Model.CheckOut?.ToString("yyyy-MM-dd")"
                        asp-route-guests="@Model.GuestCount"
