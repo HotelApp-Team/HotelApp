@@ -18,7 +18,7 @@ public class HotelSearchRequestDto
     public DateTime CheckOut { get; set; }
 
     [Required(ErrorMessage = "Misafir sayýsý zorunludur.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Misafir sayýsý en az 1 olmalýdýr.")]
+    [Range(1, 20, ErrorMessage = "Misafir sayýsý 1 ile 20 arasýnda olmalýdýr.")]
     public int GuestCount { get; set; }
 }
 // Search Response DTO
