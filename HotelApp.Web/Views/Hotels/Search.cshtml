@@ -6,13 +6,20 @@
 
 <div class="container mt-4">
 
+    @if (TempData["SearchError"] is string searchError)
+    {
+        <div class="alert alert-warning" role="alert">
+            @searchError
+        </div>
+    }
+
     <!-- FILTER -->
     <form method="get" class="search-box mb-4">
 
         <div class="row g-3">
 
             <div class="col-md-3">
-                <input name="city" value="@Model.City" class="form-control" placeholder="Şehir" />
+                <input name="city" value="@Model.City" class="form-control" placeholder="Şehir" required />
             </div>
 
             <div class="col-md-2">
@@ -34,17 +41,17 @@
             <div class="col-md-2">
                 <input type="date" name="checkIn"
                        value="@Model.CheckIn?.ToString("yyyy-MM-dd")"
-                       class="form-control" />
+                       class="form-control" required />
             </div>
 
             <div class="col-md-2">
                 <input type="date" name="checkOut"
                        value="@Model.CheckOut?.ToString("yyyy-MM-dd")"
-                       class="form-control" />
+                       class="form-control" required />
             </div>
 
             <div class="col-md-1">
-                <input name="guests" value="@Model.GuestCount" class="form-control" placeholder="Kişi" />
+                <input type="number" name="guestCount" value="@Model.GuestCount" class="form-control" placeholder="Kişi" min="1" max="20" required />
             </div>
 
         </div>
@@ -70,6 +77,19 @@
     </form>
 
     <!-- RESULTS -->
+    @if (!Model.Hotels.Any() && !string.IsNullOrWhiteSpace(Model.City) && Model.CheckIn.HasValue && Model.CheckOut.HasValue && Model.GuestCount.HasValue)
+    {
+        <div class="alert alert-info text-center" role="alert">
+            Bu kriterlere uygun musait otel bulunamadi. Tarih veya misafir sayisini degistirip tekrar deneyin.
+        </div>
+    }
+    else if (!Model.Hotels.Any())
+    {
+        <div class="alert alert-secondary text-center" role="alert">
+            Otel aramak icin sehir, tarih ve misafir sayisini girin.
+        </div>
+    }
+
     <div class="row g-3">
         @foreach (var hotel in Model.Hotels)
         {
@@ -98,7 +118,7 @@
                        asp-route-minStarRating="@Model.MinRating"
                        asp-route-checkIn="@Model.CheckIn?.ToString("yyyy-MM-dd")"
                        asp-route-checkOut="@Model.CheckOut?.ToString("yyyy-MM-dd")"
-                       asp-route-guests="@Model.GuestCount"
+                       asp-route-guestCount="@Model.GuestCount"
                        asp-route-sortBy="@Model.SortBy"
                        asp-route-page="@i">
                         @i

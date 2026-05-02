@@ -25,7 +25,7 @@ public class Sprint3SearchPageContractTests
         var source = ReadWebFile("Controllers", "HotelsController.cs");
 
         AssertContainsAny(source, "hotels/search", "api/hotels/search");
-        AssertContainsAll(source, "city", "checkIn", "checkOut", "guests", "minStarRating", "page", "pageSize");
+        AssertContainsAll(source, "city", "checkIn", "checkOut", "guestCount", "minStarRating", "page", "pageSize");
         AssertContainsAny(source, "ApiService", "GetAsync", "HttpClient");
     }
 
@@ -42,7 +42,7 @@ public class Sprint3SearchPageContractTests
         AssertContainsAny(searchView, "name=\"city\"", "name='city'", "asp-for=\"City\"", "asp-for='City'", "City");
         AssertContainsAny(searchView, "name=\"checkIn\"", "name='checkIn'", "asp-for=\"CheckIn\"", "asp-for='CheckIn'", "CheckIn");
         AssertContainsAny(searchView, "name=\"checkOut\"", "name='checkOut'", "asp-for=\"CheckOut\"", "asp-for='CheckOut'", "CheckOut");
-        AssertContainsAny(searchView, "name=\"guests\"", "name='guests'", "asp-for=\"Guests\"", "asp-for='Guests'", "Guests");
+        AssertContainsAny(searchView, "name=\"guestCount\"", "name='guestCount'", "asp-for=\"GuestCount\"", "asp-for='GuestCount'", "GuestCount");
 
         // S3-04: filtre, siralama ve sayfalama UI'i.
         AssertContainsAny(searchView, "minStarRating", "StarRating", "Yildiz", "Yıldız");
