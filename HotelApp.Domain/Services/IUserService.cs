@@ -13,4 +13,7 @@ public interface IUserService
     // Giris yapmis kullanicinin profil bilgilerini gunceller ve guncel halini dondurur
     Task<UserDto> UpdateProfileAsync(int userId, ProfileDto profileDto);
 
+    // Admin paneli için kullanıcıları filtreli ve sayfalı şekilde getirir.
+    Task<PagedResponseDto<UserDto>> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize);
+
 }

@@ -7,4 +7,6 @@ namespace HotelApp.Domain.Interfaces;
 
 public interface IUserRepository : IRepository<User>
 {
+    // Admin kullanıcı listesi için gerekli veritabanı sorgusunu yapar.
+    Task<(List<User> Data, int TotalCount)> GetPagedUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize);
 }

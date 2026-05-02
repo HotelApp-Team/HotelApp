@@ -13,18 +13,31 @@ namespace HotelApp.API.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
+    private readonly IUserService _userService;
 
-    // Admin servis bağımlılığını alır.
-    public AdminController(IAdminService adminService)
+    // Admin ve kullanıcı servislerini controller'a alır.
+    public AdminController(IAdminService adminService, IUserService userService)
     {
         _adminService = adminService;
+        _userService = userService;
     }
 
-    // E36: Admin dashboard istatistiklerini getirir ve 200 OK olarak döndürür.
+    // E36 GET api/admin/dashboard: Admin dashboard istatistiklerini getirir ve 200 OK olarak döndürür.
     [HttpGet("dashboard")]
     public async Task<ActionResult> Dashboard()
     {
         var result = await _adminService.GetDashboardDataAsync();
+        return Ok(result);
+    }
+
+    // E37 GET api/admin/users: Admin paneli için kullanıcı listesini getirir.
+    [HttpGet("users")]
+    public async Task<ActionResult> GetUsersForAdminAsync(string? search = null, bool? isActive = null, int page = 1, int pageSize = 10)
+    {
+        // Filtre ve sayfalama bilgilerini service katmanına gönderiyoruz.
+        var result = await _userService.GetUsersForAdminAsync(search, isActive, page, pageSize);
+
+        // Service'ten gelen güvenli DTO cevabını 200 OK ile döndürüyoruz.
         return Ok(result);
     }
 }

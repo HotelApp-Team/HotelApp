@@ -62,8 +62,41 @@ public class UserService : IUserService
             LastName = user.LastName,
             Email = user.Email,
             Phone = user.Phone,
+            IsActive = user.IsActive,
             Roles = user.Roles.Select(r => r.Name).ToList(),
             CreatedAt = user.CreatedAt
         };
+    }
+
+    // Admin kullanıcı listesini hazırlar ve güvenli DTO olarak döndürür.
+    public async Task<PagedResponseDto<UserDto>> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
+    {
+        // Sayfalama değerleri hatalıysa DB sorgusuna gitmeden durduruyoruz.
+        ValidatePaging(page, pageSize);
+
+        // Kullanıcıları filtrelenmiş ve sayfalanmış şekilde repository'den alıyoruz.
+        var (users, totalCount) = await _unitOfWork.UserRepository.GetPagedUsersForAdminAsync(search, isActive, page, pageSize);
+
+        // Entity listesini dışarıya açılacak güvenli DTO listesine çeviriyoruz.
+        return new PagedResponseDto<UserDto>
+        {
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            Data = users.Select(MapToUserDto).ToList()
+        };
+    }
+
+    // Page ve pageSize değerlerinin güvenli aralıkta olup olmadığını kontrol eder.
+    private static void ValidatePaging(int page, int pageSize)
+    {
+        if (page < 1)
+            throw new ArgumentException("Page 1 veya daha büyük olmalıdır.");
+
+        if (pageSize < 1)
+            throw new ArgumentException("PageSize 1 veya daha büyük olmalıdır.");
+
+        if (pageSize > 100)
+            throw new ArgumentException("PageSize en fazla 100 olabilir.");
     }
 }

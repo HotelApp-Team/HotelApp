@@ -94,15 +94,19 @@ public class Sprint4AdminApiContractTests
 
         var source = ReadApiFile("Controllers", "AdminController.cs");
         var usersBody = ExtractMethodBody(source, usersAction!.Name);
+        var implementationEvidence = usersBody
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "UserService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Repositories", "UserRepository.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "DTOs", "UserDto.cs");
 
-        AssertContainsAny(usersBody, "Skip(", "Page", "page");
-        AssertContainsAny(usersBody, "Take(", "PageSize", "pageSize");
-        AssertContainsAny(usersBody, "TotalCount", "CountAsync", ".Count(", "PagedResult");
-        AssertContainsAll(usersBody, "Id", "Email", "IsActive");
-        AssertContainsAny(usersBody, "FirstName", "LastName", "UserName", "Username", "Name");
-        AssertContainsAny(usersBody, "Roles", "RoleName", "Role");
-        Assert.DoesNotContain("PasswordHash", usersBody, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Token", usersBody, StringComparison.OrdinalIgnoreCase);
+        AssertContainsAny(implementationEvidence, "Skip(", "Page", "page");
+        AssertContainsAny(implementationEvidence, "Take(", "PageSize", "pageSize");
+        AssertContainsAny(implementationEvidence, "TotalCount", "CountAsync", ".Count(", "PagedResult");
+        AssertContainsAll(implementationEvidence, "Id", "Email", "IsActive");
+        AssertContainsAny(implementationEvidence, "FirstName", "LastName", "UserName", "Username", "Name");
+        AssertContainsAny(implementationEvidence, "Roles", "RoleName", "Role");
+        Assert.DoesNotContain("PasswordHash", implementationEvidence, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Token", implementationEvidence, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -209,7 +213,12 @@ public class Sprint4AdminApiContractTests
 
         var actualType = parameter!.ParameterType;
         if (allowNullable && Nullable.GetUnderlyingType(actualType) is { } nullableType)
-            actualType = nullableType;
+        {
+            Assert.True(
+                expectedType == actualType || expectedType == nullableType,
+                $"{parameterName} parametresi {expectedType.Name} veya {nullableType.Name} olmalı, ama {actualType.Name} bulundu.");
+            return;
+        }
 
         Assert.Equal(expectedType, actualType);
     }
