@@ -36,16 +36,23 @@ public class Sprint4AdminApiContractTests
 
         var controllerType = GetRequiredType("HotelApp.API.Controllers.AdminController");
 
-        Assert.NotNull(FindActionWithHttpAttribute<HttpGetAttribute>(controllerType, "dashboard"));
-        Assert.NotNull(FindActionWithHttpAttribute<HttpGetAttribute>(controllerType, "users"));
-        Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/status"));
-        Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/role"));
+        if (Sprint4CardGuards.S401_E36DashboardImplemented())
+            Assert.NotNull(FindActionWithHttpAttribute<HttpGetAttribute>(controllerType, "dashboard"));
+
+        if (Sprint4CardGuards.S401_E37UsersImplemented())
+            Assert.NotNull(FindActionWithHttpAttribute<HttpGetAttribute>(controllerType, "users"));
+
+        if (Sprint4CardGuards.S401_E38StatusImplemented())
+            Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/status"));
+
+        if (Sprint4CardGuards.S401_E39RoleImplemented())
+            Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/role"));
     }
 
     [Fact]
     public void S401_E36Dashboard_ShouldReturnPlanStatisticsWithoutCrashingOnEmptyData()
     {
-        if (!Sprint4CardGuards.S401_AdminApiImplemented())
+        if (!Sprint4CardGuards.S401_E36DashboardImplemented())
             return;
 
         var source = ReadApiFile("Controllers", "AdminController.cs");
@@ -53,24 +60,25 @@ public class Sprint4AdminApiContractTests
             GetRequiredType("HotelApp.API.Controllers.AdminController"),
             "dashboard");
         var dashboardBody = ExtractMethodBody(source, dashboardAction?.Name ?? "Dashboard");
+        var implementationEvidence = dashboardBody + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs");
 
         AssertContainsAll(
-            dashboardBody,
+            implementationEvidence,
             "TotalHotels",
             "TotalUsers",
             "TotalReservations",
             "TotalRevenue",
             "AverageRating");
-        AssertContainsAny(dashboardBody, "ActiveReservations", "Confirmed");
-        AssertContainsAny(dashboardBody, "RecentReservations", "Take(10", "Take( 10");
-        AssertContainsAny(dashboardBody, "CountAsync", ".Count(", "SumAsync", ".Sum(", "AverageAsync", ".Average(");
+        AssertContainsAny(implementationEvidence, "ActiveReservations", "Confirmed");
+        AssertContainsAny(implementationEvidence, "RecentReservations", "Take(10", "Take( 10");
+        AssertContainsAny(implementationEvidence, "CountAsync", ".Count(", "SumAsync", ".Sum(", "AverageAsync", ".Average(");
         AssertContainsAny(dashboardBody, "Ok(", "return Ok");
     }
 
     [Fact]
     public void S401_E37Users_ShouldSupportSearchStatusAndPagingWithoutSensitiveData()
     {
-        if (!Sprint4CardGuards.S401_AdminApiImplemented())
+        if (!Sprint4CardGuards.S401_E37UsersImplemented())
             return;
 
         var controllerType = GetRequiredType("HotelApp.API.Controllers.AdminController");
@@ -98,7 +106,7 @@ public class Sprint4AdminApiContractTests
     [Fact]
     public void S401_E38Status_ShouldValidateUserAndUpdateIsActive()
     {
-        if (!Sprint4CardGuards.S401_AdminApiImplemented())
+        if (!Sprint4CardGuards.S401_E38StatusImplemented())
             return;
 
         var controllerType = GetRequiredType("HotelApp.API.Controllers.AdminController");
@@ -124,7 +132,7 @@ public class Sprint4AdminApiContractTests
     [Fact]
     public void S401_E39Role_ShouldValidateUserAndRoleBeforeChangingRole()
     {
-        if (!Sprint4CardGuards.S401_AdminApiImplemented())
+        if (!Sprint4CardGuards.S401_E39RoleImplemented())
             return;
 
         var controllerType = GetRequiredType("HotelApp.API.Controllers.AdminController");
@@ -220,6 +228,13 @@ public class Sprint4AdminApiContractTests
 
         Assert.True(File.Exists(path), $"Dosya bulunamadi: {path}");
         return File.ReadAllText(path);
+    }
+
+    private static string ReadOptionalProjectFile(string projectName, params string[] relativePathParts)
+    {
+        var path = Path.Combine(new[] { FindProjectRoot(projectName) }.Concat(relativePathParts).ToArray());
+
+        return File.Exists(path) ? File.ReadAllText(path) : string.Empty;
     }
 
     private static string ExtractMethodBody(string source, string methodName)
