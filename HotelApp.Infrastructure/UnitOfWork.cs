@@ -1,40 +1,37 @@
-﻿using HotelApp.Domain.Interfaces;
+using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using HotelApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
-// UnitOfWork, repository'leri tek merkezden yonetir ve SaveChanges/transaction kontrolu saglar.
-// Amaci, ayni is akisi icindeki veri degisikliklerini birlikte yonetmektir.
-// SOLID: SRP kullanir, DIP icin IUnitOfWork interface'ini uygular.
 namespace HotelApp.Infrastructure;
+
+// Amaç: Repository'lere tek noktadan erişim sağlar ve transaction işlemlerini yönetir.
+// SOLID: SRP ile repository/transaction yönetimini toplar; DIP ile IUnitOfWork arayüzünü uygular.
 
 public class UnitOfWork : IUnitOfWork
 {
     private readonly HotelAppDbContext _context;
     private IDbContextTransaction? _transaction;
     private IAuthRepository? _authRepository;
-
-
     private IRoomTypeRepository? _roomTypeRepository;
     private IHotelRoomRepository? _hotelRoomRepository;
     private IReviewRepository? _reviewRepository;
     private IReservationRepository? _reservationRepository;
-
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
     private IAmenityRepository? _amenityRepository;
     private IUserRepository? _userRepository;
+    private IAdminRepository? _adminRepository;
 
-
+    // Aynı request içinde kullanılacak DbContext'i alır.
     public UnitOfWork(HotelAppDbContext context)
     {
         _context = context;
     }
 
-    // Lazy loading: ilk erisimde olustur, sonrakilerde ayni instance'i don
+    // Repository ilk istendiğinde oluşturulur, sonra aynı nesne tekrar kullanılır.
     public IAuthRepository AuthRepository =>
         _authRepository ??= new AuthRepository(_context);
-
 
     public IRoomTypeRepository RoomTypeRepository =>
         _roomTypeRepository ??= new RoomTypeRepository(_context);
@@ -60,30 +57,26 @@ public class UnitOfWork : IUnitOfWork
     public IReviewRepository ReviewRepository =>
         _reviewRepository ??= new ReviewRepository(_context);
 
+    public IAdminRepository AdminRepository =>
+        _adminRepository ??= new AdminRepository(_context);
 
-
-
-    /// Tüm değişiklikleri veritabanına kaydeder.
+    // Yapılan değişiklikleri veritabanına kaydeder.
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }
 
-    // Transaction başlatır.
-    /// Birden fazla işlemi atomik olarak yapmak için kullanılır.
+    // Yeni bir transaction başlatır.
     public async Task BeginTransactionAsync()
     {
-        // Zaten acik bir transaction varsa ustune yazmayiz: onceki transaction
-        // dispose edilmeden kaybolacagi icin resource leak olusur ve ic ice
-        // transaction gibi beklenmedik davranislara yol acar.
-        // Once mevcut transaction commit veya rollback ile kapatilmali.
+        // Aynı anda ikinci transaction başlatmayız; önce açık olan işlem bitmelidir.
         if (_transaction != null)
-            throw new InvalidOperationException("Aktif bir transaction zaten var. Once onu commit veya rollback ile kapatin.");
+            throw new InvalidOperationException("Aktif bir transaction zaten var. Önce onu commit veya rollback ile kapatın.");
 
         _transaction = await _context.Database.BeginTransactionAsync();
     }
 
-    /// Transaction'ı commit eder. Yani yapılan değişiklikleri kalıcı hale getirir.
+    // Açık transaction'ı onaylar ve kapatır.
     public async Task CommitTransactionAsync()
     {
         if (_transaction != null)
@@ -94,8 +87,7 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    /// Transaction'ı geri alır (rollback)
-    /// Hata durumunda tüm değişiklikleri iptal etmek için kullanılır.
+    // Hata olursa açık transaction'ı geri alır ve kapatır.
     public async Task RollbackTransactionAsync()
     {
         if (_transaction != null)
@@ -106,13 +98,11 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    /// Kaynakları serbest bırakır.
+    // UnitOfWork kapanırken açık transaction varsa temizler.
     public void Dispose()
     {
-        // DbContext'i burada dispose ETMIYORUZ. Program.cs'te AddDbContext ile
-        // scoped kaydedildigi icin DI container istek bitince context'i kendisi dispose eder.
-        // Burada tekrar dispose cagirmak double-dispose hatasina yol acabilir.
-        // UnitOfWork sadece kendi olusturdugu kaynagi (transaction) temizler.
+        // DbContext'i burada kapatmıyoruz; onu DI container request sonunda kapatır.
+        // Burada sadece UnitOfWork'ün yönettiği transaction temizlenir.
         _transaction?.Dispose();
     }
 }
