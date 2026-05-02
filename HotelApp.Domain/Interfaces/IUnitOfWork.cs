@@ -1,41 +1,31 @@
-﻿// IUnitOfWork, repository'leri ve kaydetme islemini tek sozlesmede toplar.
-// Amaci, birden fazla veri islemini tek bir is birimi olarak yonetmektir.
-
-using HotelApp.Domain.Services;
-
 namespace HotelApp.Domain.Interfaces;
+
+// Amaç: Repository erişimini ve veritabanı kaydetme/transaction işlemlerini tek sözleşmede toplar.
+// SOLID: ISP ile veri işlemleri için net bir sözleşme sunar; DIP ile servisler somut UnitOfWork sınıfına bağlı kalmaz.
 
 public interface IUnitOfWork : IDisposable
 {
-    //Repository'lere erişim
+    // Repository'lere tek yerden erişim sağlar.
     IAuthRepository AuthRepository { get; }
-
-
     IHotelRoomRepository HotelRoomRepository { get; }
     IRoomTypeRepository RoomTypeRepository { get; }
     IReservationRepository ReservationRepository { get; }
     IReviewRepository ReviewRepository { get; }
-
-
     IUserRepository UserRepository { get; }
-
     IHotelRepository HotelRepository { get; }
-
     IHotelImageRepository HotelImageRepository { get; }
-
     IAmenityRepository AmenityRepository { get; }
+    IAdminRepository AdminRepository { get; }
 
-
-    // Tüm değişiklikleri kaydet
+    // Yapılan değişiklikleri veritabanına kaydeder.
     Task<int> SaveChangesAsync();
 
-    // Transaction başlat
+    // Yeni bir transaction başlatır.
     Task BeginTransactionAsync();
 
-    // Transaction onayla
+    // Açık transaction'ı onaylar.
     Task CommitTransactionAsync();
 
-    // Transaction geri al
+    // Açık transaction'ı geri alır.
     Task RollbackTransactionAsync();
-
 }
