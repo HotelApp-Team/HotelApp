@@ -60,7 +60,9 @@ public class Sprint4AdminApiContractTests
             GetRequiredType("HotelApp.API.Controllers.AdminController"),
             "dashboard");
         var dashboardBody = ExtractMethodBody(source, dashboardAction?.Name ?? "Dashboard");
-        var implementationEvidence = dashboardBody + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs");
+        var implementationEvidence = dashboardBody
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Repositories", "AdminRepository.cs");
 
         AssertContainsAll(
             implementationEvidence,
