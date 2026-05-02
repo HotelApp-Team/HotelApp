@@ -153,25 +153,31 @@ namespace HotelApp.Domain.Services
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {
-            // TODO (E07 - Availability Search):
-            // Sevde'nin sp_SearchAvailableRooms PR'i merge edildikten sonra
-            // CheckIn, CheckOut ve GuestCount gerçek müsaitlik kontrolüne bağlanacak.
-            // Şu an bu alanlar sadece placeholder olarak duruyor.
-
             ValidatePaging(page, pageSize);
 
-            var (data, totalCount) =
-                await _unitOfWork.HotelRepository.SearchPagedAsync(
-                    dto.City,
-                    dto.StarRating,
-                    dto.MinRating,
-                    page,
-                    pageSize);
+            if (dto.CheckIn >= dto.CheckOut)
+                throw new ArgumentException("CheckIn tarihi CheckOut tarihinden küçük olmalıdır.");
+
+            if (dto.GuestCount < 1)
+                throw new ArgumentException("GuestCount en az 1 olmalıdır.");
+
+            if (string.IsNullOrWhiteSpace(dto.City))
+                throw new ArgumentException("Şehir bilgisi zorunludur.");
+
+            var (data, totalCount) = await _unitOfWork.HotelRepository.SearchAvailableHotelsPagedAsync(
+                dto.City,
+                dto.CheckIn,
+                dto.CheckOut,
+                dto.GuestCount,
+                dto.StarRating,
+                dto.MinRating,
+                page,
+                pageSize);
 
             return new HotelSearchResponseDto
             {
                 TotalCount = totalCount,
-                Hotels = data.Select(MapToListDto).ToList()
+                Hotels = data
             };
         }
 

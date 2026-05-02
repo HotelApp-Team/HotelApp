@@ -1,18 +1,26 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace HotelApp.Domain.DTOs;
 
 // Search Request DTO
 public class HotelSearchRequestDto
 {
+    [Required(ErrorMessage = "Þehir zorunludur.")]
     public string? City { get; set; }
+
     public byte? StarRating { get; set; }
     public decimal? MinRating { get; set; }
 
-    // Availability search icin (ileride lazim olacak)
-    public DateTime? CheckIn { get; set; }
-    public DateTime? CheckOut { get; set; }
-    public int? GuestCount { get; set; }
-}
+    [Required(ErrorMessage = "Giriþ tarihi zorunludur.")]
+    public DateTime CheckIn { get; set; }
 
+    [Required(ErrorMessage = "Çýkýþ tarihi zorunludur.")]
+    public DateTime CheckOut { get; set; }
+
+    [Required(ErrorMessage = "Misafir sayýsý zorunludur.")]
+    [Range(1, 20, ErrorMessage = "Misafir sayýsý 1 ile 20 arasýnda olmalýdýr.")]
+    public int GuestCount { get; set; }
+}
 // Search Response DTO
 public class HotelSearchResponseDto
 {

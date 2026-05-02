@@ -47,7 +47,7 @@ public class Sprint3HomePageContractTests
         Assert.Contains("name=\"city\"", indexView);
         Assert.Contains("name=\"checkIn\"", indexView);
         Assert.Contains("name=\"checkOut\"", indexView);
-        Assert.Contains("name=\"guests\"", indexView);
+        Assert.Contains("name=\"guestCount\"", indexView);
         Assert.Contains("FeaturedHotels", indexView);
         Assert.Contains("_HotelCard", indexView);
     }

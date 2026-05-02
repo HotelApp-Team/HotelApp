@@ -19,10 +19,38 @@ namespace HotelApp.Web.Controllers
             decimal? minStarRating,
             DateTime? checkIn,
             DateTime? checkOut,
-            int? guests,
+            int? guestCount,
             string? sortBy,
             int page = 1)
         {
+            // Zorunlu alanlar eksikse API'ye gitmeden once kullaniciya bilgi ver.
+            // Boylece sayfa ilk acildiginda gereksiz 400 cagrisi yapmiyoruz.
+            var hasRequiredFilters =
+                !string.IsNullOrWhiteSpace(city) &&
+                checkIn.HasValue &&
+                checkOut.HasValue &&
+                guestCount.HasValue;
+
+            var model = new HotelSearchPageViewModel
+            {
+                City = city,
+                StarRating = starRating,
+                MinRating = minStarRating,
+                CheckIn = checkIn,
+                CheckOut = checkOut,
+                GuestCount = guestCount,
+                SortBy = sortBy,
+                CurrentPage = page,
+                PageSize = 9,
+                TotalCount = 0,
+                Hotels = new()
+            };
+
+            if (!hasRequiredFilters)
+            {
+                return View(model);
+            }
+
             var queryParams = new Dictionary<string, string?>()
             {
                 ["city"] = city,
@@ -30,7 +58,7 @@ namespace HotelApp.Web.Controllers
                 ["minStarRating"] = minStarRating?.ToString(),
                 ["checkIn"] = checkIn?.ToString("yyyy-MM-dd"),
                 ["checkOut"] = checkOut?.ToString("yyyy-MM-dd"),
-                ["guestCount"] = guests?.ToString(),
+                ["guestCount"] = guestCount?.ToString(),
                 ["sortBy"] = sortBy,
                 ["page"] = page.ToString(),
                 ["pageSize"] = "9"
@@ -44,20 +72,18 @@ namespace HotelApp.Web.Controllers
 
             var response = await _apiService.GetAsync<HotelSearchResponseViewModel>(query);
 
-            var model = new HotelSearchPageViewModel
+            if (!response.Success)
             {
-                City = city,
-                StarRating = starRating,
-                MinRating = minStarRating,
-                CheckIn = checkIn,
-                CheckOut = checkOut,
-                GuestCount = guests,
-                SortBy = sortBy,
-                CurrentPage = page,
-                PageSize = 9,
-                TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0,
-                Hotels = response.Success ? response.Data?.Hotels ?? new() : new()
-            };
+                // API'den gelen hatayi sayfada kullaniciya gosteriyoruz.
+                TempData["SearchError"] = string.IsNullOrWhiteSpace(response.Message)
+                    ? "Arama yapilirken bir sorun olustu, lutfen tekrar deneyin."
+                    : response.Message;
+            }
+            else
+            {
+                model.TotalCount = response.Data?.TotalCount ?? 0;
+                model.Hotels = response.Data?.Hotels ?? new();
+            }
 
             return View(model);
         }
