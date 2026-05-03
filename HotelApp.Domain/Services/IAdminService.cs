@@ -15,4 +15,8 @@ public interface IAdminService
 
     // Admin panelinden kullanıcı hesabını aktif veya pasif yapar.
     Task<AdminUserDto> UpdateUserStatusAsync(int userId, AdminUpdateUserStatusDto dto, int currentAdminId);
+
+    // Admin panelinden kullanıcı rollerini günceller.
+    Task<AdminUserDto> UpdateUserRolesAsync(int userId, AdminUpdateUserRolesDto dto, int currentAdminId);
+
 }

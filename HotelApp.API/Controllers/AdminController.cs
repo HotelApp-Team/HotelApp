@@ -50,19 +50,8 @@ public class AdminController : ControllerBase
         if (!TryGetCurrentUserId(out var currentAdminId))
             return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
 
-        try
-        {
             var result = await _adminService.UpdateUserStatusAsync(id, dto, currentAdminId);
             return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
     }
 
     // JWT token içindeki kullanıcı Id bilgisini güvenli şekilde okumaya çalışır.
@@ -74,5 +63,16 @@ public class AdminController : ControllerBase
             ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
         return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
+    }
+
+    // E39 PUT api/admin/users/{id}/roles: Kullanıcı rollerini günceller.
+    [HttpPut("users/{id}/roles")]
+    public async Task<ActionResult<AdminUserDto>> UpdateUserRoles(int id, [FromBody] AdminUpdateUserRolesDto dto)
+    {
+        if (!TryGetCurrentUserId(out var currentAdminId))
+            return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
+
+        var result = await _adminService.UpdateUserRolesAsync(id, dto, currentAdminId);
+        return Ok(result);
     }
 }
