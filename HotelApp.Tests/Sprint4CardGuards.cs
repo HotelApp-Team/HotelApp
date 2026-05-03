@@ -33,7 +33,10 @@ internal static class Sprint4CardGuards
 
     public static bool S401_E39RoleImplemented()
     {
-        return AdminControllerSourceContains("users/{id}/role");
+        var source = ReadAdminControllerSource();
+
+        return source.Contains("users/{id}/roles", StringComparison.OrdinalIgnoreCase)
+            || source.Contains("users/{id}/role", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool AdminControllerSourceContains(string expected)
