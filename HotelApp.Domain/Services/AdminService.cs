@@ -78,8 +78,7 @@ public class AdminService : IAdminService
         // Sadece IsActive alanını güncelliyoruz.
         user.IsActive = dto.IsActive;
 
-        // Değişikliği AdminRepository üzerinden işaretleyip UnitOfWork ile kaydediyoruz.
-        _unitOfWork.AdminRepository.UpdateUser(user);
+        // User EF tarafindan takip edildigi icin sadece UnitOfWork ile kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();
 
         // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
@@ -132,10 +131,7 @@ public class AdminService : IAdminService
             user.Roles.Add(role);
         }
 
-        // Değişikliği AdminRepository üzerinden işaretliyoruz.
-        _unitOfWork.AdminRepository.UpdateUser(user);
-
-        // Değişikliği kaydediyoruz.
+        // User EF tarafindan takip edildigi icin sadece UnitOfWork ile kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();
 
         // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
