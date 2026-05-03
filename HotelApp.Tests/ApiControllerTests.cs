@@ -491,6 +491,7 @@ internal class FakeUserService : IUserService
         Phone = profileDto.Phone,
         Email = "test@hotelapp.com"
     });
+
 }
 
 internal class FakeLoggerService : ILoggerService

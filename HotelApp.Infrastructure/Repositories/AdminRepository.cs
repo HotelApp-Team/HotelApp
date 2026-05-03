@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories
 {
-    // Amaç: Admin dashboard için gerekli sayım, toplam ve listeleme sorgularını veritabanından yapar.
-    // SOLID: SRP ile sadece admin rapor sorgularından sorumludur; DIP ile IAdminRepository arayüzünü uygular.
+    // Amaç: Admin paneli için gerekli rapor ve kullanıcı yönetimi sorgularını veritabanından yapar.
+    // SOLID: SRP ile sadece admin veri erişiminden sorumludur; DIP ile IAdminRepository arayüzünü uygular.
 
     public class AdminRepository : IAdminRepository
     {
@@ -70,6 +70,59 @@ namespace HotelApp.Infrastructure.Repositories
                 .Take(count)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        // Admin kullanıcı listesi için arama, aktiflik filtresi ve sayfalama uygular.
+        public async Task<(List<User> Data, int TotalCount)> GetPagedUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
+        {
+            // Kullanıcı sorgusunu rollerle birlikte hazırlıyoruz.
+            var query = _context.Users
+                .Include(x => x.Roles)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Search doluysa ad, soyad veya email içinde arama yapıyoruz.
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keywords = search.Trim();
+
+                query = query.Where(x =>
+                    x.FirstName.Contains(keywords) ||
+                    x.LastName.Contains(keywords) ||
+                    x.Email.Contains(keywords));
+            }
+
+            // isActive geldiyse sadece aktif veya pasif kullanıcıları getiriyoruz.
+            if (isActive.HasValue)
+            {
+                query = query.Where(x => x.IsActive == isActive.Value);
+            }
+
+            // Sayfalama cevabı için toplam kayıt sayısını alıyoruz.
+            var totalCount = await query.CountAsync();
+
+            // İstenen sayfadaki kullanıcıları en yeni kayıt önce olacak şekilde çekiyoruz.
+            var users = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (users, totalCount);
+        }
+
+        // Admin işlemleri için tek kullanıcıyı rolleriyle birlikte getirir.
+        public async Task<User?> GetUserByIdAsync(int userId)
+        {
+            return await _context.Users
+                .Include(x => x.Roles)
+                .FirstOrDefaultAsync(x => x.Id == userId);
+        }
+
+        // Değişen kullanıcıyı güncellenecek olarak işaretler.
+        public void UpdateUser(User user)
+        {
+            _context.Users.Update(user);
         }
     }
 }

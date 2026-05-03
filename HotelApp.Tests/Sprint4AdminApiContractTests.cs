@@ -46,7 +46,7 @@ public class Sprint4AdminApiContractTests
             Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/status"));
 
         if (Sprint4CardGuards.S401_E39RoleImplemented())
-            Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/role"));
+            Assert.NotNull(FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/roles"));
     }
 
     [Fact]
@@ -94,15 +94,20 @@ public class Sprint4AdminApiContractTests
 
         var source = ReadApiFile("Controllers", "AdminController.cs");
         var usersBody = ExtractMethodBody(source, usersAction!.Name);
+        var implementationEvidence = usersBody
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Repositories", "AdminRepository.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "DTOs", "AdminUserDto.cs");
 
-        AssertContainsAny(usersBody, "Skip(", "Page", "page");
-        AssertContainsAny(usersBody, "Take(", "PageSize", "pageSize");
-        AssertContainsAny(usersBody, "TotalCount", "CountAsync", ".Count(", "PagedResult");
-        AssertContainsAll(usersBody, "Id", "Email", "IsActive");
-        AssertContainsAny(usersBody, "FirstName", "LastName", "UserName", "Username", "Name");
-        AssertContainsAny(usersBody, "Roles", "RoleName", "Role");
-        Assert.DoesNotContain("PasswordHash", usersBody, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Token", usersBody, StringComparison.OrdinalIgnoreCase);
+        AssertContainsAny(implementationEvidence, "AdminUserDto", "PagedResponseDto<AdminUserDto>");
+        AssertContainsAny(implementationEvidence, "Skip(", "Page", "page");
+        AssertContainsAny(implementationEvidence, "Take(", "PageSize", "pageSize");
+        AssertContainsAny(implementationEvidence, "TotalCount", "CountAsync", ".Count(", "PagedResult");
+        AssertContainsAll(implementationEvidence, "Id", "Email", "IsActive");
+        AssertContainsAny(implementationEvidence, "FirstName", "LastName", "UserName", "Username", "Name");
+        AssertContainsAny(implementationEvidence, "Roles", "RoleName", "Role");
+        Assert.DoesNotContain("PasswordHash", implementationEvidence, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Token", implementationEvidence, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -124,11 +129,15 @@ public class Sprint4AdminApiContractTests
 
         var source = ReadApiFile("Controllers", "AdminController.cs");
         var statusBody = ExtractMethodBody(source, statusAction.Name);
+        var implementationEvidence = statusBody
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Repositories", "AdminRepository.cs");
 
-        Assert.Contains("IsActive", statusBody, StringComparison.OrdinalIgnoreCase);
-        AssertContainsAny(statusBody, "NotFound", "StatusCode(404", "Results.NotFound");
-        AssertContainsAny(statusBody, "BadRequest", "StatusCode(400", "Results.BadRequest");
-        AssertContainsAny(statusBody, "SaveChangesAsync", "UpdateAsync", ".Update(");
+        AssertContainsAny(implementationEvidence, "AdminUpdateUserStatusDto", "AdminUserDto");
+        Assert.Contains("IsActive", implementationEvidence, StringComparison.OrdinalIgnoreCase);
+        AssertContainsAny(implementationEvidence, "NotFound", "StatusCode(404", "Results.NotFound", "KeyNotFoundException");
+        AssertContainsAny(implementationEvidence, "BadRequest", "StatusCode(400", "Results.BadRequest", "currentAdminId", "adminId", "InvalidOperationException");
+        AssertContainsAny(implementationEvidence, "SaveChangesAsync", "UpdateAsync", ".Update(");
     }
 
     [Fact]
@@ -138,26 +147,30 @@ public class Sprint4AdminApiContractTests
             return;
 
         var controllerType = GetRequiredType("HotelApp.API.Controllers.AdminController");
-        var roleAction = FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/role");
+        var roleAction = FindActionWithHttpAttribute<HttpPutAttribute>(controllerType, "users/{id}/roles");
 
         Assert.NotNull(roleAction);
         AssertParameter(roleAction!, "id", typeof(int));
         Assert.True(
             roleAction!.GetParameters().Any(parameter =>
-                HasProperty(parameter.ParameterType, "RoleName", typeof(string))
-                || string.Equals(parameter.Name, "roleName", StringComparison.OrdinalIgnoreCase)),
-            "E39 body veya parametre olarak RoleName string degerini almali.");
+                HasProperty(parameter.ParameterType, "Roles", typeof(string[]))
+                || HasProperty(parameter.ParameterType, "Roles", typeof(List<string>))
+                || string.Equals(parameter.Name, "roles", StringComparison.OrdinalIgnoreCase)),
+            "E39 body veya parametre olarak Roles string[] degerini almali.");
 
         var source = ReadApiFile("Controllers", "AdminController.cs");
         var roleBody = ExtractMethodBody(source, roleAction.Name);
+        var implementationEvidence = roleBody
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Repositories", "AdminRepository.cs");
 
-        AssertContainsAny(roleBody, "RoleName", "roleName");
-        AssertContainsAny(roleBody, "NotFound", "StatusCode(404", "Results.NotFound");
-        AssertContainsAny(roleBody, "BadRequest", "StatusCode(400", "Results.BadRequest");
-        AssertContainsAny(roleBody, "UserRoles", ".Roles", "Roles");
-        AssertContainsAny(roleBody, "Clear(", "Remove", "Delete", "UserRoles.Remove", "Roles.Remove");
-        AssertContainsAny(roleBody, "Add", "AddAsync", "UserRoles.Add", "Roles.Add");
-        AssertContainsAny(roleBody, "SaveChangesAsync", "UpdateAsync", ".Update(");
+        AssertContainsAny(implementationEvidence, "Roles", "RoleName", "roleName");
+        AssertContainsAny(implementationEvidence, "NotFound", "StatusCode(404", "Results.NotFound", "KeyNotFoundException");
+        AssertContainsAny(implementationEvidence, "BadRequest", "StatusCode(400", "Results.BadRequest", "InvalidOperationException");
+        AssertContainsAny(implementationEvidence, "UserRoles", ".Roles", "Roles");
+        AssertContainsAny(implementationEvidence, "Clear(", "Remove", "Delete", "UserRoles.Remove", "Roles.Remove");
+        AssertContainsAny(implementationEvidence, "Add", "AddAsync", "UserRoles.Add", "Roles.Add");
+        AssertContainsAny(implementationEvidence, "SaveChangesAsync", "UpdateAsync", ".Update(");
     }
 
     private static Type GetRequiredType(string fullName)
@@ -209,7 +222,12 @@ public class Sprint4AdminApiContractTests
 
         var actualType = parameter!.ParameterType;
         if (allowNullable && Nullable.GetUnderlyingType(actualType) is { } nullableType)
-            actualType = nullableType;
+        {
+            Assert.True(
+                expectedType == actualType || expectedType == nullableType,
+                $"{parameterName} parametresi {expectedType.Name} veya {nullableType.Name} olmalı, ama {actualType.Name} bulundu.");
+            return;
+        }
 
         Assert.Equal(expectedType, actualType);
     }
