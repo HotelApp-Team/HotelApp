@@ -119,6 +119,14 @@ namespace HotelApp.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == userId);
         }
 
+        // Role isimlerine göre rolleri getirir, admin kullanıcı düzenleme sırasında rollerin doğruluğunu kontrol etmek için kullanılır.
+        public async Task<List<Role>> GetRolesByNamesAsync(List<string> roleNames)
+        {
+            return await _context.Roles
+                .Where(x => roleNames.Contains(x.Name))
+                .ToListAsync();
+        }
+
         // Değişen kullanıcıyı güncellenecek olarak işaretler.
         public void UpdateUser(User user)
         {

@@ -1,6 +1,7 @@
 using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
+using System.Data;
 
 namespace HotelApp.Domain.Services;
 
@@ -79,6 +80,62 @@ public class AdminService : IAdminService
 
         // Değişikliği AdminRepository üzerinden işaretleyip UnitOfWork ile kaydediyoruz.
         _unitOfWork.AdminRepository.UpdateUser(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
+        return MapToAdminUserDto(user);
+    }
+
+    // E39 için admin panelinden kullanıcının rollerini günceller.
+    public async Task<AdminUserDto> UpdateUserRolesAsync(int userId, AdminUpdateUserRolesDto dto, int currentAdminId)
+    {
+        // Rol listesi boş gelirse controller tarafında 400'e çevrilecek hata fırlatıyoruz.
+        if (dto == null || dto.Roles == null)
+            throw new ArgumentException("En az bir rol seçilmelidir.");
+
+        // Gelen rol isimlerini temizliyoruz ve tekrar edenleri tekilleştiriyoruz.
+        var requestedRoles = dto.Roles
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!requestedRoles.Any())
+            throw new ArgumentException("En az bir rol seçilmelidir.");
+
+        // Rolü değiştirilecek kullanıcıyı veritabanından getiriyoruz.
+        var user = await _unitOfWork.AdminRepository.GetUserByIdAsync(userId);
+
+        // Kullanıcı yoksa controller tarafında 404'e çevrilecek hata fırlatıyoruz.
+        if (user == null)
+            throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+
+        // Role isimlerini DB'den getiriyoruz.
+        var roles = await _unitOfWork.AdminRepository.GetRolesByNamesAsync(requestedRoles);
+
+        // Gönderilen rol isimlerinden DB'de bulunmayan varsa 400 hatası fırlatıyoruz.
+        if (roles.Count != requestedRoles.Count)
+            throw new ArgumentException("Geçersiz rol isimleri var.");
+
+        if (userId == currentAdminId &&
+            !requestedRoles.Contains("Admin", StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Admin kendi Admin rolünü kaldıramaz.");
+        }
+
+        // Plan kuralı: Gönderilen rol listesi kullanıcının yeni rol listesi olur.
+        user.Roles.Clear();
+
+        // DB'den gelen rolleri kullanıcıya ekliyoruz.
+        foreach (var role in roles)
+        {
+            user.Roles.Add(role);
+        }
+
+        // Değişikliği AdminRepository üzerinden işaretliyoruz.
+        _unitOfWork.AdminRepository.UpdateUser(user);
+
+        // Değişikliği kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();
 
         // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.

@@ -34,6 +34,9 @@ public interface IAdminRepository
     // Admin işlemleri için kullanıcıyı rolleriyle birlikte getirir.
     Task<User?> GetUserByIdAsync(int userId);
 
+    // Role isimlerine göre rolleri getirir.
+    Task<List<Role>> GetRolesByNamesAsync(List<string> roleNames);
+
     // Admin işlemlerinde değişen kullanıcıyı güncellenecek olarak işaretler.
     void UpdateUser(User user);
 }
