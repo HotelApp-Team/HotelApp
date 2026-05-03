@@ -492,14 +492,6 @@ internal class FakeUserService : IUserService
         Email = "test@hotelapp.com"
     });
 
-    public Task<PagedResponseDto<UserDto>> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
-        => Task.FromResult(new PagedResponseDto<UserDto>
-        {
-            TotalCount = 0,
-            Page = page,
-            PageSize = pageSize,
-            Data = new List<UserDto>()
-        });
 }
 
 internal class FakeLoggerService : ILoggerService
