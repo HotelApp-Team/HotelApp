@@ -64,6 +64,10 @@ public class AdminService : IAdminService
     // E38 için admin panelinden kullanıcının aktiflik durumunu günceller.
     public async Task<AdminUserDto> UpdateUserStatusAsync(int userId, AdminUpdateUserStatusDto dto, int currentAdminId)
     {
+        // IsActive zorunlu alan; null gelirse planın 400 davranışına uygun olarak durduruyoruz.
+        if (dto == null || dto.IsActive == null)
+            throw new ArgumentException("IsActive alanı zorunludur.");
+
         // Status'u değiştirilecek kullanıcıyı veritabanından getiriyoruz.
         var user = await _unitOfWork.AdminRepository.GetUserByIdAsync(userId);
 
@@ -71,12 +75,12 @@ public class AdminService : IAdminService
         if (user == null)
             throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
-        // Admin kendi hesabını pasife alamaz. Bu güvenlik kuralı service katmanında durur.
-        if (userId == currentAdminId && dto.IsActive == false)
-            throw new InvalidOperationException("Admin kendi hesabını devre dışı bırakamaz.");
+        // Admin kendi hesabını pasife alamaz. Plan E38 bu durumda 400 döner.
+        if (userId == currentAdminId && dto.IsActive is false)
+            throw new ArgumentException("Admin kendi hesabını devre dışı bırakamaz.");
 
         // Sadece IsActive alanını güncelliyoruz.
-        user.IsActive = dto.IsActive;
+        user.IsActive = dto.IsActive.Value;
 
         // User EF tarafindan takip edildigi icin sadece UnitOfWork ile kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();

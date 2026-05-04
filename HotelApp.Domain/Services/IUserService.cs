@@ -12,4 +12,7 @@ public interface IUserService
 
     // Giris yapmis kullanicinin profil bilgilerini gunceller ve guncel halini dondurur
     Task<UserDto> UpdateProfileAsync(int userId, ProfileDto profileDto);
+
+    // Giris yapmis kullanicinin sifresini degistirir
+    Task ChangePasswordAsync(int userId, UserChangePassword changePasswordDto);
 }
