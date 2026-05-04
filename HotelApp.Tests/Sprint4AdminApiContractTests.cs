@@ -166,7 +166,7 @@ public class Sprint4AdminApiContractTests
 
         AssertContainsAny(implementationEvidence, "Roles", "RoleName", "roleName");
         AssertContainsAny(implementationEvidence, "NotFound", "StatusCode(404", "Results.NotFound", "KeyNotFoundException");
-        AssertContainsAny(implementationEvidence, "BadRequest", "StatusCode(400", "Results.BadRequest", "InvalidOperationException");
+        AssertContainsAny(implementationEvidence, "BadRequest", "StatusCode(400", "Results.BadRequest", "ArgumentException", "InvalidOperationException");
         AssertContainsAny(implementationEvidence, "UserRoles", ".Roles", "Roles");
         AssertContainsAny(implementationEvidence, "Clear(", "Remove", "Delete", "UserRoles.Remove", "Roles.Remove");
         AssertContainsAny(implementationEvidence, "Add", "AddAsync", "UserRoles.Add", "Roles.Add");

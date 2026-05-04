@@ -52,6 +52,33 @@ public class UserService : IUserService
         return MapToUserDto(user);
     }
 
+    public async Task ChangePasswordAsync(int userId, UserChangePassword changePasswordDto)
+    {
+        // 1. Kullanici var mi kontrol et.
+        var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+
+        if (user == null)
+            throw new UnauthorizedAccessException("Kullanıcı bulunamadı.");
+
+        // 2. Yeni sifre tekrar alaniyla ayni mi kontrol et.
+        if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
+            throw new ArgumentException("Yeni şifre ve tekrar şifre aynı olmalıdır.");
+
+        // 3. Mevcut sifre dogru mu kontrol et.
+        var isCurrentPasswordValid = BCrypt.Net.BCrypt.Verify(
+            changePasswordDto.CurrentPassword,
+            user.PasswordHash);
+
+        if (!isCurrentPasswordValid)
+            throw new UnauthorizedAccessException("Mevcut şifre hatalı.");
+
+        // 4. Yeni sifreyi hashleyip kaydet. Plain text sifre asla DB'ye yazilmaz.
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     // User entity'sini, disariya guvenli sekilde donecegimiz UserDto'ya mapler.
     private static UserDto MapToUserDto(User user)
     {
