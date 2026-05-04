@@ -50,8 +50,8 @@ public class AdminController : ControllerBase
         if (!TryGetCurrentUserId(out var currentAdminId))
             return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
 
-            var result = await _adminService.UpdateUserStatusAsync(id, dto, currentAdminId);
-            return Ok(result);
+        var result = await _adminService.UpdateUserStatusAsync(id, dto, currentAdminId);
+        return Ok(result);
     }
 
     // JWT token içindeki kullanıcı Id bilgisini güvenli şekilde okumaya çalışır.
