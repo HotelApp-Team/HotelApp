@@ -46,6 +46,12 @@
                                 Oteller
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-semibold" asp-controller="Home" asp-action="Contact">
+                                İletişim
+                            </a>
+                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -68,16 +74,31 @@
                     </h4>
                     <p class="small opacity-75">Mükemmel konaklamanızı bulun.</p>
                     <div class="d-flex gap-3">
-                        <i class="bi bi-facebook"></i>
-                        <i class="bi bi-instagram"></i>
-                        <i class="bi bi-twitter-x"></i>
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+
+                        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+
+                        <a href="https://x.com" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-twitter-x"></i>
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <h6 class="fw-bold mb-3">HIZLI LİNKLER</h6>
                     <ul class="list-unstyled small opacity-75">
-                        <li>Ana Sayfa</li>
-                        <li>Oteller</li>
+                        <li>
+                            <a class="text-decoration-none text-light" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                        </li>
+                        <li>
+                            <a class="text-decoration-none text-light" asp-controller="Hotels" asp-action="Index">Oteller</a>
+                        </li>
+                        <li>
+                            <a class="text-decoration-none text-light" asp-controller="Home" asp-action="Contact">İletişim</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="col-md-2">
