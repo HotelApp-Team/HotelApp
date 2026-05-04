@@ -118,16 +118,17 @@
                     <ul class="amenity-list">
                         @foreach (var a in Model.Amenities)
                         {
-                            <li>
-                                @if (!string.IsNullOrWhiteSpace(a.Icon))
-                                {
-                                    <i class="@a.Icon"></i>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-check-circle-fill"></i>
-                                }
+                            var iconClass = "bi bi-check-circle-fill";
 
+                            if (!string.IsNullOrWhiteSpace(a.Icon))
+                            {
+                                iconClass = a.Icon.StartsWith("bi ")
+                                ? a.Icon
+                                : $"bi bi-{a.Icon}";
+                            }
+
+                            <li>
+                                <i class="@iconClass"></i>
                                 <span>@a.Name</span>
                             </li>
                         }
