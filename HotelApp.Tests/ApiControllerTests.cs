@@ -492,7 +492,7 @@ internal class FakeUserService : IUserService
         Email = "test@hotelapp.com"
     });
 
-    public Task ChangePasswordAsync(int userId, UserChangePassword changePasswordDto) => Task.CompletedTask;
+    public Task ChangePasswordAsync(int userId, UserChangePasswordDto changePasswordDto) => Task.CompletedTask;
 }
 
 internal class FakeLoggerService : ILoggerService

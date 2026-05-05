@@ -3,10 +3,12 @@ using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-// AuthRepository, login ve email verify gibi auth sorgularini veritabaninda calistirir.
-// Amaci, auth'a ozel data access kodunu tek yerde toplamaktir.
-// SOLID: SRP kullanir, OCP icin Repository<User> yapisini genisletir.
 namespace HotelApp.Infrastructure.Repositories;
+
+// AuthRepository sınıfının amacı, auth işlemlerine özel veritabanı sorgularını yapmaktır.
+// Email kontrolü, email ile kullanıcı bulma, doğrulama tokenı ve rol sorgularını çalıştırır.
+// SOLID: SRP kullanır; sadece auth veri erişiminden sorumludur.
+// SOLID: OCP kullanır; Repository<User> yapısını auth'a özel sorgularla genişletir.
 
 public class AuthRepository : Repository<User>, IAuthRepository
 {

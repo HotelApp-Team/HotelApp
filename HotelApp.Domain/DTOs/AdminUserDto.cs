@@ -1,6 +1,9 @@
 namespace HotelApp.Domain.DTOs;
 
-// Admin panelindeki kullanici listesi ve kullanici durum islemleri icin donen DTO'dur.
+// AdminUserDto sınıfının amacı, admin panelinde gösterilecek kullanıcı bilgisini taşımaktır.
+// Kullanıcının temel bilgilerini, aktiflik durumunu ve rollerini güvenli DTO olarak döndürür.
+// SOLID: SRP kullanır; sadece admin kullanıcı cevap verisini temsil eder.
+
 public class AdminUserDto
 {
     public int Id { get; set; }

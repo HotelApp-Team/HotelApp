@@ -4,11 +4,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-// JwtService, kullanici icin JWT token uretir.
-// Amaci, token olusturma detaylarini diger servislerden ayirmaktir.
-// SOLID: SRP kullanir, DIP sayesinde IJwtService abstraction'i ile kullanilir.
 namespace HotelApp.Domain.Services
 {
+    // JwtService sınıfının amacı, kullanıcı için JWT token üretmektir.
+    // Kullanıcı bilgilerini ve rollerini claim olarak ekler, RememberMe durumuna göre geçerlilik süresini belirler.
+    // SOLID: SRP kullanır; sadece token üretme işleminden sorumludur.
+    // SOLID: DIP destekler; AuthService bu sınıfı IJwtService arayüzü üzerinden kullanır.
+
     public class JwtService : IJwtService
     {
         private readonly string _secretKey;
@@ -26,6 +28,7 @@ namespace HotelApp.Domain.Services
             _expirationMinutes = expirationMinutes;
             _rememberMeTokenExpiryDays = rememberMeTokenExpiryDays;
         }
+        // E01, E02 ve E42 için kullanıcıya JWT token üretir.
         public string GenerateToken(User user, bool rememberMe, out DateTime expiresAt)
         {
             //1. Claims (token içindeki kullanıcı bilgileri)

@@ -1,4 +1,8 @@
-﻿namespace HotelApp.Domain.DTOs;
+namespace HotelApp.Domain.DTOs;
+
+// UserDto sınıfının amacı, kullanıcı profil bilgisini API cevabı olarak taşımaktır.
+// Kullanıcının güvenli şekilde gösterilebilecek temel bilgilerini ve rollerini dışarıya aktarır.
+// SOLID: SRP kullanır; sadece kullanıcı cevap verisini temsil eder.
 
 public class UserDto
 {

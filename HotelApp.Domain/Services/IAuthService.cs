@@ -1,10 +1,12 @@
 using HotelApp.Domain.DTOs;
 
-// IAuthService, auth islemleri icin servis sozlesmesini tanimlar.
-// Amaci, controller'in somut sinifa degil interface'e baglanmasini saglamaktir.
-// SOLID: DIP ve ISP kullanir.
 namespace HotelApp.Domain.Services
 {
+    // IAuthService arayüzünün amacı, auth işlemleri için servis sözleşmesi tanımlamaktır.
+    // Kayıt, giriş, email doğrulama ve doğrulama maili tekrar gönderme metotlarını belirler.
+    // SOLID: ISP kullanır; sadece auth servis ihtiyaçlarını içerir.
+    // SOLID: DIP sağlar; controller somut AuthService yerine bu arayüze bağlı kalır.
+
     public interface IAuthService
     {
         // Yeni kullanici kaydi olusturur ve Faz ayarina gore verify mesaji veya JWT dondurur

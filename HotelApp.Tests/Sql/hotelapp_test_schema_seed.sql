@@ -415,8 +415,8 @@ GO
 INSERT INTO Amenities (Name, Icon)
 VALUES
 ('WiFi', 'wifi'),
-('Pool', 'pool'),
-('Parking', 'parking');
+('Pool', 'droplet-fill'),
+('Parking', 'car-front-fill');
 GO
 
 INSERT INTO HotelAmenities (HotelId, AmenityId)

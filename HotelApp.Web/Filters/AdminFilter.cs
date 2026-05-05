@@ -1,10 +1,15 @@
-﻿using HotelApp.Web.Helpers;
+using HotelApp.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace HotelApp.Web.Filters;
+
+// AdminFilter sınıfının amacı, admin sayfalarına erişim yetkisini kontrol etmektir.
+// Session'daki JWT tokenı okur, kullanıcının giriş yapıp yapmadığını ve Admin rolünü kontrol eder.
+// SOLID: SRP kullanır; sadece admin erişim kontrolünden sorumludur.
+
 public class AdminFilter : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
