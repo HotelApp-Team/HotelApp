@@ -305,6 +305,68 @@ internal static class Sprint4CardGuards
             || loginPartialHasReviewsLink;
     }
 
+    // S4-08 - Logger Entegrasyon + Log Endpoint'leri kartinin temel logger altyapisini kontrol eder.
+    // Bu kisim S2 logger altyapisindan da gelebilir; sadece altyapi contract testlerini aktif eder.
+    public static bool S408_LoggerInfrastructureImplemented()
+    {
+        var solutionRoot = FindSolutionRoot();
+        var loggerInterfacePath = Path.Combine(solutionRoot, "HotelApp.Domain", "Services", "ILoggerService.cs");
+        var loggerServicePath = Path.Combine(solutionRoot, "HotelApp.Infrastructure", "Services", "LoggerService.cs");
+        var logDtoPath = Path.Combine(solutionRoot, "HotelApp.Domain", "DTOs", "LogDto.cs");
+        var logEntityPath = Path.Combine(solutionRoot, "HotelApp.Domain", "Entities", "Log.cs");
+        var programSource = ReadOptionalProjectFile("HotelApp.API", "Program.cs");
+
+        return File.Exists(loggerInterfacePath)
+            && File.Exists(loggerServicePath)
+            && File.Exists(logDtoPath)
+            && File.Exists(logEntityPath)
+            && programSource.Contains("LoggerService.Initialize", StringComparison.OrdinalIgnoreCase)
+            && programSource.Contains("AddSingleton", StringComparison.OrdinalIgnoreCase)
+            && programSource.Contains("ILoggerService", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // S4-08 - E44/E45 admin log endpoint kodu basladiysa admin log contract testleri devreye girer.
+    // S4-01 admin endpointleri veya eski LoggerService altyapisi tek basina bu guard'i aktif etmez.
+    public static bool S408_AdminLogEndpointsImplemented()
+    {
+        var source = ReadAdminControllerSource();
+
+        return source.Contains("HttpGet(\"logs", StringComparison.OrdinalIgnoreCase)
+            || source.Contains("HttpGet(\"/logs", StringComparison.OrdinalIgnoreCase)
+            || source.Contains("GetLogs", StringComparison.OrdinalIgnoreCase)
+            || source.Contains("GetLog", StringComparison.OrdinalIgnoreCase)
+            || (source.Contains("ILoggerService", StringComparison.OrdinalIgnoreCase)
+                && source.Contains("logs", StringComparison.OrdinalIgnoreCase));
+    }
+
+    // S4-08 - Auth disindaki controller'larda kritik islem loglama basladiysa entegrasyon testleri devreye girer.
+    // AuthController'daki eski loglar S4-08'in tum controller entegrasyonunu baslatmis sayilmaz.
+    public static bool S408_ControllerLoggingIntegrationStarted()
+    {
+        var controllersRoot = Path.Combine(FindSolutionRoot(), "HotelApp.API", "Controllers");
+        if (!Directory.Exists(controllersRoot))
+            return false;
+
+        return Directory.GetFiles(controllersRoot, "*.cs", SearchOption.TopDirectoryOnly)
+            .Where(path => !string.Equals(Path.GetFileName(path), "AuthController.cs", StringComparison.OrdinalIgnoreCase))
+            .Select(File.ReadAllText)
+            .Any(source => source.Contains("LogInfoAsync", StringComparison.OrdinalIgnoreCase)
+                || source.Contains("LogWarningAsync", StringComparison.OrdinalIgnoreCase)
+                || source.Contains("LogErrorAsync", StringComparison.OrdinalIgnoreCase));
+    }
+
+    // S4-08 - Global exception loglama entegrasyonu varsa ilgili contract testleri aktif olur.
+    public static bool S408_GlobalExceptionLoggingImplemented()
+    {
+        var handlerSource = ReadOptionalProjectFile("HotelApp.API", "Middleware", "GlobalExceptionHandler.cs");
+        var programSource = ReadOptionalProjectFile("HotelApp.API", "Program.cs");
+
+        return handlerSource.Contains("ILoggerService", StringComparison.OrdinalIgnoreCase)
+            && handlerSource.Contains("LogErrorAsync", StringComparison.OrdinalIgnoreCase)
+            && programSource.Contains("AddExceptionHandler", StringComparison.OrdinalIgnoreCase)
+            && programSource.Contains("UseExceptionHandler", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool AdminControllerSourceContains(string expected)
     {
         return ReadAdminControllerSource().Contains(expected, StringComparison.OrdinalIgnoreCase);
@@ -320,6 +382,15 @@ internal static class Sprint4CardGuards
 
         return File.Exists(adminControllerPath)
             ? File.ReadAllText(adminControllerPath)
+            : string.Empty;
+    }
+
+    private static string ReadOptionalProjectFile(params string[] relativePathParts)
+    {
+        var path = Path.Combine(new[] { FindSolutionRoot() }.Concat(relativePathParts).ToArray());
+
+        return File.Exists(path)
+            ? File.ReadAllText(path)
             : string.Empty;
     }
 
