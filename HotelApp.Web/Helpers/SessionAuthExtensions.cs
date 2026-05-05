@@ -1,9 +1,11 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace HotelApp.Web.Helpers;
 
-// Session'daki JWT token'in gercekten gecerli olup olmadigini kontrol eden yardimci.
-// AuthFilter, AdminFilter ve _LoginPartial bu metodu cagirir.
+// SessionAuthExtensions sınıfının amacı, session içindeki JWT tokenın geçerli olup olmadığını kontrol etmektir.
+// Token yoksa, bozuksa veya süresi dolmuşsa kullanıcıyı oturum açmamış kabul eder ve session bilgisini temizler.
+// SOLID: SRP kullanır; sadece session authentication yardımcı işleminden sorumludur.
+
 public static class SessionAuthExtensions
 {
     public static bool IsAuthenticated(this ISession session)

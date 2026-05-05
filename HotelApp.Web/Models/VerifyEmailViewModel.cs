@@ -1,6 +1,9 @@
-﻿namespace HotelApp.Web.Models;
+namespace HotelApp.Web.Models;
 
-// VerifyEmail sayfasinin durumunu  (basari/hata) view'a tasiyan kucuk model
+// VerifyEmailViewModel sınıfının amacı, email doğrulama sayfasının durum bilgisini taşımaktır.
+// Başarı/hata durumunu, kullanıcı mesajını ve tekrar mail gönderme için email bilgisini view'a aktarır.
+// SOLID: SRP kullanır; sadece email doğrulama sayfa verisini temsil eder.
+
 public class VerifyEmailViewModel
 {
     // Dogrulama basarili mi?

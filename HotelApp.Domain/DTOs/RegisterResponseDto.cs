@@ -1,7 +1,9 @@
 namespace HotelApp.Domain.DTOs;
 
-// Register sonucunu tasir.
-// Faz 2'de email dogrulama bekleniyorsa token yerine durum bilgisi doner.
+// RegisterResponseDto sınıfının amacı, kayıt işleminin sonucunu taşımaktır.
+// Email doğrulama gerekip gerekmediğini, mesajı, token bilgisini ve mail gönderim sonucunu döndürür.
+// SOLID: SRP kullanır; sadece register cevap verisini temsil eder.
+
 public class RegisterResponseDto
 {
     public bool RequiresEmailVerification { get; set; }

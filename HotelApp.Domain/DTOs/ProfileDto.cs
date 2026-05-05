@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Domain.DTOs;
 
+// ProfileDto sınıfının amacı, kullanıcının profil güncelleme verisini taşımaktır.
+// Ad, soyad ve telefon alanlarını validation kurallarıyla birlikte API tarafına aktarır.
+// SOLID: SRP kullanır; sadece profil istek verisini temsil eder.
+
 public class ProfileDto
 {
     [Required(ErrorMessage = "Ad zorunludur.")]

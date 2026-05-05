@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Mail;
 
-// EmailService, email dogrulama mailini teknik olarak SMTP uzerinden gonderir.
-// Amaci, mail gonderme detaylarini auth akisindan ayirmaktir.
-// SOLID: SRP kullanir, DIP sayesinde IEmailService uzerinden degistirilebilir.
 namespace HotelApp.Domain.Services;
+
+// EmailService sınıfının amacı, kullanıcı email doğrulama mailini göndermektir.
+// SMTP ayarlarını kullanarak doğrulama linki hazırlar ve mail gönderme işlemini yapar.
+// SOLID: SRP kullanır; sadece email gönderme işleminden sorumludur.
+// SOLID: DIP destekler; üst katmanlar bu sınıfı IEmailService arayüzü üzerinden kullanır.
 
 public class EmailService : IEmailService
 {
@@ -41,6 +43,7 @@ public class EmailService : IEmailService
         _verifyEmailBaseUrl = verifyEmailBaseUrl;
     }
 
+    // E01 ve E43 için doğrulama mailini SMTP üzerinden gönderir.
     public async Task SendVerificationEmailAsync(string toEmail, string firstName, string token)
     {
         // Token ile dogrulama linkini olustur
@@ -79,8 +82,7 @@ public class EmailService : IEmailService
         await client.SendMailAsync(message);
     }
 
-    // Auth akisinin kirilmamasi gereken yerlerde kullanilir.
-    // Teknik hatayi disariya firlatmak yerine sadece basari durumunu doner.
+    // E01 ve E43 için mail gönderimini dener, hata olursa false döner.
     public async Task<bool> SendVerificationEmailSafelyAsync(string toEmail, string firstName, string token)
     {
         try
