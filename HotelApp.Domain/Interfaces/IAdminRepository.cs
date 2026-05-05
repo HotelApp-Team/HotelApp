@@ -2,8 +2,10 @@ using HotelApp.Domain.Entities;
 
 namespace HotelApp.Domain.Interfaces;
 
-// Amaç: Admin paneli için gereken veritabanı sorgularının sözleşmesini belirler.
-// SOLID: ISP ile sadece admin sorgularını içerir; DIP ile üst katmanlar somut repository yerine bu arayüze bağlı kalır.
+// IAdminRepository arayüzünün amacı, admin paneli için gereken veri erişim sözleşmesini tanımlamaktır.
+// Dashboard, kullanıcı listeleme, kullanıcı bulma ve rol sorgulama metotlarını belirler.
+// SOLID: ISP kullanır; sadece admin repository ihtiyaçlarını içerir.
+// SOLID: DIP sağlar; üst katmanlar somut repository yerine bu arayüze bağlı kalır.
 
 public interface IAdminRepository
 {

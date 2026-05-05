@@ -1,11 +1,14 @@
-﻿using HotelApp.Domain.Services;
+using HotelApp.Domain.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Diagnostics;
 
-// GlobalExceptionHandler, yakalanmayan hatalari tek yerde toplar.
-// Hata oldugunda hem log yazar hem de kullaniciya standart bir 500 cevabi doner.
 namespace HotelApp.API.Middleware;
+
+// GlobalExceptionHandler sınıfının amacı, uygulamadaki yakalanmayan hataları tek yerde yönetmektir.
+// Hataları uygun HTTP durum koduna çevirir, gerekli durumlarda loglar ve standart hata cevabı döner.
+// SOLID: SRP kullanır; sadece merkezi hata yönetiminden sorumludur.
+// SOLID: DIP kullanır; loglama için somut sınıf yerine ILoggerService arayüzüne bağlıdır.
 
 public class GlobalExceptionHandler : IExceptionHandler
 {

@@ -1,7 +1,9 @@
-// IEmailService, email gonderme davranisinin sozlesmesini tanimlar.
-// Amaci, farkli mail altyapilarini kolayca degistirebilmektir.
-// SOLID: DIP ve ISP kullanir.
 namespace HotelApp.Domain.Services;
+
+// IEmailService arayüzünün amacı, email gönderme davranışı için sözleşme tanımlamaktır.
+// Doğrulama maili gönderme ve güvenli gönderim denemesi metotlarını belirler.
+// SOLID: ISP kullanır; sadece email servis ihtiyaçlarını içerir.
+// SOLID: DIP sağlar; auth servisi somut mail altyapısı yerine bu arayüze bağlı kalır.
 
 public interface IEmailService
 {

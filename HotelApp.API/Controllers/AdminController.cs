@@ -7,8 +7,10 @@ using System.Security.Claims;
 
 namespace HotelApp.API.Controllers;
 
-// Amaç: Admin paneli endpointlerini yönetir ve servis katmanından gelen sonucu API cevabına çevirir.
-// SOLID: SRP ile sadece admin HTTP isteklerinden sorumludur; DIP ile IAdminService arayüzüne bağlı çalışır.
+// AdminController sınıfının amacı, admin paneli API endpointlerini yönetmektir.
+// Dashboard verisi, kullanıcı listesi, kullanıcı durumu ve rol güncelleme isteklerini karşılar.
+// SOLID: SRP kullanır; sadece admin HTTP isteklerinden sorumludur.
+// SOLID: DIP kullanır; iş mantığı için somut sınıf yerine IAdminService arayüzüne bağlıdır.
 
 [Route("api/admin")]
 [ApiController]
@@ -23,7 +25,7 @@ public class AdminController : ControllerBase
         _adminService = adminService;
     }
 
-    // E36 GET api/admin/dashboard: Admin dashboard istatistiklerini getirir ve 200 OK olarak döndürür.
+    // E36 - GET api/admin/dashboard : Admin dashboard istatistiklerini getirir.
     [HttpGet("dashboard")]
     public async Task<ActionResult> Dashboard()
     {
@@ -31,7 +33,7 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
-    // E37 GET api/admin/users: Admin paneli için kullanıcı listesini getirir.
+    // E37 - GET api/admin/users : Admin paneli için kullanıcı listesini getirir.
     [HttpGet("users")]
     public async Task<ActionResult> GetUsersForAdminAsync(string? search = null, bool? isActive = null, int page = 1, int pageSize = 10)
     {
@@ -42,7 +44,7 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
-    // E38 PUT api/admin/users/{id}/status: Kullanıcı hesabını aktif veya pasif yapar.
+    // E38 - PUT api/admin/users/{id}/status : Kullanıcı hesabını aktif veya pasif yapar.
     [HttpPut("users/{id}/status")]
     public async Task<ActionResult<AdminUserDto>> UpdateUserStatus(int id, [FromBody] AdminUpdateUserStatusDto dto)
     {
@@ -65,7 +67,7 @@ public class AdminController : ControllerBase
         return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
     }
 
-    // E39 PUT api/admin/users/{id}/roles: Kullanıcı rollerini günceller.
+    // E39 - PUT api/admin/users/{id}/roles : Kullanıcının rollerini günceller.
     [HttpPut("users/{id}/roles")]
     public async Task<ActionResult<AdminUserDto>> UpdateUserRoles(int id, [FromBody] AdminUpdateUserRolesDto dto)
     {

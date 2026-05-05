@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
-// Giris formundaki bilgileri tasimak icin kullanilan kutu.
+// LoginViewModel sınıfının amacı, login formundaki veriyi taşımaktır.
+// Email, şifre, beni hatırla ve dönüş URL bilgisini validation kurallarıyla view tarafına bağlar.
+// SOLID: SRP kullanır; sadece login form verisini temsil eder.
+
 public class LoginViewModel
 {
     [Required(ErrorMessage = "Email zorunludur.")]

@@ -2,10 +2,12 @@ using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 
-// UserService, kullanicinin kendi profil islemlerini yonetir.
-// Amaci, profil business logic'ini controller'dan ayirmaktir.
-// SOLID: SRP kullanir, DIP ile IUnitOfWork abstraction'ina baglanir.
 namespace HotelApp.Domain.Services;
+
+// UserService sınıfının amacı, kullanıcının kendi profil işlemlerini yönetmektir.
+// Profil bilgisi getirme, profil güncelleme ve şifre değiştirme işlerini yapar.
+// SOLID: SRP kullanır; sadece profil işlemlerinden sorumludur.
+// SOLID: DIP kullanır; veri işlemleri için somut sınıfa değil IUnitOfWork arayüzüne bağlıdır.
 
 public class UserService : IUserService
 {
@@ -17,6 +19,7 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
     }
 
+    // E03 için giriş yapan kullanıcının profil bilgisini DTO olarak hazırlar.
     public async Task<UserDto> GetProfileAsync(int userId)
     {
         // 1. Kullaniciyi repository uzerinden ID ile getir.
@@ -30,6 +33,7 @@ public class UserService : IUserService
         return MapToUserDto(user);
     }
 
+    // E46 için kullanıcının profil bilgilerini günceller ve güncel DTO döndürür.
     public async Task<UserDto> UpdateProfileAsync(int userId, ProfileDto profileDto)
     {
         // 1. Guncellenecek kullaniciyi veritabanindan getir.
@@ -52,7 +56,8 @@ public class UserService : IUserService
         return MapToUserDto(user);
     }
 
-    public async Task ChangePasswordAsync(int userId, UserChangePassword changePasswordDto)
+    // E47 için mevcut şifreyi kontrol eder ve yeni şifreyi güvenli şekilde kaydeder.
+    public async Task ChangePasswordAsync(int userId, UserChangePasswordDto changePasswordDto)
     {
         // 1. Kullanici var mi kontrol et.
         var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
@@ -62,7 +67,7 @@ public class UserService : IUserService
 
         // 2. Yeni sifre tekrar alaniyla ayni mi kontrol et.
         if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
-            throw new ArgumentException("Yeni şifre ve tekrar şifre aynı olmalıdır.");
+            throw new InvalidOperationException("Yeni şifre ve tekrar şifre aynı olmalıdır.");
 
         // 3. Mevcut sifre dogru mu kontrol et.
         var isCurrentPasswordValid = BCrypt.Net.BCrypt.Verify(

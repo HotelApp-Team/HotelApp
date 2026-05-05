@@ -4,11 +4,13 @@ using HotelApp.Domain.Services;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-// LoggerService, sistem loglarini Logs tablosuna yazan Singleton servistir.
-// Singleton secilme nedeni: logger uygulamada cross-cutting concern, tek instance yeterli.
-// DbContext Singleton ile uyumsuz oldugu icin her log cagrisinda kisa omurlu context acilir.
 namespace HotelApp.Infrastructure.Services
 {
+    // LoggerService sınıfının amacı, sistem loglarını merkezi olarak yönetmektir.
+    // Info, warning ve error loglarını Logs tablosuna yazar; admin için logları listeler ve sayar.
+    // SOLID: SRP kullanır; sadece loglama işlemlerinden sorumludur.
+    // Design Pattern: Singleton kullanır; uygulama boyunca tek logger instance'ı ile çalışır.
+
     public class LoggerService : ILoggerService
     {
         // Connection string Initialize() ile Program.cs'den alinir
@@ -39,21 +41,21 @@ namespace HotelApp.Infrastructure.Services
             _connectionString = connectionString;
         }
 
-        // INFO seviyesi log - sadece level'i ayarlayip helper'a delege eder
+        // E44 log listesinde görünecek INFO kaydını oluşturur.
         public async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null,
             string? controller = null, string? action = null, string? ipAddress = null)
         {
             await LogAsync("INFO", message, userId, userEmail, controller, action, ipAddress);
         }
 
-        // WARNING seviyesi log
+        // E44 log listesinde görünecek WARNING kaydını oluşturur.
         public async Task LogWarningAsync(string message, int? userId = null, string? userEmail = null,
             string? controller = null, string? action = null, string? ipAddress = null)
         {
             await LogAsync("WARNING", message, userId, userEmail, controller, action, ipAddress);
         }
 
-        // ERROR seviyesi log - exception detayini da alabilir
+        // E44 ve E45 için hata logunu exception detayıyla kaydeder.
         public async Task LogErrorAsync(string message, int? userId = null, string? userEmail = null,
             string? controller = null, string? action = null, string? ipAddress = null,
             string? exceptionDetail = null)
@@ -61,7 +63,7 @@ namespace HotelApp.Infrastructure.Services
             await LogAsync("ERROR", message, userId, userEmail, controller, action, ipAddress, exceptionDetail);
         }
 
-        // Sayfalama ile log listesi - admin panelinde gosterim icin
+        // E44 için sistem loglarını sayfalı şekilde getirir.
         public async Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = DefaultPageSize)
         {
             if (string.IsNullOrEmpty(_connectionString))
@@ -101,7 +103,7 @@ namespace HotelApp.Infrastructure.Services
                 .ToListAsync();
         }
 
-        // Toplam log sayisi - admin panelinde sayfalama UI'si icin (kac sayfa var?)
+        // E44 için toplam log sayısını getirir.
         public async Task<int> GetLogCountAsync()
         {
             if (string.IsNullOrEmpty(_connectionString))

@@ -2,8 +2,10 @@ using HotelApp.Domain.DTOs;
 
 namespace HotelApp.Domain.Services;
 
-// Amaç: Admin paneli iş kurallarının servis sözleşmesini tanımlar.
-// SOLID: ISP ile sadece admin işlemlerini içerir; DIP ile controller somut sınıfa bağlı kalmaz.
+// IAdminService arayüzünün amacı, admin paneli iş kuralları için servis sözleşmesi tanımlamaktır.
+// Dashboard, kullanıcı listeleme, kullanıcı durumu ve rol güncelleme metotlarını belirler.
+// SOLID: ISP kullanır; sadece admin servis ihtiyaçlarını içerir.
+// SOLID: DIP sağlar; controller somut AdminService yerine bu arayüze bağlı kalır.
 
 public interface IAdminService
 {

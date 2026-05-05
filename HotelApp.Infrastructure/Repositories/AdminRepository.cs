@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories
 {
-    // Amaç: Admin paneli için gerekli rapor ve kullanıcı yönetimi sorgularını veritabanından yapar.
-    // SOLID: SRP ile sadece admin veri erişiminden sorumludur; DIP ile IAdminRepository arayüzünü uygular.
+    // AdminRepository sınıfının amacı, admin paneli için gerekli veritabanı sorgularını yapmaktır.
+    // Dashboard istatistikleri, kullanıcı listesi, kullanıcı rolleri ve aktiflik verilerini veritabanından getirir.
+    // SOLID: SRP kullanır; sadece admin veri erişiminden sorumludur.
+    // SOLID: DIP destekler; üst katmanlar bu sınıfı IAdminRepository arayüzü üzerinden kullanır.
 
     public class AdminRepository : IAdminRepository
     {
