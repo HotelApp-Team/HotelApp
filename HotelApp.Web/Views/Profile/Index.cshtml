@@ -1,0 +1,103 @@
+@model HotelApp.Web.Models.ProfilePageViewModel
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">Profilim</h1>
+
+        @if (TempData["SuccessMessage"] is string success)
+        {
+            <div class="alert alert-success" role="alert">@success</div>
+        }
+
+        @if (TempData["ErrorMessage"] is string error)
+        {
+            <div class="alert alert-danger" role="alert">@error</div>
+        }
+
+        @* E46: Profil güncelleme formu; email sadece görüntülenir, ad-soyad-telefon API'ye gönderilir. *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Profil Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateProfile" asp-controller="Profile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label asp-for="Profile.FirstName" class="form-label"></label>
+                            <input asp-for="Profile.FirstName" autocomplete="given-name" class="form-control" />
+                            <span asp-validation-for="Profile.FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label asp-for="Profile.LastName" class="form-label"></label>
+                            <input asp-for="Profile.LastName" autocomplete="family-name" class="form-control" />
+                            <span asp-validation-for="Profile.LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Profile.Email" class="form-label"></label>
+                        @* Email güncellemesi desteklenmediği için bu alan submit edilmez. *@
+                        <input asp-for="Profile.Email" class="form-control" disabled />
+                        <small class="text-muted">Email adresinizi değiştiremezsiniz.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Profile.Phone" class="form-label"></label>
+                        <input asp-for="Profile.Phone" autocomplete="tel" class="form-control" />
+                        <span asp-validation-for="Profile.Phone" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Bilgileri Güncelle</button>
+                </form>
+            </div>
+        </div>
+
+        @* E47: Şifre değişimi mevcut şifre, yeni şifre ve tekrar alanlarıyla API'ye gönderilir. *@
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Şifre Değiştir</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="ChangePassword" asp-controller="Profile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    @* Güvenlik: Şifre alanları password input olarak kalır ve autocomplete amacı net belirtilir. *@
+                    <div class="mb-3">
+                        <label asp-for="ChangePassword.CurrentPassword" class="form-label"></label>
+                        <input asp-for="ChangePassword.CurrentPassword" autocomplete="current-password" class="form-control" />
+                        <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ChangePassword.NewPassword" class="form-label"></label>
+                        <input asp-for="ChangePassword.NewPassword" autocomplete="new-password" class="form-control" />
+                        <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label"></label>
+                        <input asp-for="ChangePassword.ConfirmNewPassword" autocomplete="new-password" class="form-control" />
+                        <span asp-validation-for="ChangePassword.ConfirmNewPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Şifreyi Değiştir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Profile.Phone için kullanılan [Phone] kuralını client-side doğrulamayla uyumlu hale getirir.
+        $.validator.methods.phone = function (value, element) {
+            return this.optional(element) || /^[\d\s\+\-\(\)]{7,20}$/.test(value);
+        };
+    </script>
+}

@@ -18,8 +18,8 @@ public class ProfileController : Controller
         _apiService = apiService;
     }
 
+    // E03 için kullanıcının profil bilgilerini alır ve Profile/Index ekranını hazırlar.
     [HttpGet]
-    // E03 icin kullanıcının profil bilgilerini alır ve Profile/Index ekranını hazırlar.
     public async Task<IActionResult> Index()
     {
         // Kullanıcı giriş yapmış mı kontrol eder.
@@ -47,13 +47,13 @@ public class ProfileController : Controller
         };
 
         // Profil ve şifre değiştirme formlarını tek sayfa modelinde toplar.
-        var model = BuildPage(profileViewModel);
+        var model = await BuildPageAsync(profile: profileViewModel);
         return View(model);
     }
 
+    // E46 için profil güncelleme formundan gelen bilgileri API'ye gönderir.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // E46 icin profil güncelleme formundan gelen bilgileri API'ye gönderir.
     public async Task<IActionResult> UpdateProfile([Bind(Prefix = "Profile")] ProfileViewModel model)
     {
         // Kullanıcı giriş yapmış mı kontrol eder.
@@ -63,7 +63,7 @@ public class ProfileController : Controller
         // Form validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
         if (!ModelState.IsValid)
         {
-            var invalidPage = BuildPage(model);
+            var invalidPage = await BuildPageAsync(profile: model);
             return View("Index", invalidPage);
         }
 
@@ -81,21 +81,77 @@ public class ProfileController : Controller
         // Güncelleme başarılıysa kullanıcıya bilgi verip profil sayfasını yeniler.
         if (response.Success)
         {
+            // Navbar'da görünen kullanıcı adını güncel profil bilgisiyle senkronlar.
+            HttpContext.Session.SetString("UserFullName", $"{model.FirstName} {model.LastName}");
             TempData["SuccessMessage"] = "Profil bilgileriniz güncellendi.";
             return RedirectToAction("Index");
         }
 
         // API hata döndürürse mesajı form üzerinde gösterir.
         ModelState.AddModelError(string.Empty, response.Message);
-        var page = BuildPage(model);
+        var page = await BuildPageAsync(profile: model);
         return View("Index", page);
     }
 
-    // Profil ve şifre değiştirme formlarını aynı View içinde kullanılacak sayfa modeline dönüştürür.
-    private ProfilePageViewModel BuildPage(ProfileViewModel profile) =>
-        new ProfilePageViewModel
+    // E47 için şifre değiştirme formundan gelen bilgileri API'ye gönderir.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword([Bind(Prefix = "ChangePassword")] ChangePasswordViewModel model)
+    {
+        // Kullanıcı giriş yapmış mı kontrol eder.
+        if (!HttpContext.Session.IsAuthenticated())
+            return RedirectToAction("Login", "Auth");
+
+        // Şifre formu validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
+        if (!ModelState.IsValid)
+        {
+            var page = await BuildPageAsync(changePassword: model);
+            return View("Index", page);
+        }
+
+        // Formdan gelen şifre bilgilerini E47 API endpoint'ine gönderir.
+        var response = await _apiService.PutAsync("auth/change-password", model);
+
+        // Şifre değişimi başarılıysa kullanıcıya bilgi verip profil sayfasını yeniler.
+        if (response.Success)
+        {
+            TempData["SuccessMessage"] = "Şifreniz başarıyla değiştirildi.";
+            return RedirectToAction("Index");
+        }
+
+        // API hata döndürürse mesajı form üzerinde gösterir.
+        ModelState.AddModelError(string.Empty, response.Message);
+        var errorPage = await BuildPageAsync(changePassword: model);
+        return View("Index", errorPage);
+    }
+
+    // E03, E46 ve E47 akışlarında profil ve şifre formlarını aynı View için sayfa modeline dönüştürür.
+    private async Task<ProfilePageViewModel> BuildPageAsync(
+        ProfileViewModel? profile = null,
+        ChangePasswordViewModel? changePassword = null)
+    {
+        // Profil modeli verilmediyse güncel profil bilgisi API'den çekilir.
+        if (profile == null)
+        {
+            var response = await _apiService.GetAsync<UserResponse>("auth/profile");
+
+            // API'den gelen profil cevabını forma basılacak ViewModel'e mapler.
+            profile = response.Data != null
+                ? new ProfileViewModel
+                {
+                    FirstName = response.Data.FirstName,
+                    LastName = response.Data.LastName,
+                    Email = response.Data.Email,
+                    Phone = response.Data.Phone
+                }
+                : new ProfileViewModel();
+        }
+
+        // Profil ve şifre formlarını tek sayfa modelinde birleştirir.
+        return new ProfilePageViewModel
         {
             Profile = profile,
-            ChangePassword = new ChangePasswordViewModel()
+            ChangePassword = changePassword ?? new ChangePasswordViewModel()
         };
+    }
 }

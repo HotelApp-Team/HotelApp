@@ -1,16 +1,18 @@
-﻿@using HotelApp.Web.Helpers
-@*Navbar'ın sağ tarafında görünecek küçük parça, Kullanıcı girmiş mi? diye bakıp ona göre farklı içerik gösterir*@
+@using HotelApp.Web.Helpers
 @{
-    // Token varsa, formatı doğruysa ve süresi dolmadıysa kullanıcı giriş yapmış sayılır.
+    // Oturum helper'ı token geçerliliğini kontrol eder; navbar kararını buna göre verir.
     var fullName = Context.Session.GetString("UserFullName");
     var isLoggedIn = Context.Session.IsAuthenticated();
 }
 <ul class="navbar-nav">
     @if (isLoggedIn)
     {
-        @*Giriş yapmış kullanıcı için: isim + çıkış butonu*@
+        @* Giriş yapan kullanıcı için profil bağlantısı ve çıkış formu gösterilir. *@
         <li class="nav-item d-flex align-items-center me-2">
             <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">Profilim</a>
         </li>
         <li class="nav-item">
             <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
@@ -21,7 +23,6 @@
     }
     else
     {
-        @*Giriş yapmamış kullanıcı için: giriş ve kayıt butonları*@
         <li class="nav-item">
             <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
         </li>
@@ -30,4 +31,3 @@
         </li>
     }
 </ul>
-
