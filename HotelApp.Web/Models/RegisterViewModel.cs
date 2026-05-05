@@ -1,10 +1,12 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
-// Kayıt formunda bilgileri taşıyan kutu
-// Backend'e UserRegisterDto'suyla aynı alanları içerir + UI özel confirm password alanı
+// RegisterViewModel sınıfının amacı, kayıt formundaki veriyi taşımaktır.
+// Ad, soyad, email, şifre, şifre tekrarı ve telefon bilgisini validation kurallarıyla view tarafına bağlar.
+// SOLID: SRP kullanır; sadece register form verisini temsil eder.
+
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "Ad zorunludur.")]

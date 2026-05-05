@@ -1,7 +1,9 @@
 namespace HotelApp.Web.Models;
 
-// ApiResponse, ApiService'in her istekte standart sonuc dondurmesi icin kullanilir.
-// Basarili durumda Data dolar, hatada Message ve StatusCode bilgisi tasinir.
+// ApiResponse sınıfının amacı, ApiService sonuçlarını standart hale getirmektir.
+// Başarı durumu, veri, mesaj ve HTTP status code bilgisini tek modelde taşır.
+// SOLID: SRP kullanır; sadece API istek sonuç verisini temsil eder.
+
 public class ApiResponse<T>
 {
     public bool Success { get; set; }

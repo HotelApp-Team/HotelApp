@@ -2,10 +2,12 @@ using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 
-// AuthService, kayit, login, email verify ve resend gibi kimlik islemlerini yonetir.
-// Amaci, auth kurallarini tek yerde toplamak ve controller'i sade tutmaktir.
-// SOLID: SRP kullanir, DIP ile IUnitOfWork/IJwtService/IEmailService abstraction'larina baglanir.
 namespace HotelApp.Domain.Services;
+
+// AuthService sınıfının amacı, kullanıcı kimlik doğrulama işlemlerini yönetmektir.
+// Kayıt, giriş, email doğrulama, doğrulama maili tekrar gönderme ve lockout kurallarını uygular.
+// SOLID: SRP kullanır; sadece auth iş kurallarından sorumludur.
+// SOLID: DIP kullanır; veri, token ve mail işlemleri için IUnitOfWork, IJwtService ve IEmailService arayüzlerine bağlıdır.
 
 public class AuthService : IAuthService
 {
@@ -22,6 +24,7 @@ public class AuthService : IAuthService
         _useEmailVerification = useEmailVerification;
     }
 
+    // E01 için yeni kullanıcı kaydını oluşturur ve doğrulama akışını başlatır.
     public async Task<RegisterResponseDto> RegisterAsync(UserRegisterDto dto)
     {
         // Email zaten var mi?
@@ -104,6 +107,7 @@ public class AuthService : IAuthService
         };
     }
 
+    // E02 için kullanıcı girişini kontrol eder ve JWT cevabını hazırlar.
     public async Task<LoginResponseDto> LoginAsync(UserLoginDto dto)
     {
         // Kullaniciyi email ile bul
@@ -171,7 +175,7 @@ public class AuthService : IAuthService
         };
     }
 
-    // Email dogrulama islemi
+    // E42 için email doğrulama token'ını kontrol eder ve giriş cevabı hazırlar.
     public async Task<LoginResponseDto> VerifyEmailAsync(string token)
     {
         // Token bos mu kontrol et
@@ -208,9 +212,8 @@ public class AuthService : IAuthService
         };
     }
 
-    // Dogrulama mailini yeniden gonderir.
-    // Guvenlik notu: Saldirgan hangi email'lerin sistemde kayitli oldugunu ogrenmesin diye
-    // her durumda (kullanici var/yok, dogrulanmis/dogrulanmamis) ayni mesaji donuyoruz.
+    // E43 için doğrulama mailini yeniden göndermek üzere yeni token hazırlar.
+    // Güvenlik için kullanıcı var/yok bilgisini dışarıya sızdırmaz.
     public async Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto)
     {
         const string genericMessage = "Eğer bu email adresi kayıtlı ve doğrulanmamışsa, doğrulama maili gönderildi.";

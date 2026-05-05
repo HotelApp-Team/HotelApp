@@ -1,6 +1,11 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 
 namespace HotelApp.Domain.Services;
+
+// ILoggerService arayüzünün amacı, loglama işlemleri için servis sözleşmesi tanımlamaktır.
+// Info, warning, error log yazma ve logları listeleme metotlarını belirler.
+// SOLID: ISP kullanır; sadece loglama servis ihtiyaçlarını içerir.
+// SOLID: DIP sağlar; API katmanı somut logger yerine bu arayüze bağlı kalır.
 
 public interface ILoggerService
 {

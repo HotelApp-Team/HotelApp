@@ -7,6 +7,11 @@ using System.Security.Claims;
 
 namespace HotelApp.API.Controllers;
 
+// AuthController sınıfının amacı, auth endpointlerini yönetmektir.
+// Kayıt, giriş, profil, email doğrulama ve şifre değiştirme isteklerini ilgili servislere yönlendirir.
+// SOLID: SRP kullanır; sadece auth HTTP isteklerinden sorumludur.
+// SOLID: DIP kullanır; iş mantığı için IAuthService, IUserService ve ILoggerService arayüzlerine bağlıdır.
+
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -22,7 +27,7 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    // E01 - POST api/auth/register
+    // E01 - POST api/auth/register : Yeni kullanıcı kaydı oluşturur.
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
     {
@@ -54,7 +59,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // E02 - POST api/auth/login
+    // E02 - POST api/auth/login : Kullanıcı girişi yapar ve JWT token döndürür.
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto)
     {
@@ -67,7 +72,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // E03 - GET api/auth/profile
+    // E03 - GET api/auth/profile : Kullanıcının profil bilgilerini getirir.
     [Authorize]
     [HttpGet("profile")]
     public async Task<ActionResult<UserDto>> GetProfile()
@@ -79,8 +84,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // E42 - GET api/auth/verify-email?token=abc123
-    // Email doğrulama linkinden gelen token'ı alır, service'e gönderir ve sonucu döndürür
+    // E42 - GET api/auth/verify-email?token={token} : Email doğrulama token'ını kontrol eder ve otomatik giriş sağlar.
     [AllowAnonymous]
     [HttpGet("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromQuery] string token)
@@ -95,7 +99,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // E43 - POST api/auth/resend-verification
+    // E43 - POST api/auth/resend-verification : Doğrulama mailinin yeniden gönderilmesini sağlar.
     [AllowAnonymous]
     [HttpPost("resend-verification")]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationDto dto)
@@ -129,7 +133,7 @@ public class AuthController : ControllerBase
         return Ok(new { Message = result.Message });
     }
 
-    // E46 - PUT api/auth/profile
+    // E46 - PUT api/auth/profile : Kullanıcının profil bilgilerini güncellemesini sağlar.
     [Authorize]
     [HttpPut("profile")]
     public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] ProfileDto profileDto)
@@ -170,5 +174,25 @@ public class AuthController : ControllerBase
             ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
         return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
+    }
+
+    // E47 - PUT api/auth/change-password : Kullanıcının şifresini değiştirmesini sağlar.
+    [Authorize]
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] UserChangePasswordDto dto)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized("Token içinde geçerli kullanıcı bilgisi bulunamadı.");
+        
+        await _userService.ChangePasswordAsync(userId, dto);
+
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        await LogInfoAsync(
+            $"Kullanıcı şifresini değiştirdi: UserId={userId}",
+            userId: userId,
+            userEmail: userEmail);
+
+        return Ok(new { Message = "Şifre başarıyla değiştirildi." });
     }
 }

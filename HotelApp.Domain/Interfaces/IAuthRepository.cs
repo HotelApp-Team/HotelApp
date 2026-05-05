@@ -1,8 +1,11 @@
 using HotelApp.Domain.Entities;
 
-// IAuthRepository, auth islemleri icin gerekli veri erisim sozlesmesini tanimlar.
-// Amaci, auth tarafindaki ozel sorgulari standart repository'den ayirmaktir.
 namespace HotelApp.Domain.Interfaces;
+
+// IAuthRepository arayüzünün amacı, auth işlemleri için özel veri erişim sözleşmesini tanımlamaktır.
+// Email kontrolü, email ile kullanıcı bulma, doğrulama tokenı ve rol sorgularını belirler.
+// SOLID: ISP kullanır; sadece auth repository ihtiyaçlarını içerir.
+// SOLID: DIP sağlar; servis katmanı somut repository yerine bu arayüze bağlı kalır.
 
 public interface IAuthRepository : IRepository<User>
 {

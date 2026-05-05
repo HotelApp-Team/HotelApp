@@ -2,7 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Domain.DTOs;
 
-// E38 icin adminin kullanici aktiflik durumunu guncelleme istegini tasir.
+// AdminUpdateUserStatusDto sınıfının amacı, kullanıcının aktiflik durumunu güncelleme isteğini taşımaktır.
+// Admin panelinden gelen aktif/pasif bilgisini validation kurallarıyla birlikte API tarafına aktarır.
+// SOLID: SRP kullanır; sadece kullanıcı durum güncelleme istek verisini temsil eder.
+
 public class AdminUpdateUserStatusDto
 {
     // true aktif, false pasif anlamina gelir.

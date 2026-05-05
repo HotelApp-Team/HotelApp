@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Domain.DTOs;
 
+// UserRegisterDto sınıfının amacı, kullanıcı kayıt isteğini taşımaktır.
+// Ad, soyad, email, şifre ve telefon bilgisini validation kurallarıyla API tarafına aktarır.
+// SOLID: SRP kullanır; sadece register istek verisini temsil eder.
+
 public class UserRegisterDto
 {
     [Required(ErrorMessage = "Ad zorunludur.")]
