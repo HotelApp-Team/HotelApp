@@ -223,6 +223,88 @@ internal static class Sprint4CardGuards
             || controllerSource.Contains("/cancel", StringComparison.OrdinalIgnoreCase);
     }
 
+    // S4-07 - Rezervasyon Detay + Yorumlarim karti.
+    // S4-06'daki rezervasyon olusturma/listeme kodu tek basina bu karti baslatmaz;
+    // Detail, invoice veya detay linki gorunurse S4-07 detay contract testleri devreye girer.
+    public static bool S407_ReservationDetailImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var reservationsControllerPath = Path.Combine(webRoot, "Controllers", "ReservationsController.cs");
+        var detailViewPath = Path.Combine(webRoot, "Views", "Reservations", "Detail.cshtml");
+        var reservationsMyViewPath = Path.Combine(webRoot, "Views", "Reservations", "My.cshtml");
+
+        var controllerSource = File.Exists(reservationsControllerPath)
+            ? File.ReadAllText(reservationsControllerPath)
+            : string.Empty;
+
+        var reservationsMyView = File.Exists(reservationsMyViewPath)
+            ? File.ReadAllText(reservationsMyViewPath)
+            : string.Empty;
+
+        var controllerHasDetailAction = controllerSource.Contains(" Detail(", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains(" DetailAsync(", StringComparison.OrdinalIgnoreCase);
+
+        var controllerCallsDetailEndpoint = controllerSource.Contains("reservations/{id}", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains("api/reservations/{id}", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains("reservations/" + "{reservationId}", StringComparison.OrdinalIgnoreCase);
+
+        var controllerHasInvoiceFlow = controllerSource.Contains("reservations", StringComparison.OrdinalIgnoreCase)
+            && controllerSource.Contains("invoice", StringComparison.OrdinalIgnoreCase);
+
+        var listViewHasDetailLink = reservationsMyView.Contains("asp-action=\"Detail\"", StringComparison.OrdinalIgnoreCase)
+            || reservationsMyView.Contains("Reservations/Detail", StringComparison.OrdinalIgnoreCase)
+            || reservationsMyView.Contains("/Reservations/Detail", StringComparison.OrdinalIgnoreCase);
+
+        return File.Exists(detailViewPath)
+            || controllerHasDetailAction
+            || controllerCallsDetailEndpoint
+            || controllerHasInvoiceFlow
+            || listViewHasDetailLink;
+    }
+
+    // S4-07 - Yorumlarim sayfasi ve yorum silme akisinin baslayip baslamadigini kontrol eder.
+    // S3-07/S4-05'teki yorum olusturma veya otel detay yorumlari tek basina bu karti aktif etmez.
+    public static bool S407_MyReviewsImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var reviewsControllerPath = Path.Combine(webRoot, "Controllers", "ReviewsController.cs");
+        var reviewsMyViewPath = Path.Combine(webRoot, "Views", "Reviews", "My.cshtml");
+        var loginPartialPath = Path.Combine(webRoot, "Views", "Shared", "_LoginPartial.cshtml");
+
+        var controllerSource = File.Exists(reviewsControllerPath)
+            ? File.ReadAllText(reviewsControllerPath)
+            : string.Empty;
+
+        var loginPartial = File.Exists(loginPartialPath)
+            ? File.ReadAllText(loginPartialPath)
+            : string.Empty;
+
+        var controllerHasMyAction = controllerSource.Contains(" My(", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains(" MyAsync(", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains("GetMyReviews", StringComparison.OrdinalIgnoreCase);
+
+        var controllerHasDeleteAction = controllerSource.Contains(" Delete(", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains(" DeleteAsync(", StringComparison.OrdinalIgnoreCase)
+            || controllerSource.Contains("DeleteReview", StringComparison.OrdinalIgnoreCase);
+
+        var controllerCallsMyEndpoint = controllerSource.Contains("reviews/my", StringComparison.OrdinalIgnoreCase);
+
+        var controllerCallsDeleteEndpoint = controllerSource.Contains("reviews/{id}", StringComparison.OrdinalIgnoreCase)
+            || (controllerSource.Contains("DeleteAsync", StringComparison.OrdinalIgnoreCase)
+                && controllerSource.Contains("reviews", StringComparison.OrdinalIgnoreCase));
+
+        var loginPartialHasReviewsLink = loginPartial.Contains("Reviews/My", StringComparison.OrdinalIgnoreCase)
+            || (loginPartial.Contains("asp-controller=\"Reviews\"", StringComparison.OrdinalIgnoreCase)
+                && loginPartial.Contains("asp-action=\"My\"", StringComparison.OrdinalIgnoreCase));
+
+        return File.Exists(reviewsMyViewPath)
+            || controllerHasMyAction
+            || controllerHasDeleteAction
+            || controllerCallsMyEndpoint
+            || controllerCallsDeleteEndpoint
+            || loginPartialHasReviewsLink;
+    }
+
     private static bool AdminControllerSourceContains(string expected)
     {
         return ReadAdminControllerSource().Contains(expected, StringComparison.OrdinalIgnoreCase);
