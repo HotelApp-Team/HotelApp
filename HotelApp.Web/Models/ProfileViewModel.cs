@@ -18,8 +18,9 @@ public class ProfileViewModel
     [Display(Name = "Soyad")]
     public string LastName { get; set; } = null!;
 
+    // Email formda salt okunur gösterildiği için POST sırasında boş gelebilir.
     [Display(Name = "Email")]
-    public string Email { get; set; } = null!;
+    public string? Email { get; set; }
 
     [Required(ErrorMessage = "Telefon numarası zorunludur.")]
     [Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
