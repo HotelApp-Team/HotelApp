@@ -25,7 +25,10 @@
             <div class="card-body">
                 <form asp-action="UpdateProfile" asp-controller="Profile" method="post">
                     @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    @if (ViewData["ProfileErrorMessage"] is string profileError)
+                    {
+                        <div class="text-danger mb-3" role="alert">@profileError</div>
+                    }
 
                     <div class="row">
                         <div class="col-6 mb-3">
@@ -66,7 +69,10 @@
             <div class="card-body">
                 <form asp-action="ChangePassword" asp-controller="Profile" method="post">
                     @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    @if (ViewData["PasswordErrorMessage"] is string passwordError)
+                    {
+                        <div class="text-danger mb-3" role="alert">@passwordError</div>
+                    }
 
                     @* Güvenlik: Şifre alanları password input olarak kalır ve autocomplete amacı net belirtilir. *@
                     <div class="mb-3">

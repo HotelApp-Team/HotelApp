@@ -48,6 +48,9 @@ public class ProfileController : Controller
 
         // Profil ve şifre değiştirme formlarını tek sayfa modelinde toplar.
         var model = await BuildPageAsync(profile: profileViewModel);
+        if (model == null)
+            return RedirectToAction("Index", "Home");
+
         return View(model);
     }
 
@@ -64,6 +67,9 @@ public class ProfileController : Controller
         if (!ModelState.IsValid)
         {
             var invalidPage = await BuildPageAsync(profile: model);
+            if (invalidPage == null)
+                return RedirectToAction("Index", "Home");
+
             return View("Index", invalidPage);
         }
 
@@ -88,8 +94,11 @@ public class ProfileController : Controller
         }
 
         // API hata döndürürse mesajı form üzerinde gösterir.
-        ModelState.AddModelError(string.Empty, response.Message);
+        ViewData["ProfileErrorMessage"] = response.Message;
         var page = await BuildPageAsync(profile: model);
+        if (page == null)
+            return RedirectToAction("Index", "Home");
+
         return View("Index", page);
     }
 
@@ -106,6 +115,9 @@ public class ProfileController : Controller
         if (!ModelState.IsValid)
         {
             var page = await BuildPageAsync(changePassword: model);
+            if (page == null)
+                return RedirectToAction("Index", "Home");
+
             return View("Index", page);
         }
 
@@ -120,13 +132,16 @@ public class ProfileController : Controller
         }
 
         // API hata döndürürse mesajı form üzerinde gösterir.
-        ModelState.AddModelError(string.Empty, response.Message);
+        ViewData["PasswordErrorMessage"] = response.Message;
         var errorPage = await BuildPageAsync(changePassword: model);
+        if (errorPage == null)
+            return RedirectToAction("Index", "Home");
+
         return View("Index", errorPage);
     }
 
     // E03, E46 ve E47 akışlarında profil ve şifre formlarını aynı View için sayfa modeline dönüştürür.
-    private async Task<ProfilePageViewModel> BuildPageAsync(
+    private async Task<ProfilePageViewModel?> BuildPageAsync(
         ProfileViewModel? profile = null,
         ChangePasswordViewModel? changePassword = null)
     {
@@ -135,16 +150,23 @@ public class ProfileController : Controller
         {
             var response = await _apiService.GetAsync<UserResponse>("auth/profile");
 
+            if (!response.Success || response.Data == null)
+            {
+                TempData["ErrorMessage"] = string.IsNullOrWhiteSpace(response.Message)
+                    ? "Profil bilgileri alınamadı."
+                    : response.Message;
+
+                return null;
+            }
+
             // API'den gelen profil cevabını forma basılacak ViewModel'e mapler.
-            profile = response.Data != null
-                ? new ProfileViewModel
-                {
-                    FirstName = response.Data.FirstName,
-                    LastName = response.Data.LastName,
-                    Email = response.Data.Email,
-                    Phone = response.Data.Phone
-                }
-                : new ProfileViewModel();
+            profile = new ProfileViewModel
+            {
+                FirstName = response.Data.FirstName,
+                LastName = response.Data.LastName,
+                Email = response.Data.Email,
+                Phone = response.Data.Phone
+            };
         }
 
         // Profil ve şifre formlarını tek sayfa modelinde birleştirir.
