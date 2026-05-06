@@ -1,8 +1,17 @@
 ﻿@model HotelApp.Web.Models.HotelDetailPageVm
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @{
     ViewData["Title"] = Model.Name;
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="container mt-3">
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    </div>
+}
 
 <!-- ================= HERO ================= -->
 <div class="hotel-hero"
@@ -71,39 +80,54 @@
                 </div>
             </section>
 
-            <!-- ================= ROOMS (PLACEHOLDER) Sevde Eklicek ================= -->
-            <section class="card-box mt-4">
+            <!-- ================= ROOMS ================= -->
+            <section id="rooms-section" class="card-box mt-4">
                 <h3>Odalar</h3>
+
                 @if (Model.Rooms != null && Model.Rooms.Any())
                 {
+                    if (!Model.IsAuthenticated)
+                    {
+                        <div class="alert alert-info">
+                            Rezervasyon başlatmak için giriş yapmalısınız.
+                            <a asp-controller="Auth"
+                               asp-action="Login"
+                               asp-route-returnUrl="@Context.Request.Path">
+                                Giriş Yap
+                            </a>
+                        </div>
+                    }
+
                     foreach (var room in Model.Rooms)
                     {
-                        @await Html.PartialAsync("_RoomCard", room)
+                        @await Html.PartialAsync("_RoomCard", room, new ViewDataDictionary(ViewData)
+                        {
+                            ["CheckIn"] = Model.SearchCheckIn?.ToString("yyyy-MM-dd"),
+                            ["CheckOut"] = Model.SearchCheckOut?.ToString("yyyy-MM-dd"),
+                            ["GuestCount"] = Model.SearchGuestCount
+                        })
                     }
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        Bu otel için oda bilgisi bulunamadı.
-                    </div>
+                    <p class="text-muted mb-0">Bu otel için henüz oda bilgisi bulunmuyor.</p>
                 }
             </section>
 
-            <!-- ================= REVIEWS (PLACEHOLDER) Sevde Eklicek ================= -->
+            <!-- ================= REVIEWS ================= -->
             <section class="card-box mt-4">
                 <h3>Yorumlar</h3>
+
                 @if (Model.Reviews != null && Model.Reviews.Any())
                 {
-                    foreach (var review in Model.Reviews)
+                    foreach (var review in Model.Reviews.OrderByDescending(x => x.CreatedAt))
                     {
                         @await Html.PartialAsync("_ReviewCard", review)
                     }
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        Henüz yorum yapılmamış.
-                    </div>
+                    <p class="text-muted mb-0">Bu otel için henüz yorum paylaşılmamış.</p>
                 }
             </section>
 
@@ -117,20 +141,21 @@
 
                 @if (Model.IsAuthenticated)
                 {
-                    <p class="text-success">Giriş yapıldı</p>
+                    <p class="text-success">Giriş yapıldı. Uygun odalardan rezervasyon başlatabilirsiniz.</p>
+                    <a class="btn btn-primary w-100 mt-3" href="#rooms-section">
+                        Uygun Odaları Gör
+                    </a>
                 }
                 else
                 {
-                    <p class="text-danger">Rezervasyon için giriş yapmalısınız</p>
+                    <p class="text-danger">Rezervasyon için giriş yapmalısınız.</p>
+                    <a class="btn btn-outline-primary w-100 mt-3"
+                       asp-controller="Auth"
+                       asp-action="Login"
+                       asp-route-returnUrl="@Context.Request.Path">
+                        Giriş Yap ve Devam Et
+                    </a>
                 }
-
-                <form>
-                    <input type="hidden" asp-for="BookingForm.HotelId" />
-
-                    <button class="btn btn-primary w-100 mt-3">
-                        Rezervasyon Yap
-                    </button>
-                </form>
             </div>
 
             <!-- AMENITIES -->
@@ -147,8 +172,8 @@
                             if (!string.IsNullOrWhiteSpace(a.Icon))
                             {
                                 iconClass = a.Icon.StartsWith("bi ")
-                                ? a.Icon
-                                : $"bi bi-{a.Icon}";
+                                    ? a.Icon
+                                    : $"bi bi-{a.Icon}";
                             }
 
                             <li>
