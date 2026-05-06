@@ -35,17 +35,10 @@ namespace HotelApp.Web.Controllers
         {
             model.HotelId = hotelId;
 
-            var response = await _apiService.PostAsync<object>(
-                "reviews", model);
+            var response = await _apiService.PostAsync<object>("reviews", model);
 
-            if (!response.Success)
-            {
-                TempData["Error"] = response.Message;
-            }
-            else
-            {
-                TempData["Success"] = "Yorum başarıyla eklendi.";
-            }
+            TempData[response.Success ? "Success" : "Error"] =
+                response.Success ? "Yorum basariyla eklendi." : response.Message;
 
             return RedirectToAction("Detail", "Hotels", new { id = hotelId });
         }
@@ -57,14 +50,8 @@ namespace HotelApp.Web.Controllers
         {
             var response = await _apiService.DeleteAsync($"reviews/{id}");
 
-            if (!response.Success)
-            {
-                TempData["Error"] = response.Message;
-            }
-            else
-            {
-                TempData["Success"] = "Yorum silindi.";
-            }
+            TempData[response.Success ? "Success" : "Error"] =
+                response.Success ? "Yorum silindi." : response.Message;
 
             return RedirectToAction("My");
         }
