@@ -1,4 +1,8 @@
-﻿namespace HotelApp.Web.Models;
+namespace HotelApp.Web.Models;
+
+// RegisterResponse sınıfının amacı, API'den gelen kayıt sonucunu web tarafında taşımaktır.
+// Email doğrulama durumu, mesaj, token ve kullanıcı bilgilerini register akışında kullanır.
+// SOLID: SRP kullanır; sadece web register cevap verisini temsil eder.
 
 public class RegisterResponse
 {

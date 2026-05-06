@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Domain.DTOs;
 
-// Kullanici "maili tekrar gonder" dediginde API'ye giden istektir.
+// ResendVerificationDto sınıfının amacı, doğrulama mailini tekrar gönderme isteğini taşımaktır.
+// Kullanıcının email bilgisini validation kurallarıyla birlikte API tarafına aktarır.
+// SOLID: SRP kullanır; sadece resend verification istek verisini temsil eder.
+
 public class ResendVerificationDto
 {
     [Required(ErrorMessage = "Email alanı zorunludur.")]
@@ -10,8 +13,10 @@ public class ResendVerificationDto
     public string Email { get; set; } = null!;
 }
 
-// Resend isleminin controller tarafinda loglanabilmesi icin ic sonuc bilgisini tasir.
-// Disariya yine generic message gosterilir; EmailSent / EmailSendAttempted daha cok ic akis icindir.
+// ResendVerificationResultDto sınıfının amacı, doğrulama maili tekrar gönderme sonucunu taşımaktır.
+// Controller'ın log seviyesini seçebilmesi için mesaj, mail denendi mi ve gönderildi mi bilgilerini tutar.
+// SOLID: SRP kullanır; sadece resend verification iç sonuç verisini temsil eder.
+
 public class ResendVerificationResultDto
 {
     public string Message { get; set; } = string.Empty;

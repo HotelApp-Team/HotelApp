@@ -137,14 +137,31 @@
             <div class="card-box mt-4">
                 <h4>Olanaklar</h4>
 
-                <ul class="amenity-list">
-                    @foreach (var a in Model.Amenities)
-                    {
-                        <li>
-                            @a.Name
-                        </li>
-                    }
-                </ul>
+                @if (Model.Amenities != null && Model.Amenities.Any())
+                {
+                    <ul class="amenity-list">
+                        @foreach (var a in Model.Amenities)
+                        {
+                            var iconClass = "bi bi-check-circle-fill";
+
+                            if (!string.IsNullOrWhiteSpace(a.Icon))
+                            {
+                                iconClass = a.Icon.StartsWith("bi ")
+                                ? a.Icon
+                                : $"bi bi-{a.Icon}";
+                            }
+
+                            <li>
+                                <i class="@iconClass"></i>
+                                <span>@a.Name</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Olanak bilgisi henüz eklenmemiş.</p>
+                }
             </div>
 
         </div>

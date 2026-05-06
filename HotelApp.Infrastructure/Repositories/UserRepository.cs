@@ -3,10 +3,12 @@ using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-// UserRepository, kullanici profil islemleri icin gerekli verileri veritabanindan getirir.
-// Amaci, user tarafindaki data access kodunu service katmanindan ayirmaktir.
-// SOLID: SRP kullanir, OCP icin Repository<User> yapisini genisletir.
 namespace HotelApp.Infrastructure.Repositories;
+
+// UserRepository sınıfının amacı, kullanıcı profil işlemleri için gerekli verileri getirmektir.
+// Kullanıcıyı rollerle birlikte veritabanından okur ve service katmanına hazır veri sağlar.
+// SOLID: SRP kullanır; sadece kullanıcı veri erişiminden sorumludur.
+// SOLID: OCP kullanır; Repository<User> yapısını kullanıcıya özel sorguyla genişletir.
 
 public class UserRepository : Repository<User>, IUserRepository
 {

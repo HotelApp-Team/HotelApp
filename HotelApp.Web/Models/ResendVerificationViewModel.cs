@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
-// "Tekrar doğrulama maili gönder" formunun taşıdığı tek alan: Email.
-// Backend'in ResendVerificationDto'su ile aynı yapıda
+// ResendVerificationViewModel sınıfının amacı, doğrulama mailini tekrar gönderme formunun verisini taşımaktır.
+// Kullanıcının email bilgisini validation kurallarıyla view tarafına bağlar.
+// SOLID: SRP kullanır; sadece resend verification form verisini temsil eder.
+
 public class ResendVerificationViewModel
 {
     [Required(ErrorMessage = "Email alanı zorunludur.")]

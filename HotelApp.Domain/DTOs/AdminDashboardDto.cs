@@ -1,7 +1,8 @@
 namespace HotelApp.Domain.DTOs;
 
-// Amaç: Admin dashboard ekranında gösterilecek özet istatistikleri taşır.
-// SOLID: SRP ile sadece dashboard cevap verisini temsil eder.
+// AdminDashboardDto sınıfının amacı, admin dashboard ekranının özet verilerini taşımaktır.
+// Toplam otel, kullanıcı, rezervasyon, gelir ve son rezervasyon bilgilerini API cevabı olarak hazırlar.
+// SOLID: SRP kullanır; sadece dashboard cevap verisini temsil eder.
 
 public class AdminDashboardDto
 {

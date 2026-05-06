@@ -5,8 +5,10 @@ using System.Data;
 
 namespace HotelApp.Domain.Services;
 
-// Amaç: Admin paneli iş kurallarını yönetir ve repository katmanından gelen veriyi DTO'ya çevirir.
-// SOLID: SRP ile sadece admin iş akışlarından sorumludur; DIP ile IUnitOfWork arayüzüne bağlı çalışır.
+// AdminService sınıfının amacı, admin paneli iş kurallarını yönetmektir.
+// Dashboard verisi hazırlar, kullanıcıları listeler, aktiflik durumunu ve rolleri günceller.
+// SOLID: SRP kullanır; sadece admin iş akışlarından sorumludur.
+// SOLID: DIP kullanır; veri işlemleri için somut repository yerine IUnitOfWork arayüzüne bağlıdır.
 
 public class AdminService : IAdminService
 {

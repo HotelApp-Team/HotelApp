@@ -5,8 +5,10 @@ using System.Text.Json;
 
 namespace HotelApp.Web.Services;
 
-// ApiService, MVC ile Web API arasindaki koprudur.
-// Istek atar, token ekler, JSON verisini cevirir ve hata mesajlarini duzenli sekilde geri dondurur.
+// ApiService sınıfının amacı, MVC web projesi ile Web API arasında köprü olmaktır.
+// GET/POST/PUT/DELETE isteklerini gönderir, JWT token ekler ve API cevaplarını standart ApiResponse modeline çevirir.
+// SOLID: SRP kullanır; sadece API iletişimi ve response dönüştürme işlerinden sorumludur.
+
 public class ApiService
 {
     private readonly HttpClient _httpClient;

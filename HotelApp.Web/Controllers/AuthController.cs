@@ -1,11 +1,14 @@
-﻿using HotelApp.Web.Helpers;
+using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers;
 
-// Giris, kayit ve email dogrulama sayfalarini yoneten controller.
+// AuthController sınıfının amacı, web tarafındaki auth sayfalarını yönetmektir.
+// Login, register, email doğrulama, doğrulama maili tekrar gönderme ve logout akışlarını API ile konuşturur.
+// SOLID: SRP kullanır; sadece web auth sayfa akışlarından sorumludur.
+
 public class AuthController : Controller
 {
     // API ile konuşmak için ApiService'i kullanacağız.

@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HotelApp.Infrastructure;
 
-// Amaç: Repository'lere tek noktadan erişim sağlar ve transaction işlemlerini yönetir.
-// SOLID: SRP ile repository/transaction yönetimini toplar; DIP ile IUnitOfWork arayüzünü uygular.
+// UnitOfWork sınıfının amacı, repository erişimini ve transaction yönetimini tek merkezde toplamaktır.
+// Repository nesnelerini üretir, SaveChanges çalıştırır ve transaction başlatma/commit/rollback işlemlerini yönetir.
+// SOLID: SRP kullanır; sadece veri erişimi koordinasyonundan sorumludur.
+// SOLID: DIP destekler; üst katmanlar somut sınıf yerine IUnitOfWork arayüzüne bağlı kalır.
 
 public class UnitOfWork : IUnitOfWork
 {
