@@ -15,9 +15,10 @@ namespace HotelApp.Web.Controllers
         }
 
         [ServiceFilter(typeof(AuthFilter))]
-        public async Task<IActionResult> My()
+        public async Task<IActionResult> My(string? status, string? sortBy, int page = 1, int pageSize = 10)
         {
-            var response = await _apiService.GetAsync<List<ReservationDetailViewModel>>("reservations/my");
+            var endpoint = $"reservations/my?status={status}&sortBy={sortBy}&page={page}&pageSize={pageSize}";
+            var response = await _apiService.GetAsync<List<ReservationDetailViewModel>>(endpoint);
 
             if (!response.Success)
             {
