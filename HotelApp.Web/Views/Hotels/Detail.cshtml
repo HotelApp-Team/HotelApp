@@ -85,7 +85,14 @@
 
                 @if (Model.Rooms != null && Model.Rooms.Any())
                 {
-                    @if (!Model.IsAuthenticated)
+                    if (Model.IsAuthenticated)
+                    {
+                        @foreach (var room in Model.Rooms)
+                        {
+                            @await Html.PartialAsync("_RoomCard", room)
+                        }
+                    }
+                    else
                     {
                         <div class="alert alert-info">
                             Rezervasyon başlatmak için giriş yapmalısınız.
@@ -95,11 +102,6 @@
                                 Giriş Yap
                             </a>
                         </div>
-                    }
-
-                    @foreach (var room in Model.Rooms)
-                    {
-                        @await Html.PartialAsync("_RoomCard", room)
                     }
                 }
                 else

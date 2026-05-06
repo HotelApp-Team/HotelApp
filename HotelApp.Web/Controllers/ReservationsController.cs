@@ -22,11 +22,11 @@ namespace HotelApp.Web.Controllers
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
-                return RedirectToAction("Details", "Hotels", new { id = model.HotelId });
+                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
             }
 
             TempData["Success"] = "Rezervasyon başarıyla oluşturuldu.";
-            return RedirectToAction("Details", "Hotels", new { id = model.HotelId });
+            return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
         }
     }
 }
