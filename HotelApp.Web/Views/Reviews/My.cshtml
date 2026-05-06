@@ -1,0 +1,38 @@
+﻿@model List<ReviewViewModel>
+
+<h2>Yorumlarım</h2>
+
+@if (TempData["Error"] != null)
+{
+<div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Henüz yorumunuz bulunmuyor.</div>
+}
+else
+{
+    @foreach(var review in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>@review.HotelName</h5>
+                <p>Puan: @review.Rating</p>
+                <p>@review.Comment</p>
+                <small>@review.CreatedAt.ToShortDateString()</small>
+
+                <form asp-controller="Reviews" asp-action="Delete" method="post" class="mt-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@review.Id" />
+                    <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+                </form>
+            </div>
+        </div>
+    }
+}

@@ -1,4 +1,5 @@
-﻿using HotelApp.Web.Models;
+﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,20 +14,65 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateReservationViewModel model)
+        [ServiceFilter(typeof(AuthFilter))]
+        public async Task<IActionResult> My()
         {
-            var response = await _apiService.PostAsync<object>("reservations", model);
+            var response = await _apiService.GetAsync<List<ReservationDetailViewModel>>("reservations/my");
 
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
-                return RedirectToAction("Details", "Hotels", new { id = model.HotelId });
+                return View(new List<ReservationDetailViewModel>());
             }
 
-            TempData["Success"] = "Rezervasyon başarıyla oluşturuldu.";
-            return RedirectToAction("Details", "Hotels", new { id = model.HotelId });
+            return View(response.Data ?? new List<ReservationDetailViewModel>());
+        }
+
+        [ServiceFilter(typeof(AuthFilter))]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var response = await _apiService.PutAsync($"reservations/{id}/cancel", new { });
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message;
+            }
+            else
+            {
+                TempData["Success"] = "Rezervasyon iptal edildi.";
+            }
+
+            return RedirectToAction("My");
+        }
+
+        [ServiceFilter(typeof(AuthFilter))]
+        public async Task<IActionResult> Detail(int id)
+        {
+            var response = await _apiService.GetAsync<ReservationDetailViewModel>($"reservations/{id}");
+
+            if (!response.Success || response.Data == null)
+            {
+                TempData["Error"] = response.Message ?? "Rezervasyon detayı alınamadı.";
+                return RedirectToAction("My");
+            }
+
+            return View(response.Data);
+        }
+
+        [ServiceFilter(typeof(AuthFilter))]
+        public async Task<IActionResult> Invoice(int id)
+        {
+            var response = await _apiService.GetAsync<ReservationDetailViewModel>($"reservations/{id}/invoice");
+
+            if (!response.Success || response.Data == null)
+            {
+                TempData["Error"] = response.Message ?? "Fatura bilgisi alınamadı.";
+                return RedirectToAction("My");
+            }
+
+            return View(response.Data);
         }
     }
 }

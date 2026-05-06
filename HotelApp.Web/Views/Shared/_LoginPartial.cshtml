@@ -8,10 +8,28 @@
 <ul class="navbar-nav">
     @if (isLoggedIn)
     {
-        @*Giriş yapmış kullanıcı için: isim + çıkış butonu*@
+        @*Giriş yapmış kullanıcı için: rezervasyon, yorum, isim + çıkış butonu*@
+
+        <li class="nav-item">
+            <a class="nav-link text-dark"
+               asp-controller="Reservations"
+               asp-action="My">
+                Rezervasyonlarım
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link text-dark"
+               asp-controller="Reviews"
+               asp-action="My">
+                Yorumlarım
+            </a>
+        </li>
+
         <li class="nav-item d-flex align-items-center me-2">
             <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
         </li>
+
         <li class="nav-item">
             <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
                 @Html.AntiForgeryToken()

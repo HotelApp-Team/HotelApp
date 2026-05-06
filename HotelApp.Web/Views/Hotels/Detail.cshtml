@@ -6,7 +6,7 @@
 
 <!-- ================= HERO ================= -->
 <div class="hotel-hero"
-    style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
+     style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
     <div class="overlay"></div>
 
     <div class="container hero-content">
@@ -74,13 +74,37 @@
             <!-- ================= ROOMS (PLACEHOLDER) Sevde Eklicek ================= -->
             <section class="card-box mt-4">
                 <h3>Odalar</h3>
-                <p>Grup C burada room partial ekleyecek.</p>
+                @if (Model.Rooms != null && Model.Rooms.Any())
+                {
+                    foreach (var room in Model.Rooms)
+                    {
+                        @await Html.PartialAsync("_RoomCard", room)
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        Bu otel için oda bilgisi bulunamadı.
+                    </div>
+                }
             </section>
 
             <!-- ================= REVIEWS (PLACEHOLDER) Sevde Eklicek ================= -->
             <section class="card-box mt-4">
                 <h3>Yorumlar</h3>
-                <p>Grup C review partial entegrasyonu yapılacak.</p>
+                @if (Model.Reviews != null && Model.Reviews.Any())
+                {
+                    foreach (var review in Model.Reviews)
+                    {
+                        @await Html.PartialAsync("_ReviewCard", review)
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        Henüz yorum yapılmamış.
+                    </div>
+                }
             </section>
 
         </div>

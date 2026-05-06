@@ -1,0 +1,71 @@
+﻿@model ReservationDetailViewModel
+@{
+    ViewData["Title"] = "Fatura";
+}
+
+<div class="page-header">
+    <h1>Ödeme Özeti</h1>
+    <p>Rezervasyon ve ödeme bilgilerini görüntüle.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="app-card p-4">
+            <h4>Konaklama Bilgileri</h4>
+
+            <div class="summary-row">
+                <span class="summary-label">Rezervasyon No</span>
+                <span class="summary-value">#@Model.ReservationId</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Otel</span>
+                <span class="summary-value">@Model.HotelName</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Oda Tipi</span>
+                <span class="summary-value">@Model.RoomTypeName</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Tarih</span>
+                <span class="summary-value">
+                    @Model.CheckInDate.ToShortDateString() - @Model.CheckOutDate.ToShortDateString()
+                </span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Misafir</span>
+                <span class="summary-value">@Model.GuestCount</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="app-card p-4">
+            <h4>Booking Summary</h4>
+
+            <div class="summary-row">
+                <span class="summary-label">Durum</span>
+                <span class="summary-value">@Model.Status</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Toplam</span>
+                <span class="price-total">@Model.TotalPrice.ToString("C")</span>
+            </div>
+
+            <div class="alert alert-primary mt-3 mb-0">
+                Rezervasyon bilgileriniz güvenli şekilde görüntüleniyor.
+            </div>
+
+            <a asp-controller="Reservations"
+               asp-action="Detail"
+               asp-route-id="@Model.ReservationId"
+               class="btn btn-outline-primary w-100 mt-3">
+                Detaya Dön
+            </a>
+        </div>
+    </div>
+</div>

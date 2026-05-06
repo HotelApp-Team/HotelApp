@@ -12,7 +12,8 @@
 
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-controller="Reservations" asp-action="Create" method="post">
+            <form asp-controller="Booking" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="bookingModalLabel-@roomId">
                         @Model.RoomTypeName Rezervasyonu

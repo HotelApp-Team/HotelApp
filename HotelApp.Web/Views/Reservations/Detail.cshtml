@@ -1,0 +1,66 @@
+﻿@model ReservationDetailViewModel
+@{
+    ViewData["Title"] = "Rezervasyon Detayı";
+}
+
+<div class="page-header">
+    <h1>Rezervasyon Detayı</h1>
+    <p>Konaklama bilgilerini kontrol et.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="app-card p-4">
+            <h4 class="mb-4">@Model.HotelName</h4>
+
+            <div class="summary-row">
+                <span class="summary-label">Oda Tipi</span>
+                <span class="summary-value">@Model.RoomTypeName</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Giriş</span>
+                <span class="summary-value">@Model.CheckInDate.ToShortDateString()</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Çıkış</span>
+                <span class="summary-value">@Model.CheckOutDate.ToShortDateString()</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Misafir</span>
+                <span class="summary-value">@Model.GuestCount</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Durum</span>
+                <span class="summary-value">@Model.Status</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="app-card p-4">
+            <h4>Özet</h4>
+
+            <div class="summary-row">
+                <span class="summary-label">Toplam</span>
+                <span class="price-total">@Model.TotalPrice.ToString("C")</span>
+            </div>
+
+            <a asp-controller="Reservations"
+               asp-action="Invoice"
+               asp-route-id="@Model.ReservationId"
+               class="btn btn-primary w-100 mt-3">
+                Fatura Görüntüle
+            </a>
+
+            <a asp-controller="Reservations"
+               asp-action="My"
+               class="btn btn-outline-primary w-100 mt-2">
+                Rezervasyonlarıma Dön
+            </a>
+        </div>
+    </div>
+</div>
