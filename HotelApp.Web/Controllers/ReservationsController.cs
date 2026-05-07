@@ -1,9 +1,13 @@
-﻿using HotelApp.Web.Models;
+﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
 {
+    // Rezervasyon islemleri sadece giris yapmis kullaniciya ozeldir.
+    // AuthFilter, session'daki JWT token gecerli degilse Login sayfasina yonlendirir.
+    [ServiceFilter(typeof(AuthFilter))]
     public class ReservationsController : Controller
     {
         private readonly ApiService _apiService;
