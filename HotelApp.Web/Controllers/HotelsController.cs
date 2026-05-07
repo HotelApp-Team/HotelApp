@@ -123,8 +123,13 @@ namespace HotelApp.Web.Controllers
                 ? imagesResponse.Data ?? new List<HotelImageViewModel>()
                 : new List<HotelImageViewModel>();
 
-            model.Rooms = roomsResponse.Data ?? new List<AvailableRoomViewModel>();
-            model.Reviews = reviewsResponse.Data ?? new List<ReviewViewModel>();
+            model.Rooms = roomsResponse.Success
+                ? roomsResponse.Data ?? new List<AvailableRoomViewModel>()
+                : new List<AvailableRoomViewModel>();
+
+            model.Reviews = reviewsResponse.Success
+                ? reviewsResponse.Data ?? new List<ReviewViewModel>()
+                : new List<ReviewViewModel>();
             model.BookingForm = new CreateReservationViewModel
             {
                 HotelId = id

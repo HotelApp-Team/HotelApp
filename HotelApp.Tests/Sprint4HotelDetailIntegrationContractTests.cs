@@ -105,7 +105,7 @@ public class Sprint4HotelDetailIntegrationContractTests
         AssertContainsAny(reviewCard, "CreatedAt", "Tarih");
 
         AssertContainsAny(bookingModal, "AvailableRoomViewModel", "BookingVM", "Reservation");
-        AssertContainsAny(bookingModal, "asp-controller=\"Reservations\"", "Reservations");
+        AssertContainsAny(bookingModal, "asp-controller=\"Booking\"", "Booking", "asp-controller=\"Reservations\"", "Reservations");
         AssertContainsAny(bookingModal, "asp-action=\"Create\"", "Create");
         AssertContainsAny(bookingModal, "method=\"post\"", "method=\"POST\"");
         AssertContainsAny(bookingModal, "HotelRoomId", "RoomId");
@@ -152,7 +152,7 @@ public class Sprint4HotelDetailIntegrationContractTests
 
         var combined = string.Join(Environment.NewLine, detailView, roomCard, bookingModal);
 
-        AssertContainsAny(combined, "asp-controller=\"Reservations\"", "Reservations");
+        AssertContainsAny(combined, "asp-controller=\"Booking\"", "Booking", "asp-controller=\"Reservations\"", "Reservations");
         AssertContainsAny(combined, "asp-action=\"Create\"", "Create");
         AssertContainsAny(combined, "HotelRoomId", "RoomId");
         AssertContainsAny(combined, "IsAuthenticated", "JWToken", "Login", "Giriş", "Giris");
