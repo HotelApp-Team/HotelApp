@@ -13,11 +13,13 @@ namespace HotelApp.Domain.Services;
 public class AdminService : IAdminService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILoggerService _logger;
 
     // UnitOfWork bağımlılığını alır.
-    public AdminService(IUnitOfWork unitOfWork)
+    public AdminService(IUnitOfWork unitOfWork, ILoggerService logger)
     {
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     // E36 için dashboard istatistiklerini toplar ve tek DTO halinde hazırlar.
@@ -142,6 +144,29 @@ public class AdminService : IAdminService
 
         // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
         return MapToAdminUserDto(user);
+    }
+
+    // E44 için LoggerService'in iki çağrısını PagedResponseDto zarfında birleştirir.
+    public async Task<PagedResponseDto<LogDto>> GetLogsAsync(LogFilterDto filter)
+    {
+        // LoggerService zaten Match.Clamp ile sayfa parametlerini koruyor
+        // Burada ekstra ValidatePaging çağırmaya gerek yok
+        var logs = await _logger.GetLogsAsync(filter);
+        var totalCount = await _logger.GetLogCountAsync(filter);
+
+        return new PagedResponseDto<LogDto>
+        {
+            TotalCount = totalCount,
+            Page = filter.PageNumber,
+            PageSize = filter.PageSize,
+            Data = logs.ToList()
+        };
+    }
+
+    // E45 için tek log kaydını  ileterek logger katmanına  delege ediyoruz.
+    public async Task<LogDto?> GetLogByIdAsync(int id)
+    {
+        return await _logger.GetLogByIdAsync(id);
     }
 
     // User entity'sini admin ekranına güvenli şekilde döneceğimiz AdminUserDto'ya çevirir.

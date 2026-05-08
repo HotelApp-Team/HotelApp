@@ -122,12 +122,16 @@ public class Sprint4LoggerAdminContractTests
         var implementationEvidence = body
             + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "IAdminService.cs")
             + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "AdminService.cs")
-            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "ILoggerService.cs");
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "Services", "ILoggerService.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Domain", "DTOs", "LogFilterDto.cs")
+            + Environment.NewLine + ReadOptionalProjectFile("HotelApp.Infrastructure", "Services", "LoggerService.cs");
 
         AssertContainsAny(implementationEvidence, "ILoggerService", "_logger", "GetLogsAsync");
-        AssertContainsAll(body, "level", "dateFrom", "dateTo", "search");
+        // DTO yaklasiminda level/dateFrom/... isimleri body'de degil LogFilterDto property'lerinde bulunur.
+        AssertContainsAll(implementationEvidence, "level", "dateFrom", "dateTo", "search");
         AssertContainsAny(implementationEvidence, "PagedResponseDto", "PagedResult", "TotalCount", "GetLogCountAsync");
-        AssertContainsAny(body, "page", "pageSize", "Skip", "Take");
+        // Sayfalama mantigi LoggerService.GetLogsAsync'te (Skip/Take); controller body'sinde olmasi gerekmez.
+        AssertContainsAny(implementationEvidence, "page", "pageSize", "Skip", "Take");
         AssertContainsAny(body, "Ok(", "return Ok");
         Assert.DoesNotContain("ExceptionDetail", body, StringComparison.OrdinalIgnoreCase);
     }
@@ -254,12 +258,49 @@ public class Sprint4LoggerAdminContractTests
 
     private static void AssertLogListParameters(MethodInfo method)
     {
+        // DTO yaklasimi (tercih edilen): tek parametre LogFilterDto, property'leriyle kontrat dogrulanir.
+        var dtoParameter = method.GetParameters()
+            .FirstOrDefault(p => string.Equals(p.ParameterType.Name, "LogFilterDto", StringComparison.Ordinal));
+
+        if (dtoParameter is not null)
+        {
+            var dtoType = dtoParameter.ParameterType;
+            AssertDtoProperty(dtoType, "Level", typeof(string), allowNullable: true);
+            AssertDtoProperty(dtoType, "DateFrom", typeof(DateTime), allowNullable: true);
+            AssertDtoProperty(dtoType, "DateTo", typeof(DateTime), allowNullable: true);
+            AssertDtoProperty(dtoType, "Search", typeof(string), allowNullable: true);
+            AssertDtoProperty(dtoType, "PageNumber", typeof(int));
+            AssertDtoProperty(dtoType, "PageSize", typeof(int));
+            return;
+        }
+
+        // Flat parametre yaklasimi (geriye donuk uyumluluk).
         AssertParameter(method, "level", typeof(string), allowNullable: true);
         AssertParameter(method, "dateFrom", typeof(DateTime), allowNullable: true);
         AssertParameter(method, "dateTo", typeof(DateTime), allowNullable: true);
         AssertParameter(method, "search", typeof(string), allowNullable: true);
         AssertParameter(method, "page", typeof(int));
         AssertParameter(method, "pageSize", typeof(int));
+    }
+
+    private static void AssertDtoProperty(Type dtoType, string propertyName, Type expectedType, bool allowNullable = false)
+    {
+        var property = dtoType.GetProperty(
+            propertyName,
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+        Assert.NotNull(property);
+
+        var actualType = Nullable.GetUnderlyingType(property!.PropertyType) ?? property.PropertyType;
+        Assert.True(actualType == expectedType,
+            $"{dtoType.Name}.{propertyName} property'si {expectedType.Name} tipinde olmali.");
+
+        if (!allowNullable)
+            return;
+
+        Assert.True(
+            !property.PropertyType.IsValueType || Nullable.GetUnderlyingType(property.PropertyType) is not null,
+            $"{dtoType.Name}.{propertyName} property'si nullable olmali.");
     }
 
     private static void AssertParameter(MethodInfo method, string parameterName, Type expectedType, bool allowNullable = false)
