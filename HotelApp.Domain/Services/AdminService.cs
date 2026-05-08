@@ -12,6 +12,11 @@ namespace HotelApp.Domain.Services;
 
 public class AdminService : IAdminService
 {
+    // Log listesi sayfa basina maksimum kayit sayisi.
+    // LoggerService'teki ayni sabitle bilincli olarak ikilenmistir;
+    // boylece response meta ile DB sorgusunda ayni clamp kurali calisir.
+    private const int MaxPageSize = 100;
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILoggerService _logger;
 
@@ -149,16 +154,20 @@ public class AdminService : IAdminService
     // E44 için LoggerService'in iki çağrısını PagedResponseDto zarfında birleştirir.
     public async Task<PagedResponseDto<LogDto>> GetLogsAsync(LogFilterDto filter)
     {
-        // LoggerService zaten Match.Clamp ile sayfa parametlerini koruyor
-        // Burada ekstra ValidatePaging çağırmaya gerek yok
+        // LoggerService zaten Math.Clamp ile sayfa parametrelerini koruyor.
+        // Burada da ayni clamp'i tekrarliyoruz ki response meta ile DB sorgusu
+        // ayni sayilari gostersin (orn. PageSize=999 istense bile meta 100 doner).
+        var safePage = Math.Max(1, filter.PageNumber);
+        var safePageSize = Math.Clamp(filter.PageSize, 1, MaxPageSize);
+
         var logs = await _logger.GetLogsAsync(filter);
         var totalCount = await _logger.GetLogCountAsync(filter);
 
         return new PagedResponseDto<LogDto>
         {
             TotalCount = totalCount,
-            Page = filter.PageNumber,
-            PageSize = filter.PageSize,
+            Page = safePage,
+            PageSize = safePageSize,
             Data = logs.ToList()
         };
     }
