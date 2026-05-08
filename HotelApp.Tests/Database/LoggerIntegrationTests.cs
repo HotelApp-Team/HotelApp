@@ -98,7 +98,7 @@ public class LoggerIntegrationTests
         await LoggerService.Instance.LogInfoAsync($"Paging log 1 {Guid.NewGuid():N}");
         await LoggerService.Instance.LogInfoAsync($"Paging log 2 {Guid.NewGuid():N}");
 
-        var logs = (await LoggerService.Instance.GetLogsAsync(pageNumber: 0, pageSize: 999)).ToList();
+        var logs = (await LoggerService.Instance.GetLogsAsync(new LogFilterDto { PageNumber = 0, PageSize = 999 })).ToList();
 
         Assert.NotEmpty(logs);
         Assert.True(logs.Count <= 100);
@@ -111,11 +111,11 @@ public class LoggerIntegrationTests
             return;
 
         LoggerService.Initialize(_database.ConnectionString);
-        var before = await LoggerService.Instance.GetLogCountAsync();
+        var before = await LoggerService.Instance.GetLogCountAsync(new LogFilterDto());
 
         await LoggerService.Instance.LogInfoAsync($"Count log test {Guid.NewGuid():N}");
 
-        var after = await LoggerService.Instance.GetLogCountAsync();
+        var after = await LoggerService.Instance.GetLogCountAsync(new LogFilterDto());
 
         Assert.True(after >= before + 1);
     }
@@ -253,9 +253,11 @@ public class LoggerIntegrationTests
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = 20) => Task.FromResult(Enumerable.Empty<LogDto>());
+        public Task<IEnumerable<LogDto>> GetLogsAsync(LogFilterDto filter) => Task.FromResult(Enumerable.Empty<LogDto>());
 
-        public Task<int> GetLogCountAsync() => Task.FromResult(0);
+        public Task<int> GetLogCountAsync(LogFilterDto filter) => Task.FromResult(0);
+
+        public Task<LogDto?> GetLogByIdAsync(int id) => Task.FromResult<LogDto?>(null);
     }
 
     private sealed record CapturedErrorLog(

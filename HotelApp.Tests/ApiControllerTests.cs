@@ -14,7 +14,7 @@ public class ApiControllerTests
     [Fact]
     public async Task Hotels_GetAll_PageBirdenKucukse_BadRequestDoner()
     {
-        var controller = new HotelsController(new FakeHotelService());
+        var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
         var result = await controller.GetAll(city: null, star: null, page: 0);
 
@@ -24,7 +24,7 @@ public class ApiControllerTests
     [Fact]
     public async Task Hotels_GetAll_PageSizeYuzdenBuyukse_BadRequestDoner()
     {
-        var controller = new HotelsController(new FakeHotelService());
+        var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
         var result = await controller.GetAll(city: null, star: null, pageSize: 101);
 
@@ -34,7 +34,7 @@ public class ApiControllerTests
     [Fact]
     public async Task Hotels_GetById_OtelYoksa_NotFoundDoner()
     {
-        var controller = new HotelsController(new FakeHotelService { HotelById = null });
+        var controller = new HotelsController(new FakeHotelService { HotelById = null }, new FakeLoggerService());
 
         var result = await controller.GetById(999);
 
@@ -47,7 +47,7 @@ public class ApiControllerTests
         var controller = new HotelsController(new FakeHotelService
         {
             SearchException = new ArgumentException("Gecersiz arama kriteri")
-        });
+        }, new FakeLoggerService());
 
         var result = await controller.Search(new HotelSearchRequestDto(), page: 1, pageSize: 10);
 
@@ -500,6 +500,7 @@ internal class FakeLoggerService : ILoggerService
     public Task LogInfoAsync(string message, int? userId = null, string? userEmail = null, string? controller = null, string? action = null, string? ipAddress = null) => Task.CompletedTask;
     public Task LogWarningAsync(string message, int? userId = null, string? userEmail = null, string? controller = null, string? action = null, string? ipAddress = null) => Task.CompletedTask;
     public Task LogErrorAsync(string message, int? userId = null, string? userEmail = null, string? controller = null, string? action = null, string? ipAddress = null, string? exceptionDetail = null) => Task.CompletedTask;
-    public Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = 20) => Task.FromResult(Enumerable.Empty<LogDto>());
-    public Task<int> GetLogCountAsync() => Task.FromResult(0);
+    public Task<IEnumerable<LogDto>> GetLogsAsync(LogFilterDto filter) => Task.FromResult(Enumerable.Empty<LogDto>());
+    public Task<int> GetLogCountAsync(LogFilterDto filter) => Task.FromResult(0);
+    public Task<LogDto?> GetLogByIdAsync(int id) => Task.FromResult<LogDto?>(null);
 }

@@ -15,7 +15,12 @@ public interface ILoggerService
 
     Task LogErrorAsync(string message, int? userId = null, string? userEmail = null, string? controller = null, string? action = null, string? ipAddress = null, string? exceptionDetail = null);
 
-    Task<IEnumerable<LogDto>> GetLogsAsync(int pageNumber = 1, int pageSize = 20);
+    // Adminin verdigi filtreyle log listesini sayfali sekilde getirir.
+    Task<IEnumerable<LogDto>> GetLogsAsync(LogFilterDto filter);
 
-    Task<int> GetLogCountAsync();
+    // Toplam kayit sayisi (filtre uygulanmis halde) — sayfalama icin gerekli.
+    Task<int> GetLogCountAsync(LogFilterDto filter);
+
+    // Tek log kaydini id ile getirir; bulunamazsa null doner.
+    Task<LogDto?> GetLogByIdAsync(int id);
 }
