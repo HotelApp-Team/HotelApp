@@ -21,7 +21,7 @@ public interface IAdminService
     // Admin panelinden kullanıcı rollerini günceller.
     Task<AdminUserDto> UpdateUserRolesAsync(int userId, AdminUpdateUserRolesDto dto, int currentAdminId);
 
-    // E44 - filtreli ve sayfalı log listesini sayım ile bitlikte zarflayıp döndürür
+    // E44 - filtreli ve sayfalı log listesini sayım ile birlikte zarflayıp döndürür
     Task<PagedResponseDto<LogDto>> GetLogsAsync(LogFilterDto filter);
 
     // E45 - tek log kaydını detaylı şekilde getirir; bulunamazsa null döner
