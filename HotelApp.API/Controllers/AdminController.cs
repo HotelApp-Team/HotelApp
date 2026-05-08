@@ -18,11 +18,13 @@ namespace HotelApp.API.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
+    private readonly ILoggerService _logger;
 
-    // Admin işlemleri için sadece AdminService sözleşmesini alıyoruz.
-    public AdminController(IAdminService adminService)
+    // AdminService is mantigini, LoggerService ise audit log yazimini saglar.
+    public AdminController(IAdminService adminService, ILoggerService logger)
     {
         _adminService = adminService;
+        _logger = logger;
     }
 
     // E36 - GET api/admin/dashboard : Admin dashboard istatistiklerini getirir.
@@ -53,6 +55,11 @@ public class AdminController : ControllerBase
             return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
 
         var result = await _adminService.UpdateUserStatusAsync(id, dto, currentAdminId);
+
+        await LogInfoAsync(
+            $"Kullanıcı durumu değiştirildi: TargetUserId={id}, IsActive={dto.IsActive}, AdminId={currentAdminId}",
+            userId: currentAdminId);
+
         return Ok(result);
     }
 
@@ -75,6 +82,59 @@ public class AdminController : ControllerBase
             return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
 
         var result = await _adminService.UpdateUserRolesAsync(id, dto, currentAdminId);
+
+        await LogInfoAsync(
+            $"Kullanıcı rolleri güncellendi: TargetUserId={id}, AdminId={currentAdminId}",
+            userId: currentAdminId);
+
         return Ok(result);
+    }
+
+    // E44 - GET api/admin/logs : Sistem loglarını filtreli ve sayfalı şekilde getirir.
+    [HttpGet("logs")]
+    public async Task<ActionResult<PagedResponseDto<LogDto>>> GetLogs([FromQuery] LogFilterDto filter)
+    {
+        var result = await _adminService.GetLogsAsync(filter);
+
+        // Admin paneline kim ne zaman baktigini audit izi icin tutuyoruz.
+        if (TryGetCurrentUserId(out var currentAdminId))
+        {
+            await LogInfoAsync(
+                $"Admin log listesi görüntülendi: Page={filter.PageNumber}, PageSize={filter.PageSize}",
+                userId: currentAdminId);
+        }
+
+        return Ok(result);
+    }
+
+    // E45 - GET api/admin/logs/{id} : Tek log kaydını detaylı şekilde getirir.
+    [HttpGet("logs/{id}")]
+    public async Task<ActionResult<LogDto>> GetLogById(int id)
+    {
+        var log = await _adminService.GetLogByIdAsync(id);
+        if (log == null)
+            return NotFound();
+
+        if (TryGetCurrentUserId(out var currentAdminId))
+        {
+            await LogInfoAsync(
+                $"Admin log detayı görüntülendi: LogId={id}",
+                userId: currentAdminId);
+        }
+
+        return Ok(log);
+    }
+
+    // Ortak bilgi logu atmak icin kullanilir.
+    // Mesaj, kullanici bilgisi, controller/action ve IP bilgisini tek yerden logger servisine yollar.
+    private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
+    {
+        await _logger.LogInfoAsync(
+            message: message,
+            userId: userId,
+            userEmail: userEmail,
+            controller: nameof(AdminController),
+            action: $"{Request.Method} {Request.Path}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
     }
 }
