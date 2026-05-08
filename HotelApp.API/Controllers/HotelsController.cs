@@ -10,10 +10,12 @@ namespace HotelApp.API.Controllers;
 public class HotelsController : ControllerBase
 {
     private readonly IHotelService _hotelService;
+    private readonly ILoggerService _logger;
 
-    public HotelsController(IHotelService hotelService)
+    public HotelsController(IHotelService hotelService, ILoggerService logger)
     {
         _hotelService = hotelService;
+        _logger = logger;
     }
 
     // E04 - GET /api/hotels (Pagination)
@@ -68,6 +70,10 @@ public class HotelsController : ControllerBase
         try
         {
             var result = await _hotelService.SearchAsync(dto, page, pageSize);
+
+            await LogInfoAsync(
+                $"Otel arama yapıldı: City={dto.City}, Star={dto.StarRating}");
+
             return Ok(result);
         }
         catch (ArgumentException ex)
@@ -85,6 +91,10 @@ public class HotelsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] HotelCreateDto dto)
     {
         await _hotelService.CreateAsync(dto);
+
+        await LogInfoAsync(
+            $"Yeni otel oluşturuldu: Name={dto.Name}, City={dto.City}");
+
         return StatusCode(201);
     }
 
@@ -100,14 +110,36 @@ public class HotelsController : ControllerBase
             return BadRequest(ModelState);
 
         await _hotelService.UpdateAsync(dto);
+
+        await LogInfoAsync(
+            $"Otel güncellendi: HotelId={dto.Id}");
+
         return NoContent();
     }
+
     // E10 - DELETE /api/hotels/{id}
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         await _hotelService.DeleteAsync(id);
+
+        await LogInfoAsync(
+            $"Otel silindi: HotelId={id}");
+
         return NoContent();
+    }
+
+    // Ortak bilgi logu atmak icin kullanilir.
+    // Mesaj, kullanici bilgisi, controller/action ve IP bilgisini tek yerden logger servisine yollar.
+    private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
+    {
+        await _logger.LogInfoAsync(
+            message: message,
+            userId: userId,
+            userEmail: userEmail,
+            controller: nameof(HotelsController),
+            action: $"{Request.Method} {Request.Path}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
     }
 }

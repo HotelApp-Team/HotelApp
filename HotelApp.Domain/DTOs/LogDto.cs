@@ -25,4 +25,5 @@ public class LogDto
     public string? IpAddress { get; set; }
 
     public string? ExceptionDetail { get; set; }
+
 }

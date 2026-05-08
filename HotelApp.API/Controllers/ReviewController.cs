@@ -12,10 +12,12 @@ namespace HotelApp.API.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;
+        private readonly ILoggerService _logger;
 
-        public ReviewController(IReviewService reviewService)
+        public ReviewController(IReviewService reviewService, ILoggerService logger)
         {
             _reviewService = reviewService;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -48,7 +50,11 @@ namespace HotelApp.API.Controllers
 
             var review = await _reviewService.CreateReviewAsync(userId, dto);
 
-            return Created(string.Empty ,review);
+            await LogInfoAsync(
+                $"Yeni değerlendirme eklendi: ReviewId={review.Id}, HotelId={dto.HotelId}",
+                userId: userId);
+
+            return Created(string.Empty, review);
         }
 
         [Authorize]
@@ -60,6 +66,10 @@ namespace HotelApp.API.Controllers
 
             await _reviewService.DeleteReviewAsync(id, userId);
 
+            await LogInfoAsync(
+                $"Değerlendirme silindi: ReviewId={id}",
+                userId: userId);
+
             return NoContent();
         }
 
@@ -70,6 +80,19 @@ namespace HotelApp.API.Controllers
          ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
             return int.TryParse(userIdClaim, out userId);
+        }
+
+        // Ortak bilgi logu atmak icin kullanilir.
+        // Mesaj, kullanici bilgisi, controller/action ve IP bilgisini tek yerden logger servisine yollar.
+        private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
+        {
+            await _logger.LogInfoAsync(
+                message: message,
+                userId: userId,
+                userEmail: userEmail,
+                controller: nameof(ReviewController),
+                action: $"{Request.Method} {Request.Path}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
         }
     }
 }

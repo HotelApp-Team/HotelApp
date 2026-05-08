@@ -13,10 +13,12 @@ namespace HotelApp.API.Controllers
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
+        private readonly ILoggerService _logger;
 
-        public ReservationController(IReservationService reservationService)
+        public ReservationController(IReservationService reservationService, ILoggerService logger)
         {
             _reservationService = reservationService;
+            _logger = logger;
         }
 
         [HttpGet("my")]
@@ -65,6 +67,10 @@ namespace HotelApp.API.Controllers
             if (reservation.UserId != userId && !isAdmin)
                 return Forbid();
 
+            await LogInfoAsync(
+                $"Rezervasyon faturası görüntülendi: ReservationId={id}",
+                userId: userId);
+
             return Ok(reservation);
         }
 
@@ -76,6 +82,10 @@ namespace HotelApp.API.Controllers
 
             var reservation = await _reservationService.CreateReservationAsync(userId, dto);
 
+            await LogInfoAsync(
+                $"Yeni rezervasyon oluşturuldu: ReservationId={reservation.Id}, HotelName={reservation.HotelName}, HotelRoomId={reservation.HotelRoomId}",
+                userId: userId);
+
             return CreatedAtAction(nameof(GetById), new { id = reservation.Id }, reservation);
         }
 
@@ -86,9 +96,13 @@ namespace HotelApp.API.Controllers
                 return Unauthorized();
 
             var isAdmin = User.IsInRole("Admin");
-            
+
             await _reservationService.CancelReservationAsync(id, userId, isAdmin);
-            
+
+            await LogInfoAsync(
+                $"Rezervasyon iptal edildi: ReservationId={id}, isAdmin={isAdmin}",
+                userId: userId);
+
             return NoContent();
         }
 
@@ -99,6 +113,17 @@ namespace HotelApp.API.Controllers
          ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
             return int.TryParse(userIdClaim, out userId);
+        }
+
+        private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
+        {
+            await _logger.LogInfoAsync(
+                message: message,
+                userId: userId,
+                userEmail: userEmail,
+                controller: nameof(ReservationController),
+                action: $"{Request.Method} {Request.Path}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
         }
     }
 }
