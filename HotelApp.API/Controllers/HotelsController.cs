@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +57,14 @@ public class HotelsController : ControllerBase
     public async Task<IActionResult> GetCities()
     {
         var cities = await _hotelService.GetCitiesAsync();
+        return Ok(cities);
+    }
+
+    // GET /api/hotels/featured-cities : Anasayfada gosterilecek one cikan sehir kartlarini getirir.
+    [HttpGet("featured-cities")]
+    public async Task<IActionResult> GetFeaturedCities([FromQuery] int count = 5)
+    {
+        var cities = await _hotelService.GetFeaturedCitiesAsync(count);
         return Ok(cities);
     }
 

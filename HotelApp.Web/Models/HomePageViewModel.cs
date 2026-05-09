@@ -1,9 +1,11 @@
-﻿namespace HotelApp.Web.Models;
+namespace HotelApp.Web.Models;
 
 public class HomePageViewModel
 {
     public List<string> Cities { get; set; } = new();
     public List<HotelCardViewModel> FeaturedHotels { get; set; } = new();
+    public List<CityCardViewModel> FeaturedCities { get; set; } = new();
+    public List<ReviewViewModel> FeaturedReviews { get; set; } = new();
 }
 
 public class HotelCardViewModel

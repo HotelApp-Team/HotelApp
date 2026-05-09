@@ -1,28 +1,60 @@
-﻿@model HotelApp.Web.Models.HotelCardViewModel
+@*
+    Otel kart partial'i - HotelCardViewModel kullanir.
+    Alanlar: Id, Name, City, Country, StarRating, AvgRating?, MinPrice?, MainImageUrl
+*@
+@model HotelApp.Web.Models.HotelCardViewModel
 
-<div class="hotel-card">
+<article class="hotel-card">
 
-    <img src="@(Model.MainImageUrl ?? "/images/no-image.jpg")"
-         class="hotel-img" />
+    <div class="hotel-card-media">
+        <img src="@(Model.MainImageUrl ?? "/images/no-image.jpg")"
+             alt="@Model.Name"
+             class="hotel-img"
+             loading="lazy" />
 
-    <div class="p-3">
+        @if (Model.AvgRating.HasValue && Model.AvgRating.Value >= 9)
+        {
+            <span class="hotel-badge hotel-badge-top">
+                <i class="bi bi-award-fill"></i> En Beğenilen
+            </span>
+        }
 
-        <h5 class="fw-bold">@Model.Name</h5>
+        <button type="button" class="hotel-fav" aria-label="Favorilere ekle">
+            <i class="bi bi-heart"></i>
+        </button>
+    </div>
 
-        <p class="text-muted mb-1">
+    <div class="hotel-card-body">
+
+        <div class="hotel-stars">
+            @await Html.PartialAsync("_StarRating", Model.StarRating)
+        </div>
+
+        <h3 class="hotel-name">@Model.Name</h3>
+
+        <div class="hotel-location">
+            <i class="bi bi-geo-alt-fill"></i>
             @Model.City, @Model.Country
-        </p>
+        </div>
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="hotel-rating-row">
 
-            <span class="badge bg-primary">
-                @await Html.PartialAsync("_StarRating", Model.StarRating)
+            <span class="badge-stars">
+                <i class="bi bi-star-fill"></i> @Model.StarRating Yıldız
             </span>
 
             @if (Model.AvgRating.HasValue)
             {
-                <span class="badge bg-success">
-                    @Model.AvgRating.Value.ToString("0.0")
+                var avg = Model.AvgRating.Value;
+                var ratingClass = avg >= 9 ? "rating-excellent"
+                                  : avg >= 8 ? "rating-good"
+                                  : "rating-ok";
+                var ratingLabel = avg >= 9 ? "Mükemmel"
+                                  : avg >= 8.5m ? "Çok İyi"
+                                  : "İyi";
+                <span class="hotel-rating">
+                    <span class="rating-pill @ratingClass">@avg.ToString("0.0")</span>
+                    <span class="rating-label">@ratingLabel</span>
                 </span>
             }
 
@@ -30,21 +62,27 @@
 
         @if (Model.MinPrice.HasValue)
         {
-            <div class="mt-2">
-                <span class="fw-bold text-success">
-                    @Model.MinPrice.Value.ToString("0") TL
-                </span>
+            <div class="hotel-price-row">
+                <div>
+                    <div class="price-label">Gecelik fiyat</div>
+                    <div class="price-amount">
+                        @Model.MinPrice.Value.ToString("N0", new System.Globalization.CultureInfo("tr-TR")) TL
+                    </div>
+                </div>
+                <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@Model.Id"
+                   class="btn btn-outline-primary btn-detail">
+                    Detay <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
         }
-
-        <a asp-controller="Hotels"
-           asp-action="Detail"
-           asp-route-id="@Model.Id"
-           class="btn btn-outline-primary w-100 mt-3">
-            Detay
-        </a>
+        else
+        {
+            <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@Model.Id"
+               class="btn btn-outline-primary w-100 mt-2">
+                Detay <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        }
 
     </div>
 
-</div>
-
+</article>

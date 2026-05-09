@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ namespace HotelApp.Domain.Services
     {
         Task<IEnumerable<ReviewDto>> GetHotelReviewAsync(int hotelId);
         Task<IEnumerable<ReviewDto>> GetUserReviewsAsync(int userId);
+        Task<IEnumerable<ReviewDto>> GetFeaturedReviewsAsync(int count);
         Task<ReviewDto> CreateReviewAsync(int userId, CreateReviewDto dto);
         Task DeleteReviewAsync(int id, int userId);
     }

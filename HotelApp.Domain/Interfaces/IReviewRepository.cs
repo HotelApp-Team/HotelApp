@@ -1,9 +1,4 @@
-﻿using HotelApp.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HotelApp.Domain.Entities;
 
 namespace HotelApp.Domain.Interfaces
 {
@@ -11,6 +6,7 @@ namespace HotelApp.Domain.Interfaces
     {
         Task<IEnumerable<Review>> GetByHotelIdAsync(int hotelId);
         Task<IEnumerable<Review>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Review>> GetFeaturedAsync(int count);
         Task<Review?> GetByUserAndHotelAsync(int userId, int hotelId);
         Task<Review?> GetWithDetailsAsync(int id);
     }

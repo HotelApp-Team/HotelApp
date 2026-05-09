@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +17,7 @@ namespace HotelApp.Domain.Services
         Task UpdateAsync(HotelUpdateDto dto);
         Task DeleteAsync(int id);
         Task<List<string>> GetCitiesAsync();
+        Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count);
         Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize);
         Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
     }
