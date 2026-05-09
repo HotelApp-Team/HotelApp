@@ -28,6 +28,8 @@ namespace HotelApp.Web.Controllers
             return View(response.Data ?? new List<ReviewViewModel>());
         }
 
+        // Web projesinde [Authorize] calismaz cunku auth scheme kurulu degil.
+        // Bunun yerine session/JWT tabanli AuthFilter kullaniyoruz.
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]
