@@ -11,15 +11,34 @@
     {
         @* Giriş yapan kullanıcı için profil bağlantısı ve çıkış formu gösterilir. *@
         <li class="nav-item d-flex align-items-center me-2">
-            <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
+            <span class="nav-link text-dark"> Hoşgeldin <strong>@fullName</strong></span>
         </li>
         @if (isAdmin)
         {
-            @* Admin rolu varsa navbar'da ayri bir "Admin Panel" link'i goruntulenir. *@
-            <li class="nav-item">
-                <a class="nav-link text-primary fw-semibold" asp-controller="AdminDashboard" asp-action="Index">
+            @* Admin rolu varsa navbar'da Admin Panel dropdown'i goruntulenir.
+               Bootstrap 5 dropdown bundle script'i _Layout'ta yuklu, ek JS gerekmez. *@
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-primary fw-semibold"
+                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-speedometer2 me-1"></i>Admin Panel
                 </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" asp-controller="AdminDashboard" asp-action="Index">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="AdminUserMgmt" asp-action="Index">
+                            <i class="bi bi-people-fill me-2"></i>Kullanicilar
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="AdminLog" asp-action="Index">
+                            <i class="bi bi-clock-history me-2"></i>Loglar
+                        </a>
+                    </li>
+                </ul>
             </li>
         }
         <li class="nav-item">

@@ -9,9 +9,14 @@ namespace HotelApp.Web.Helpers;
 
 public static class SessionAuthExtensions
 {
+    public const string JwtSessionKey = "JWToken";
+    public const string UserEmailSessionKey = "UserEmail";
+    public const string UserFullNameSessionKey = "UserFullName";
+    public const string RememberMeCookieName = "HotelApp.RememberMeToken";
+
     public static bool IsAuthenticated(this ISession session)
     {
-        var token = session.GetString("JWToken");
+        var token = session.GetString(JwtSessionKey);
         // Token hiç yok: kullanıcı giriş yapmamış.
         if(string.IsNullOrEmpty(token))
             return false;
@@ -21,9 +26,7 @@ public static class SessionAuthExtensions
         // Token formatı JWT'ye uymuyor. Session'ı temizle.
         if(!handler.CanReadToken(token))
         {
-            session.Remove("JWToken");
-            session.Remove("UserEmail");
-            session.Remove("UserFullName");
+            session.ClearAuthSession();
             return false;
         }
 
@@ -32,12 +35,70 @@ public static class SessionAuthExtensions
         if(jwt.ValidTo < DateTime.UtcNow)
         {
             // Token süresi dolmuş. Auth session bilgilerini temizle.
-            session.Remove("JWToken");
-            session.Remove("UserEmail");
-            session.Remove("UserFullName");
+            session.ClearAuthSession();
             return false;
         }
         return true;
+    }
+
+    // Login veya email doğrulama başarılı olduğunda JWT ve kullanıcı özet bilgisini session'a yazar.
+    public static void SetAuthSession(this ISession session, string token, string email, string fullName)
+    {
+        session.SetString(JwtSessionKey, token);
+        session.SetString(UserEmailSessionKey, email);
+        session.SetString(UserFullNameSessionKey, fullName);
+    }
+
+    // Logout veya geçersiz token durumunda sadece auth ile ilgili session alanlarını temizler.
+    public static void ClearAuthSession(this ISession session)
+    {
+        session.Remove(JwtSessionKey);
+        session.Remove(UserEmailSessionKey);
+        session.Remove(UserFullNameSessionKey);
+    }
+
+    // Beni Hatırla cookie'si varsa geçerli tokenı session'a geri yükler.
+    // Böylece tarayıcı kapansa bile geçerli JWT süresi boyunca kullanıcı tekrar login olmadan devam eder.
+    public static void RestoreAuthSessionFromRememberMeCookie(this HttpContext context)
+    {
+        // Session zaten geçerliyse cookie'den tekrar yükleme yapmaya gerek yok.
+        if (context.Session.IsAuthenticated())
+            return;
+
+        // Cookie yoksa veya boşsa kullanıcı anonim kabul edilir.
+        if (!context.Request.Cookies.TryGetValue(RememberMeCookieName, out var token) || string.IsNullOrWhiteSpace(token))
+            return;
+
+        var handler = new JwtSecurityTokenHandler();
+
+        // Cookie'deki değer JWT formatında değilse güvenli tarafta kalıp cookie'yi siler.
+        if (!handler.CanReadToken(token))
+        {
+            context.Response.Cookies.Delete(RememberMeCookieName);
+            return;
+        }
+
+        var jwt = handler.ReadJwtToken(token);
+
+        // Token süresi dolduysa eski cookie silinir ve session yüklenmez.
+        if (jwt.ValidTo < DateTime.UtcNow)
+        {
+            context.Response.Cookies.Delete(RememberMeCookieName);
+            return;
+        }
+
+        // Session'a yazılacak kullanıcı özet bilgileri JWT claim'lerinden okunur.
+        var email = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email || c.Type == ClaimTypes.Email)?.Value;
+        var fullName = jwt.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value ?? email;
+
+        // Email veya ad bilgisi yoksa navbar/session eksik çalışmasın diye cookie temizlenir.
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(fullName))
+        {
+            context.Response.Cookies.Delete(RememberMeCookieName);
+            return;
+        }
+
+        context.Session.SetAuthSession(token, email, fullName);
     }
 
     // Session'daki JWT token'in icindeki rolleri okuyup verilen rol bilgisini iceriyor mu kontrol eder.
@@ -51,7 +112,7 @@ public static class SessionAuthExtensions
         if (!session.IsAuthenticated())
             return false;
 
-        var token = session.GetString("JWToken")!;
+        var token = session.GetString(JwtSessionKey)!;
         var handler = new JwtSecurityTokenHandler();
 
         // IsAuthenticated CanReadToken kontrolunu zaten yapti; yine de defensive guard.

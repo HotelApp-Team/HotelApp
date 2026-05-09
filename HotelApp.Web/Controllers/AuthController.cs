@@ -82,6 +82,7 @@ public class AuthController : Controller
         HttpContext.Session.SetString("JWToken", data.Token);
         HttpContext.Session.SetString("UserEmail", data.Email);
         HttpContext.Session.SetString("UserFullName", data.FullName);
+        SetRememberMeCookie(data, model.RememberMe);
 
         // ReturnUrl varsa oraya yönlendir, yoksa ana sayfaya.
         // Url.IsLocalUrl ile güvenli bir yönlendirme yapıyoruz, dışarıya yönlendirmiyoruz.
@@ -141,6 +142,7 @@ public class AuthController : Controller
             HttpContext.Session.SetString("JWToken", data.Token);
             HttpContext.Session.SetString("UserEmail", data.Email!);
             HttpContext.Session.SetString("UserFullName", data.FullName!);
+            ClearRememberMeCookie();
             return RedirectToAction("Index", "Home");
         }
 
@@ -155,6 +157,12 @@ public class AuthController : Controller
     [HttpGet]
     public async Task<IActionResult> VerifyEmail(string? token)
     {
+        // Kullanici zaten login ise (orn. ayni dogrulama linki ikinci kez aciliyor),
+        // dogrulama akisi calistirmak yerine ana sayfaya yonlendiriyoruz.
+        // Boylece sag ustte "Hosgeldin X" goruyorken "dogrulama basarisiz" celiskisi yasanmaz.
+        if (HttpContext.Session.IsAuthenticated())
+            return RedirectToAction("Index", "Home");
+
         // Token yoksa direkt hata sayfasini goster.
         if (string.IsNullOrEmpty(token))
         {
@@ -187,6 +195,7 @@ public class AuthController : Controller
         HttpContext.Session.SetString("JWToken", data.Token);
         HttpContext.Session.SetString("UserEmail", data.Email);
         HttpContext.Session.SetString("UserFullName", data.FullName);
+        ClearRememberMeCookie();
 
         // Basari ekrani - kullanici 'tamam anaysayfaya git' diye tiklayacak.
         return View(new VerifyEmailViewModel
@@ -242,6 +251,41 @@ public class AuthController : Controller
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
+        ClearRememberMeCookie();
         return RedirectToAction("Index", "Home");
+    }
+
+    // Login cevabındaki JWT tokenı Beni Hatırla seçimine göre güvenli cookie'ye yazar.
+    private void SetRememberMeCookie(LoginResponse data, bool rememberMe)
+    {
+        // Kullanıcı Beni Hatırla seçmediyse eski cookie kalmasın diye temizler.
+        if (!rememberMe)
+        {
+            ClearRememberMeCookie();
+            return;
+        }
+
+        // API'den gelen bitiş tarihini UTC olarak normalize eder.
+        var expiresAt = data.ExpiresAt.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(data.ExpiresAt, DateTimeKind.Utc)
+            : data.ExpiresAt.ToUniversalTime();
+
+        // Token JavaScript tarafından okunamasın diye HttpOnly cookie olarak saklanır.
+        Response.Cookies.Append(
+            SessionAuthExtensions.RememberMeCookieName,
+            data.Token,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = new DateTimeOffset(expiresAt)
+            });
+    }
+
+    // Logout, register auto-login ve doğrulama akışlarında eski Beni Hatırla cookie'sini temizler.
+    private void ClearRememberMeCookie()
+    {
+        Response.Cookies.Delete(SessionAuthExtensions.RememberMeCookieName);
     }
 }
