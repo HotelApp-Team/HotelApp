@@ -33,7 +33,7 @@ public class Sprint5AdminUiAuthContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "DashboardController.cs", "AdminDashboardController.cs" },
-            viewNames: new[] { "Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml") });
+            viewNames: new[] { "Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml"), Path.Combine("AdminDashboard", "Index.cshtml") });
 
         AssertContainsAny(source, "admin/dashboard", "api/admin/dashboard", "GetAsync");
         AssertContainsAll(source, "TotalHotels", "TotalUsers", "TotalReservations", "TotalRevenue", "AverageRating");
@@ -51,8 +51,8 @@ public class Sprint5AdminUiAuthContractTests
             return;
 
         var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs" },
-            viewNames: new[] { "Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml") });
+            controllerNames: new[] { "UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs", "AdminUserMgmtController.cs" },
+            viewNames: new[] { "Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml") });
 
         AssertContainsAny(source, "admin/users", "api/admin/users");
         AssertContainsAny(source, "search", "Search");
@@ -75,8 +75,8 @@ public class Sprint5AdminUiAuthContractTests
             return;
 
         var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "LogController.cs", "LogsController.cs", "AdminLogsController.cs" },
-            viewNames: new[] { "Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml") });
+            controllerNames: new[] { "LogController.cs", "LogsController.cs", "AdminLogsController.cs", "AdminLogController.cs" },
+            viewNames: new[] { "Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml"), Path.Combine("AdminLog", "Index.cshtml") });
 
         AssertContainsAny(source, "admin/logs", "api/admin/logs");
         AssertContainsAll(source, "level", "dateFrom", "dateTo", "search");
@@ -151,13 +151,13 @@ public class Sprint5AdminUiAuthContractTests
 
         // Hangi admin ekranı başladıysa yalnızca onun view dosyalarını okuruz.
         if (Sprint5CardGuards.S501_DashboardUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml"), Path.Combine("AdminDashboard", "Index.cshtml")));
 
         if (Sprint5CardGuards.S501_UserMgmtUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml")));
 
         if (Sprint5CardGuards.S501_LogUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml"), Path.Combine("AdminLog", "Index.cshtml")));
 
         return sources.ToList();
     }

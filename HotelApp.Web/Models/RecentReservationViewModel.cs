@@ -1,5 +1,8 @@
-﻿namespace HotelApp.Web.Models;
+namespace HotelApp.Web.Models;
 
+// RecentReservationViewModel sınıfının amacı, dashboard ekranındaki son rezervasyon satırlarını taşımaktır.
+// E36 response içindeki rezervasyon özetini tabloya basmak için gerekli alanları içerir.
+// SOLID: SRP kullanır; sadece son rezervasyon özet verisini temsil eder.
 public class RecentReservationViewModel
 {
     public int Id { get; set; }
@@ -9,5 +12,4 @@ public class RecentReservationViewModel
     public DateTime? CheckOutDate { get; set; }
     public string? Status { get; set; }
     public decimal TotalPrice { get; set; }
-
 }

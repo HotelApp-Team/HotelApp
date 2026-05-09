@@ -2,6 +2,12 @@
 
 @{
     var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
+
+    // Rezervasyon bugünden önce başlayamaz; bu nedenle iki tarih input'una min=bugün konuyor.
+    // CheckOut'un en küçük degeri kullanıcı CheckIn seçtikten sonra inline JS ile ayarlanır.
+    // Default value: check-in = bugün, check-out = yarın (en az 1 gece kalış).
+    var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
+    var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
 }
 
 <div class="modal fade"
@@ -32,12 +38,25 @@
 
                     <div class="mb-3">
                         <label class="form-label">Giriş Tarihi</label>
-                        <input type="date" name="CheckInDate" class="form-control" required />
+                        <input type="date"
+                               name="CheckInDate"
+                               id="checkIn-@roomId"
+                               min="@todayIso"
+                               value="@todayIso"
+                               class="form-control"
+                               required
+                               onchange="document.getElementById('checkOut-@roomId').min = this.value;" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Çıkış Tarihi</label>
-                        <input type="date" name="CheckOutDate" class="form-control" required />
+                        <input type="date"
+                               name="CheckOutDate"
+                               id="checkOut-@roomId"
+                               min="@tomorrowIso"
+                               value="@tomorrowIso"
+                               class="form-control"
+                               required />
                     </div>
 
                     <div class="mb-3">
