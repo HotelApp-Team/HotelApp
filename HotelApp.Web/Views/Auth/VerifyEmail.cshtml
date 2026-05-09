@@ -18,14 +18,23 @@
         }
         else
         {
-            @*Basarisiz durumu: kirmizi alert + (Madde 7'de Resend formu buraya)*@
+            @*Basarisiz durumu: kirmizi alert + bilgilendirici ipucu + Resend formu*@
             <div class="alert alert-danger" role="alert">
                 <h4 class="alert-heading">Email Doğrulama Başarısız</h4>
                 <p class="mb-0">@Model.Message</p>
             </div>
+
+            @* Token tek kullanimlik oldugu icin ayni link ikinci kez acilirsa hata gelir.
+               Eger kullanici zaten dogrulanmissa "giris yap" yolunu net gosteriyoruz. *@
+            <div class="alert alert-light border" role="alert">
+                <i class="bi bi-info-circle me-1"></i>
+                Eğer hesabınızı daha önce doğruladıysanız doğrudan
+                <a asp-action="Login" class="alert-link">giriş yapabilirsiniz</a>.
+            </div>
+
             @* Resend formu - kullanici email girip tekrar dogrulama maili isteyebilir.*@
             <partial name="_ResendVerificationForm"
-                model="@(new HotelApp.Web.Models.ResendVerificationViewModel { Email = Model.Email})" />   
+                model="@(new HotelApp.Web.Models.ResendVerificationViewModel { Email = Model.Email})" />
             <div class="text-center mt-3">
                 <a asp-action="Login">Giriş sayfasına dön</a>
             </div>

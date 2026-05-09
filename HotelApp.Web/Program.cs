@@ -1,4 +1,5 @@
 using HotelApp.Web.Filters;
+using HotelApp.Web.Helpers;
 using HotelApp.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +37,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession(); // Session'i kullan
+// Session middleware auth tokeninin her request'te okunabilmesi için routing sonrası çalışır.
+app.UseSession();
+
+// Beni Hatırla cookie'si varsa request başında geçerli JWT'yi session'a geri yükler.
+app.Use(async (context, next) =>
+{
+    context.RestoreAuthSessionFromRememberMeCookie();
+    await next();
+});
 
 app.UseAuthorization();
 
