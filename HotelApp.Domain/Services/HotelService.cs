@@ -150,6 +150,61 @@ namespace HotelApp.Domain.Services
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
 
+        // Anasayfa şehir kartları için aktif otel sayılarına göre öne çıkan şehirleri hazırlar.
+        public async Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count)
+        {
+            var safeCount = Math.Clamp(count, 1, 12);
+            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
+
+            return hotels
+                .Where(h => !string.IsNullOrWhiteSpace(h.City))
+                .GroupBy(h => h.City.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => new
+                {
+                    Name = g.Key,
+                    HotelCount = g.Count(),
+                    AverageRating = g.Average(h => h.AvgRating ?? 0)
+                })
+                .OrderByDescending(x => x.HotelCount)
+                .ThenByDescending(x => x.AverageRating)
+                .ThenBy(x => x.Name)
+                .Take(safeCount)
+                .Select((city, index) => new CityCardDto
+                {
+                    Name = city.Name,
+                    HotelCount = city.HotelCount,
+                    ImageUrl = GetCityImageUrl(city.Name),
+                    IsBig = index == 0
+                })
+                .ToList();
+        }
+
+        // Şehir görselleri public web klasöründeki sabit dosyalardan okunur.
+        private static string GetCityImageUrl(string cityName)
+        {
+            var cityImageMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Istanbul"] = "istanbul.jpg",
+                ["İstanbul"] = "istanbul.jpg",
+                ["Ankara"] = "ankara.jpg",
+                ["Antalya"] = "antalya.jpg",
+                ["Izmir"] = "izmir.jpg",
+                ["İzmir"] = "izmir.jpg",
+                ["Bursa"] = "bursa.jpg",
+                ["Aydin"] = "aydin.jpg",
+                ["Aydın"] = "aydin.jpg",
+                ["Gaziantep"] = "gaziantep.jpg",
+                ["Antep"] = "gaziantep.jpg",
+                ["Kayseri"] = "kayseri.jpg",
+                ["Konya"] = "konya.jpg",
+                ["Trabzon"] = "trabzon.jpg"
+            };
+
+            return cityImageMap.TryGetValue(cityName.Trim(), out var fileName)
+                ? $"/images/cities/{fileName}"
+                : "/images/cities/default-city.svg";
+        }
+
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {

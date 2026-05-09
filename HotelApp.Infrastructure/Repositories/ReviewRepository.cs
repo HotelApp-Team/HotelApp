@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.Entities;
+using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +32,18 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Where(x => x.HotelId == hotelId)
                 .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+
+        // Anasayfa vitrininde gosterilecek yorumlari puan ve tarihe gore siralar.
+        public async Task<IEnumerable<Review>> GetFeaturedAsync(int count)
+        {
+            return await _dbSet
+                .Include(x => x.User)
+                .Include(x => x.Hotel)
+                .OrderByDescending(x => x.Rating)
+                .ThenByDescending(x => x.CreatedAt)
+                .Take(count)
                 .ToListAsync();
         }
 

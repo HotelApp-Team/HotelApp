@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +18,16 @@ namespace HotelApp.API.Controllers
         {
             _reviewService = reviewService;
             _logger = logger;
+        }
+
+        // GET api/reviews/featured : Anasayfada gosterilecek one cikan yorumlari getirir.
+        [AllowAnonymous]
+        [HttpGet("featured")]
+        public async Task<IActionResult> GetFeaturedReviews([FromQuery] int count = 3)
+        {
+            var reviews = await _reviewService.GetFeaturedReviewsAsync(count);
+
+            return Ok(reviews);
         }
 
         [AllowAnonymous]

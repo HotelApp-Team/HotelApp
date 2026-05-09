@@ -20,11 +20,16 @@ public class HomeController : Controller
     {
         var citiesResponse = await _apiService.GetAsync<List<string>>("hotels/cities");
         var hotelsResponse = await _apiService.GetAsync<PagedHotelListResponse>("hotels?page=1&pageSize=6");
+        var featuredCitiesResponse = await _apiService.GetAsync<List<CityCardViewModel>>("hotels/featured-cities?count=5");
+        var reviewsResponse = await _apiService.GetAsync<List<ReviewViewModel>>("reviews/featured?count=3");
 
+        // API'den gelen vitrin verilerini anasayfa modeline toplar.
         var model = new HomePageViewModel
         {
             Cities = citiesResponse.Success ? citiesResponse.Data ?? new List<string>() : new List<string>(),
-            FeaturedHotels = hotelsResponse.Success ? hotelsResponse.Data?.Data ?? new List<HotelCardViewModel>() : new List<HotelCardViewModel>()
+            FeaturedHotels = hotelsResponse.Success ? hotelsResponse.Data?.Data ?? new List<HotelCardViewModel>() : new List<HotelCardViewModel>(),
+            FeaturedCities = featuredCitiesResponse.Success ? featuredCitiesResponse.Data ?? new List<CityCardViewModel>() : new List<CityCardViewModel>(),
+            FeaturedReviews = reviewsResponse.Success ? reviewsResponse.Data ?? new List<ReviewViewModel>() : new List<ReviewViewModel>()
         };
 
         return View(model);

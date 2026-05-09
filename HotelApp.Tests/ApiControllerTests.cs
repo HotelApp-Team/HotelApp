@@ -385,6 +385,7 @@ internal class FakeHotelService : IHotelService
     public Task UpdateAsync(HotelUpdateDto dto) => Task.CompletedTask;
     public Task DeleteAsync(int id) => Task.CompletedTask;
     public Task<List<string>> GetCitiesAsync() => Task.FromResult(new List<string>());
+    public Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count) => Task.FromResult(new List<CityCardDto>());
 
     public Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
     {
