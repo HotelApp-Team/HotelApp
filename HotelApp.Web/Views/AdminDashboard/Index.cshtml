@@ -1,0 +1,148 @@
+@model HotelApp.Web.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="container py-4">
+
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>
+            Admin Dashboard
+        </h2>
+    </div>
+
+    @* Ust kisim: 6 ozet karti (2 satir x 3 sutun) *@
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Toplam Otel</div>
+                    <div class="h3 mb-0 fw-bold">@Model.TotalHotels</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Toplam Kullanici</div>
+                    <div class="h3 mb-0 fw-bold">@Model.TotalUsers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Toplam Rezervasyon</div>
+                    <div class="h3 mb-0 fw-bold">@Model.TotalReservations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Aktif Rezervasyon</div>
+                    <div class="h3 mb-0 fw-bold">@Model.ActiveReservations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Toplam Gelir</div>
+                    <div class="h3 mb-0 fw-bold text-success">
+                        @Model.TotalRevenue.ToString("C", trCulture)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Ortalama Puan</div>
+                    <div class="h3 mb-0 fw-bold text-warning">
+                        @Model.AverageRating.ToString("0.0", trCulture)
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* Alt kisim: son rezervasyonlar tablosu *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history text-primary me-2"></i>
+                Son Rezervasyonlar
+            </h5>
+        </div>
+        <div class="card-body p-0">
+
+            @if (Model.RecentReservations != null && Model.RecentReservations.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Otel</th>
+                                <th>Misafir</th>
+                                <th>Giris</th>
+                                <th>Cikis</th>
+                                <th>Durum</th>
+                                <th class="text-end">Tutar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RecentReservations)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@(item.HotelName ?? "-")</td>
+                                    <td>@(item.UserName ?? "-")</td>
+                                    <td>@item.CheckInDate.ToString("dd.MM.yyyy")</td>
+                                    <td>@(item.CheckOutDate?.ToString("dd.MM.yyyy") ?? "-")</td>
+                                    <td>
+                                        @{
+                                            // Durum etiketinin rengi: Confirmed yesil, Cancelled kirmizi,
+                                            // Completed gri, diger durumlarda sari/uyari rengi.
+                                            var badgeClass = item.Status switch
+                                            {
+                                                "Confirmed" => "bg-success",
+                                                "Cancelled" => "bg-danger",
+                                                "Completed" => "bg-secondary",
+                                                _ => "bg-warning text-dark"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@(item.Status ?? "-")</span>
+                                    </td>
+                                    <td class="text-end fw-semibold">
+                                        @item.TotalPrice.ToString("C", trCulture)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Henuz rezervasyon yok.
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
