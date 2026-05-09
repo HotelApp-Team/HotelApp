@@ -1,4 +1,5 @@
-﻿using HotelApp.Web.Models;
+﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,10 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+        // Web projesinde [Authorize] calismaz cunku auth scheme kurulu degil
+        // (Program.cs'de AddAuthentication/UseAuthentication yok). Bunun yerine
+        // session/JWT tabanli AuthFilter kullaniyoruz.
+        [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(int hotelId, ReviewViewModel model)
