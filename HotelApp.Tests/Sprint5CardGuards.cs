@@ -18,25 +18,25 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("DashboardController.cs", "AdminDashboardController.cs")
                 .Any(source => ContainsAny(source, "Dashboard", "admin/dashboard", "api/admin/dashboard"))
-            || CandidateAdminViewSources("Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml"))
+            || CandidateAdminViewSources("Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml"), Path.Combine("AdminDashboard", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "TotalHotels", "Toplam Otel", "Dashboard"));
     }
 
     // S5-01 Kullanıcı yönetimi kısmı başladıysa Users contract testleri aktif olur.
     public static bool S501_UserMgmtUiImplemented()
     {
-        return CandidateAdminControllerSources("UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs")
+        return CandidateAdminControllerSources("UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs", "AdminUserMgmtController.cs")
                 .Any(source => ContainsAny(source, "admin/users", "api/admin/users", "UserMgmt", "UpdateUserStatus", "UpdateUserRoles"))
-            || CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"))
+            || CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Kullanıcı", "Users", "IsActive", "Roles"));
     }
 
     // S5-01 Log ekranı başladıysa Logs contract testleri aktif olur.
     public static bool S501_LogUiImplemented()
     {
-        return CandidateAdminControllerSources("LogController.cs", "LogsController.cs", "AdminLogsController.cs")
+        return CandidateAdminControllerSources("LogController.cs", "LogsController.cs", "AdminLogsController.cs", "AdminLogController.cs")
                 .Any(source => ContainsAny(source, "admin/logs", "api/admin/logs", "LogController", "GetLog"))
-            || CandidateAdminViewSources("Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml"))
+            || CandidateAdminViewSources("Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml"), Path.Combine("AdminLog", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Log", "Level", "ExceptionDetail", "dateFrom"));
     }
 

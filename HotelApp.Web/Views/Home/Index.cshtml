@@ -1,6 +1,10 @@
 ﻿@model HotelApp.Web.Models.HomePageViewModel
 @{
     ViewData["Title"] = "Ana Sayfa";
+    // Anasayfa hizli arama: tarih input'lari bugunden once secilemez.
+    // Default: check-in = bugün, check-out = yarın.
+    var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
+    var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
 }
 
 <!-- HERO TEXT -->
@@ -28,11 +32,11 @@
             </div>
 
             <div class="col-md-2">
-                <input type="date" name="checkIn" class="form-control" required />
+                <input type="date" name="checkIn" min="@todayIso" value="@todayIso" class="form-control" required />
             </div>
 
             <div class="col-md-2">
-                <input type="date" name="checkOut" class="form-control" required />
+                <input type="date" name="checkOut" min="@todayIso" value="@tomorrowIso" class="form-control" required />
             </div>
 
             <div class="col-md-2">
