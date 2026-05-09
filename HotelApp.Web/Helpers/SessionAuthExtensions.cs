@@ -45,20 +45,30 @@ public static class SessionAuthExtensions
     // AdminFilter token decode mantigiyla ayni pattern; tek noktadan rol kontrolu icin merkezilesmistir.
     public static bool IsInRole(this ISession session, string roleName)
     {
-        var token = session.GetString("JWToken");
-        if (string.IsNullOrEmpty(token))
+        // Once token gecerliligini IsAuthenticated uzerinden dogrula.
+        // Bu cagri ayni zamanda suresi dolmus veya bozuk token icin session'i temizliyor;
+        // boylece IsInRole sade kalir ve expired token'da yanlislikla "rol var" demez.
+        if (!session.IsAuthenticated())
             return false;
 
+        var token = session.GetString("JWToken")!;
         var handler = new JwtSecurityTokenHandler();
-        if (!handler.CanReadToken(token))
+
+        // IsAuthenticated CanReadToken kontrolunu zaten yapti; yine de defensive guard.
+        try
+        {
+            var jwt = handler.ReadJwtToken(token);
+
+            // JWT icindeki rol claim'leri ClaimTypes.Role veya kisa "role" anahtariyla gelebilir.
+            // Karsilastirma case-insensitive yapilir ki "admin" / "Admin" farki sorun olmasin.
+            return jwt.Claims
+                .Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
+                .Any(c => string.Equals(c.Value, roleName, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            // ReadJwtToken beklenmedik exception atarsa view render bozulmasin; sessizce false don.
             return false;
-
-        var jwt = handler.ReadJwtToken(token);
-
-        // JWT icindeki rol claim'leri ClaimTypes.Role veya kisa "role" anahtariyla gelebilir.
-        // Karsilastirma case-insensitive yapilir ki "admin" / "Admin" farki sorun olmasin.
-        return jwt.Claims
-            .Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
-            .Any(c => string.Equals(c.Value, roleName, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

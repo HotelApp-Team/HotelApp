@@ -27,6 +27,8 @@ public class AdminDashboardController : Controller
             return View(new AdminDashboardViewModel());
         }
 
-        return View(response.Data);
+        // API success dondurse bile body bos olabilir (204 No Content veya parse edilemeyen body).
+        // Data null gelirse view @Model.X erisimlerinde NullReferenceException alir; bos VM ile koruruz.
+        return View(response.Data ?? new AdminDashboardViewModel());
     }
 }
