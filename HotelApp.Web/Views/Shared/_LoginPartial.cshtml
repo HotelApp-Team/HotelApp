@@ -1,19 +1,21 @@
-@using HotelApp.Web.Helpers
+﻿@using HotelApp.Web.Helpers
 @{
-    // Oturum helper'ı token geçerliliğini kontrol eder; navbar kararını buna göre verir.
+    // Oturum helper'i token gecerliligini kontrol eder; navbar kararini buna gore verir.
     var fullName = Context.Session.GetString("UserFullName");
     var isLoggedIn = Context.Session.IsAuthenticated();
+    // IsInRole token icindeki rol claim'lerine bakar; sadece admin'lere ozel link gosterimi icin.
+    var isAdmin = isLoggedIn && Context.Session.IsInRole("Admin");
 }
 <ul class="navbar-nav">
     @if (isLoggedIn)
     {
-        @*Giriş yapmış kullanıcı için: rezervasyon, yorum, isim + çıkış butonu*@
+        @* Giris yapmis kullanici icin: rezervasyon, yorum, isim + cikis butonu *@
 
         <li class="nav-item">
             <a class="nav-link text-dark"
                asp-controller="Reservations"
                asp-action="My">
-                Rezervasyonlarım
+                Rezervasyonlarim
             </a>
         </li>
 
@@ -21,14 +23,22 @@
             <a class="nav-link text-dark"
                asp-controller="Reviews"
                asp-action="My">
-                Yorumlarım
+                Yorumlarim
             </a>
         </li>
 
-        @* Giriş yapan kullanıcı için profil bağlantısı ve çıkış formu gösterilir. *@
         <li class="nav-item d-flex align-items-center me-2">
-            <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
+            <span class="nav-link text-dark">Hosgeldin, <strong>@fullName</strong></span>
         </li>
+
+        @if (isAdmin)
+        {
+            <li class="nav-item">
+                <a class="nav-link text-primary fw-semibold" asp-controller="AdminDashboard" asp-action="Index">
+                    <i class="bi bi-speedometer2 me-1"></i>Admin Panel
+                </a>
+            </li>
+        }
 
         <li class="nav-item">
             <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">Profilim</a>
@@ -36,17 +46,17 @@
         <li class="nav-item">
             <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-link nav-link text-dark">Çıkış Yap</button>
+                <button type="submit" class="btn btn-link nav-link text-dark">Cikis Yap</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
+            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Giris Yap</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Register">Kayıt Ol</a>
+            <a class="nav-link text-dark" asp-controller="Auth" asp-action="Register">Kayit Ol</a>
         </li>
     }
 </ul>

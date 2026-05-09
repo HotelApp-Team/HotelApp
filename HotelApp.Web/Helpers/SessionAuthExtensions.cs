@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace HotelApp.Web.Helpers;
 
@@ -37,5 +38,27 @@ public static class SessionAuthExtensions
             return false;
         }
         return true;
+    }
+
+    // Session'daki JWT token'in icindeki rolleri okuyup verilen rol bilgisini iceriyor mu kontrol eder.
+    // Token yoksa, bozuksa veya rol yoksa false doner; navbar ve view kararlarinda kullanilir.
+    // AdminFilter token decode mantigiyla ayni pattern; tek noktadan rol kontrolu icin merkezilesmistir.
+    public static bool IsInRole(this ISession session, string roleName)
+    {
+        var token = session.GetString("JWToken");
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(token))
+            return false;
+
+        var jwt = handler.ReadJwtToken(token);
+
+        // JWT icindeki rol claim'leri ClaimTypes.Role veya kisa "role" anahtariyla gelebilir.
+        // Karsilastirma case-insensitive yapilir ki "admin" / "Admin" farki sorun olmasin.
+        return jwt.Claims
+            .Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
+            .Any(c => string.Equals(c.Value, roleName, StringComparison.OrdinalIgnoreCase));
     }
 }
