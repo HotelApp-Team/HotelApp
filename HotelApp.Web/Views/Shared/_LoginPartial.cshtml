@@ -3,6 +3,8 @@
     // Oturum helper'ı token geçerliliğini kontrol eder; navbar kararını buna göre verir.
     var fullName = Context.Session.GetString("UserFullName");
     var isLoggedIn = Context.Session.IsAuthenticated();
+    // IsInRole token icindeki rol claim'lerine bakar; sadece admin'lere ozel link gosterimi icin.
+    var isAdmin = isLoggedIn && Context.Session.IsInRole("Admin");
 }
 <ul class="navbar-nav">
     @if (isLoggedIn)
@@ -11,6 +13,15 @@
         <li class="nav-item d-flex align-items-center me-2">
             <span class="nav-link text-dark"> Hoşgeldin, <strong>@fullName</strong></span>
         </li>
+        @if (isAdmin)
+        {
+            @* Admin rolu varsa navbar'da ayri bir "Admin Panel" link'i goruntulenir. *@
+            <li class="nav-item">
+                <a class="nav-link text-primary fw-semibold" asp-controller="AdminDashboard" asp-action="Index">
+                    <i class="bi bi-speedometer2 me-1"></i>Admin Panel
+                </a>
+            </li>
+        }
         <li class="nav-item">
             <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">Profilim</a>
         </li>

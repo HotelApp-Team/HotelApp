@@ -1,5 +1,6 @@
 ﻿using HotelApp.Web.Models;
 using HotelApp.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
@@ -13,6 +14,7 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+        [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(int hotelId, ReviewViewModel model)

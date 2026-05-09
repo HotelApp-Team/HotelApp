@@ -115,6 +115,237 @@ internal static class Sprint5CardGuards
             || S503_AmenityUiImplemented();
     }
 
+    // S5-04 public otel akışı başladıysa detail veya arama contract testleri aktif olur.
+    public static bool S504_PublicHotelFlowImplemented()
+    {
+        return S504_DetailPageImplemented()
+            || S504_SearchFilterUiImplemented();
+    }
+
+    // S5-04 otel detay polish kapsamındaki Detail action/view/model başladı mı kontrol eder.
+    public static bool S504_DetailPageImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "HotelsController.cs");
+        var detailViewPath = Path.Combine(webRoot, "Views", "Hotels", "Detail.cshtml");
+        var modelPath = Path.Combine(webRoot, "Models", "HotelDetailPageVm.cs");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+        var viewSource = File.Exists(detailViewPath) ? File.ReadAllText(detailViewPath) : string.Empty;
+
+        return File.Exists(modelPath)
+            || ContainsAny(controllerSource, "Detail(", "HotelDetailPageVm", "hotels/{id}", "rooms", "reviews")
+            || ContainsAny(viewSource, "HotelDetailPageVm", "Galeri", "Olanak", "_RoomCard", "_ReviewCard");
+    }
+
+    // S5-04 arama/filtre bug fix kapsamındaki Search action/view başladı mı kontrol eder.
+    public static bool S504_SearchFilterUiImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "HotelsController.cs");
+        var searchViewPath = Path.Combine(webRoot, "Views", "Hotels", "Search.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+        var viewSource = File.Exists(searchViewPath) ? File.ReadAllText(searchViewPath) : string.Empty;
+
+        return ContainsAny(controllerSource, "Search(", "hotels/search", "checkIn", "guestCount", "sortBy", "pageSize")
+            || ContainsAny(viewSource, "sortBy", "guestCount", "pagination", "_HotelCard", "asp-route-page");
+    }
+
+    // S5-04 demo seed data dosyası eklendiyse seed contract testi aktif olur.
+    public static bool S504_DemoSeedDataImplemented()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory != null)
+        {
+            var solutionFile = Path.Combine(directory.FullName, "HotelApp.sln");
+            if (File.Exists(solutionFile))
+            {
+                return Directory.GetFiles(directory.FullName, "*.sql", SearchOption.AllDirectories)
+                    .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
+                        && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
+                        && !path.Contains($"{Path.DirectorySeparatorChar}HotelApp.Tests{Path.DirectorySeparatorChar}"))
+                    .Any(path => ContainsAny(File.ReadAllText(path), "INSERT INTO Hotels", "INSERT [dbo].[Hotels]", "HotelImages", "Amenities"));
+            }
+
+            directory = directory.Parent;
+        }
+
+        return false;
+    }
+
+    // S5-05 RoomTypes API dosyası varsa E20-E22/E51 contract testleri aktif olur.
+    public static bool S505_RoomTypesApiImplemented()
+    {
+        var apiRoot = FindApiProjectRoot();
+        var controllerSources = new[]
+        {
+            Path.Combine(apiRoot, "Controllers", "RoomTypeController.cs"),
+            Path.Combine(apiRoot, "Controllers", "RoomTypesController.cs")
+        };
+
+        return controllerSources
+            .Where(File.Exists)
+            .Any(path => ContainsAny(File.ReadAllText(path), "api/roomtypes", "RoomTypeController", "RoomTypesController", "HttpDelete"));
+    }
+
+    // S5-05 Admin RoomTypes UI başladıysa ilgili contract testleri aktif olur.
+    public static bool S505_AdminRoomTypesUiImplemented()
+    {
+        return CandidateAdminControllerSources("RoomTypeController.cs", "RoomTypesController.cs", "AdminRoomTypesController.cs")
+                .Any(source => ContainsAny(source, "api/roomtypes", "RoomTypes", "RoomType", "DeleteAsync"))
+            || CandidateAdminViewSources("RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml"))
+                .Any(source => ContainsAny(source, "RoomTypes", "RoomType", "Oda tipi", "MaxGuests"));
+    }
+
+    // S5-05 Admin rezervasyon API endpointleri başladıysa E40-E41/E48 contract testleri aktif olur.
+    public static bool S505_AdminReservationsApiImplemented()
+    {
+        var apiRoot = FindApiProjectRoot();
+        var adminController = Path.Combine(apiRoot, "Controllers", "AdminController.cs");
+        var reservationAdminController = Path.Combine(apiRoot, "Controllers", "AdminReservationsController.cs");
+
+        var sources = new[] { adminController, reservationAdminController }
+            .Where(File.Exists)
+            .Select(File.ReadAllText);
+
+        return sources.Any(source => ContainsAny(source,
+            "admin/reservations",
+            "HttpGet(\"reservations\")",
+            "HttpPut(\"reservations/{id}/status\")",
+            "HttpPut(\"reservations/{id}/confirm\")",
+            "UpdateReservationStatus",
+            "ConfirmReservation"));
+    }
+
+    // S5-05 Admin Reservations UI başladıysa ilgili contract testleri aktif olur.
+    public static bool S505_AdminReservationsUiImplemented()
+    {
+        return CandidateAdminControllerSources("ReservationMgmtController.cs", "ReservationsController.cs", "AdminReservationsController.cs")
+                .Any(source => ContainsAny(source, "admin/reservations", "ReservationMgmt", "UpdateStatus", "Confirm", "Reject"))
+            || CandidateAdminViewSources("Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml"))
+                .Any(source => ContainsAny(source, "Rezervasyon", "Reservation", "Status", "dateFrom", "Confirm"));
+    }
+
+    // S5-05 FAQ sayfası başladıysa public FAQ contract testi aktif olur.
+    public static bool S505_FaqPageImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "HomeController.cs");
+        var viewPath = Path.Combine(webRoot, "Views", "Home", "Faq.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+        var viewSource = File.Exists(viewPath) ? File.ReadAllText(viewPath) : string.Empty;
+
+        return ContainsAny(controllerSource, "Faq(", "FAQ(")
+            || ContainsAny(viewSource, "accordion", "FAQ", "Sıkça", "Sikca");
+    }
+
+    // S5-05 admin oda tipi veya rezervasyon UI dosyaları başladı mı kontrol eder.
+    public static bool S505_AdminRoomReservationUiImplemented()
+    {
+        return S505_AdminRoomTypesUiImplemented()
+            || S505_AdminReservationsUiImplemented();
+    }
+
+    // S5-06 rezervasyon API dosyası varsa E23-E27 bug fix contract testleri aktif olur.
+    public static bool S506_ReservationApiImplemented()
+    {
+        var apiRoot = FindApiProjectRoot();
+        var sources = new[]
+        {
+            Path.Combine(apiRoot, "Controllers", "ReservationController.cs"),
+            Path.Combine(apiRoot, "Controllers", "ReservationsController.cs")
+        };
+
+        return sources
+            .Where(File.Exists)
+            .Any(path => ContainsAny(File.ReadAllText(path), "api/reservations", "HttpPost", "HttpGet(\"my\")", "cancel", "invoice"));
+    }
+
+    // S5-06 yorum API dosyası varsa E28-E31 bug fix contract testleri aktif olur.
+    public static bool S506_ReviewApiImplemented()
+    {
+        var apiRoot = FindApiProjectRoot();
+        var sources = new[]
+        {
+            Path.Combine(apiRoot, "Controllers", "ReviewController.cs"),
+            Path.Combine(apiRoot, "Controllers", "ReviewsController.cs")
+        };
+
+        return sources
+            .Where(File.Exists)
+            .Any(path => ContainsAny(File.ReadAllText(path), "api/reviews", "hotels/{hotelId}/reviews", "HttpGet(\"my\")", "HttpDelete"));
+    }
+
+    // S5-06 otel detayindan rezervasyon olusturma UI akisi başladı mı kontrol eder.
+    public static bool S506_ReservationCreateUiImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "ReservationsController.cs");
+        var bookingModalPath = Path.Combine(webRoot, "Views", "Hotels", "_BookingModal.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+        var viewSource = File.Exists(bookingModalPath) ? File.ReadAllText(bookingModalPath) : string.Empty;
+
+        return ContainsAny(controllerSource, "Create(", "PostAsync", "reservations")
+            || ContainsAny(viewSource, "Reservations", "Create", "HotelRoomId", "CheckInDate");
+    }
+
+    // S5-06 kullanici rezervasyon sayfalari başladı mı kontrol eder.
+    public static bool S506_ReservationUserPagesImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "ReservationsController.cs");
+        var myViewPath = Path.Combine(webRoot, "Views", "Reservations", "My.cshtml");
+        var detailViewPath = Path.Combine(webRoot, "Views", "Reservations", "Detail.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+
+        return File.Exists(myViewPath)
+            || File.Exists(detailViewPath)
+            || ContainsAny(controllerSource, " My(", " Detail(", " Cancel(", "Invoice", "reservations/my", "/cancel", "/invoice");
+    }
+
+    // S5-06 otel detayindan yorum ekleme UI akisi başladı mı kontrol eder.
+    public static bool S506_ReviewCreateUiImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "ReviewsController.cs");
+        var detailViewPath = Path.Combine(webRoot, "Views", "Hotels", "Detail.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+        var viewSource = File.Exists(detailViewPath) ? File.ReadAllText(detailViewPath) : string.Empty;
+
+        return ContainsAny(controllerSource, "Create(", "PostAsync", "reviews")
+            || ContainsAny(viewSource, "Reviews", "Create", "Rating", "Comment");
+    }
+
+    // S5-06 kullanicinin kendi yorumlari/silme UI akisi başladı mı kontrol eder.
+    public static bool S506_ReviewUserPagesImplemented()
+    {
+        var webRoot = FindWebProjectRoot();
+        var controllerPath = Path.Combine(webRoot, "Controllers", "ReviewsController.cs");
+        var myViewPath = Path.Combine(webRoot, "Views", "Reviews", "My.cshtml");
+
+        var controllerSource = File.Exists(controllerPath) ? File.ReadAllText(controllerPath) : string.Empty;
+
+        return File.Exists(myViewPath)
+            || ContainsAny(controllerSource, " My(", " Delete(", "reviews/my", "DeleteAsync");
+    }
+
+    // S5-06 rezervasyon veya yorum akisi başladı mı kontrol eder.
+    public static bool S506_ReservationReviewFlowImplemented()
+    {
+        return S506_ReservationApiImplemented()
+            || S506_ReviewApiImplemented()
+            || S506_ReservationCreateUiImplemented()
+            || S506_ReservationUserPagesImplemented()
+            || S506_ReviewCreateUiImplemented()
+            || S506_ReviewUserPagesImplemented();
+    }
+
     // Admin controller kaynaklarını olası klasör yapıları üzerinden okur.
     public static IEnumerable<string> CandidateAdminControllerSources(params string[] fileNames)
     {
@@ -172,5 +403,22 @@ internal static class Sprint5CardGuards
         }
 
         throw new DirectoryNotFoundException("HotelApp.Web klasoru bulunamadi.");
+    }
+
+    // Test çalışma klasöründen yukarı çıkarak API projesinin gerçek yolunu bulur.
+    private static string FindApiProjectRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory != null)
+        {
+            var candidate = Path.Combine(directory.FullName, "HotelApp.API");
+            if (Directory.Exists(candidate))
+                return candidate;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("HotelApp.API klasoru bulunamadi.");
     }
 }
