@@ -1,146 +1,164 @@
-﻿<!DOCTYPE html>
+@using HotelApp.Web.Helpers
+
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - HotelApp</title>
+    <title>@ViewData["Title"] - HasTur</title>
 
     <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <!-- ICON (opsiyonel ama güzel durur) -->
+    <!-- ICON -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- SENİN THEME -->
+    <!-- FONTS — IBM Plex (Türkçe karakter dostu) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- THEME -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+
     <!-- NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-3">
+        <nav class="navbar navbar-expand-lg">
             <div class="container">
 
-                <!-- LOGO -->
-                <a class="navbar-brand fw-bold text-primary" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-building"></i> Hastur
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark"><i class="bi bi-building"></i></span>
+                    HasTur
                 </a>
 
-                <!-- MOBILE -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- MENU -->
                 <div class="collapse navbar-collapse" id="navbarMenu">
 
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-controller="Home" asp-action="Index">
-                                Anasayfa
-                            </a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Anasayfa</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-controller="Hotels" asp-action="Index">
-                                Oteller
-                            </a>
+                            <a class="nav-link" asp-controller="Hotels" asp-action="Search">Oteller</a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-controller="Home" asp-action="About">
-                                Hakkımızda
-                            </a>
+                            <a class="nav-link" asp-controller="Home" asp-action="About">Hakkımızda</a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-controller="Home" asp-action="Contact">
-                                İletişim
-                            </a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Contact">İletişim</a>
                         </li>
+
                     </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-    <div class="hero-bg"></div>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @* TempData mesajlari: Controller redirect ile bilgi gonderdiginde tek seferlik gosterilir *@
-            @if (TempData["Success"] != null)
-            {
+
+    <main role="main" class="pb-3">
+
+        @* TempData mesajlari: Controller redirect ile bilgi gonderdiginde tek seferlik gosterilir *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="container">
                 <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
                 </div>
-            }
-            @if (TempData["Error"] != null)
-            {
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="container">
                 <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
                 </div>
-            }
-            @RenderBody()
-        </main>
-    </div>
+            </div>
+        }
 
-    <footer class="pt-5 pb-4 mt-5" style="background-color: #0f172a; color: #f8fafc; clear: both;">
+        @RenderBody()
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="pt-5 pb-4 mt-5">
         <div class="container">
             <div class="row g-4">
+
                 <div class="col-md-4">
-                    <h4 class="fw-bold text-primary mb-3">
-                        <i class="bi bi-building"></i> HasTur
+                    <h4 class="fw-bold mb-3" style="font-family:'IBM Plex Serif',serif;">
+                        <span class="brand-mark"><i class="bi bi-building"></i></span>HasTur
                     </h4>
-                    <p class="small opacity-75">Mükemmel konaklamanızı bulun.</p>
-                    <div class="d-flex gap-3">
-                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+                    <p class="small opacity-75">
+                        Mükemmel konaklamanızı bulun. Türkiye'nin her köşesindeki kaliteli otelleri tek bir yerden rezerve edin.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a class="social-link" href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                             <i class="bi bi-facebook"></i>
                         </a>
-
-                        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                        <a class="social-link" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                             <i class="bi bi-instagram"></i>
                         </a>
-
-                        <a href="https://x.com" target="_blank" rel="noopener noreferrer">
+                        <a class="social-link" href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X">
                             <i class="bi bi-twitter-x"></i>
                         </a>
                     </div>
                 </div>
+
                 <div class="col-md-2">
                     <h6 class="fw-bold mb-3">HIZLI LİNKLER</h6>
-                    <ul class="list-unstyled small opacity-75">
-                        <li>
-                            <a class="text-decoration-none text-light" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
-                        </li>
-                        <li>
-                            <a class="text-decoration-none text-light" asp-controller="Hotels" asp-action="Index">Oteller</a>
-                        </li>
-                        <li>
-                            <a class="text-decoration-none text-light" asp-controller="Home" asp-action="About">Hakkımızda</a>
-                        </li>
-                        <li>
-                            <a class="text-decoration-none text-light" asp-controller="Home" asp-action="Contact">İletişim</a>
-                        </li>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a class="text-decoration-none" asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+                        <li class="mb-2"><a class="text-decoration-none" asp-controller="Hotels" asp-action="Search">Oteller</a></li>
+                        <li class="mb-2"><a class="text-decoration-none" asp-controller="Home" asp-action="About">Hakkımızda</a></li>
+                        <li class="mb-2"><a class="text-decoration-none" asp-controller="Home" asp-action="Contact">İletişim</a></li>
                     </ul>
                 </div>
+
                 <div class="col-md-2">
                     <h6 class="fw-bold mb-3">HESABIM</h6>
-                    <ul class="list-unstyled small opacity-75">
-                        <li>Giriş Yap</li>
-                        <li>Kayıt Ol</li>
+                    <ul class="list-unstyled small">
+                        @* Footer hesap linkleri kullanıcının oturum durumuna göre gösterilir. *@
+                        @if (Context.Session.IsAuthenticated())
+                        {
+                            <li class="mb-2"><a class="text-decoration-none" asp-controller="Profile" asp-action="Index">Profilim</a></li>
+                            <li class="mb-2">
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="footer-link-button">Çıkış Yap</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="mb-2"><a class="text-decoration-none" asp-controller="Auth" asp-action="Login">Giriş Yap</a></li>
+                            <li class="mb-2"><a class="text-decoration-none" asp-controller="Auth" asp-action="Register">Kayıt Ol</a></li>
+                        }
                     </ul>
                 </div>
+
                 <div class="col-md-3">
                     <h6 class="fw-bold mb-3">DESTEK</h6>
-                    <ul class="list-unstyled small opacity-75">
-                        <li>destek@hastur.com</li>
-                        <li>0850 123 45 67</li>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">destek@hastur.com</li>
+                        <li class="mb-2">0850 123 45 67</li>
                     </ul>
                 </div>
+
             </div>
             <hr class="my-4 border-secondary opacity-25">
             <div class="text-center small opacity-50">
-                <p>&copy; 2026 HasTur - Tüm hakları saklıdır.</p>
+                <p class="mb-0">&copy; 2026 HasTur - Tüm hakları saklıdır.</p>
             </div>
         </div>
     </footer>
@@ -151,4 +169,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

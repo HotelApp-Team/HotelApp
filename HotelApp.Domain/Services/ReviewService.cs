@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using System;
@@ -28,6 +28,16 @@ namespace HotelApp.Domain.Services
         public async Task<IEnumerable<ReviewDto>> GetUserReviewsAsync(int userId)
         {
             var reviews = await _unitOfWork.ReviewRepository.GetByUserIdAsync(userId);
+
+            return reviews.Select(MapToDto);
+        }
+
+        // Anasayfa testimonial kartlari icin en yuksek puanli ve en yeni yorumlari hazirlar.
+        public async Task<IEnumerable<ReviewDto>> GetFeaturedReviewsAsync(int count)
+        {
+            // Vitrin endpoint'inde asiri veri cekilmesini engeller.
+            var safeCount = Math.Clamp(count, 1, 10);
+            var reviews = await _unitOfWork.ReviewRepository.GetFeaturedAsync(safeCount);
 
             return reviews.Select(MapToDto);
         }

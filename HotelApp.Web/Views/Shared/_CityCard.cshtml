@@ -1,0 +1,34 @@
+@model HotelApp.Web.Models.CityCardViewModel
+@{
+    // Şehir kartı arama sayfasına giderken hızlı şehir chip'leriyle aynı varsayılan arama değerlerini taşır.
+    var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
+    var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+
+    // Route DB'deki şehir adını taşır; kartta kullanıcıya Türkçe isim gösterilir.
+    var displayCityName = Model.Name.Trim() switch
+    {
+        "Istanbul" => "İstanbul",
+        "Izmir" => "İzmir",
+        "Aydin" => "Aydın",
+        "Antep" => "Gaziantep",
+        _ => Model.Name
+    };
+}
+
+<a asp-controller="Hotels"
+   asp-action="Search"
+   asp-route-city="@Model.Name"
+   asp-route-checkIn="@todayIso"
+   asp-route-checkOut="@tomorrowIso"
+   asp-route-guestCount="1"
+   class="city-card @(Model.IsBig ? "city-card-big" : "")">
+    <img src="@Model.ImageUrl" alt="@displayCityName" loading="lazy" class="city-card-img" />
+    <div class="city-card-overlay"></div>
+    <div class="city-card-content">
+        <div>
+            <div class="city-card-name">@displayCityName</div>
+            <div class="city-card-count">@Model.HotelCount otel</div>
+        </div>
+        <span class="city-card-arrow"><i class="bi bi-arrow-right"></i></span>
+    </div>
+</a>

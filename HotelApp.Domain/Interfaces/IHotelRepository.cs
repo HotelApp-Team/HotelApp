@@ -14,6 +14,10 @@ public interface IHotelRepository : IRepository<Hotel>
     // Aktif oteller
     Task<IEnumerable<Hotel>> GetActiveAsync();
     Task<List<string>> GetActiveCitiesAsync();
+
+    // Anasayfa vitrinindeki sehir kartlari icin DB tarafinda gruplanmis veriyi getirir.
+    Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count);
+
     IQueryable<Hotel> Query();
     Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
     Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize);

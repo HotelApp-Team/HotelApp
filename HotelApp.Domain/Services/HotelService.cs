@@ -150,6 +150,50 @@ namespace HotelApp.Domain.Services
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
 
+        // Anasayfa şehir kartları için repository'den gelen istatistikleri ekrana uygun DTO'ya mapler.
+        public async Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count)
+        {
+            var safeCount = Math.Clamp(count, 1, 12);
+            var cities = await _unitOfWork.HotelRepository.GetFeaturedCityStatsAsync(safeCount);
+
+            // Repository sorgu sonucunu vitrin karti modeline donusturur.
+            return cities
+                .Select((city, index) => new CityCardDto
+                {
+                    Name = city.Name,
+                    HotelCount = city.HotelCount,
+                    ImageUrl = GetCityImageUrl(city.Name),
+                    IsBig = index == 0
+                })
+                .ToList();
+        }
+
+        // Şehir görselleri public web klasöründeki sabit dosyalardan okunur.
+        private static string GetCityImageUrl(string cityName)
+        {
+            var cityImageMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Istanbul"] = "istanbul.jpg",
+                ["İstanbul"] = "istanbul.jpg",
+                ["Ankara"] = "ankara.jpg",
+                ["Antalya"] = "antalya.jpg",
+                ["Izmir"] = "izmir.jpg",
+                ["İzmir"] = "izmir.jpg",
+                ["Bursa"] = "bursa.jpg",
+                ["Aydin"] = "aydin.jpg",
+                ["Aydın"] = "aydin.jpg",
+                ["Gaziantep"] = "gaziantep.jpg",
+                ["Antep"] = "gaziantep.jpg",
+                ["Kayseri"] = "kayseri.jpg",
+                ["Konya"] = "konya.jpg",
+                ["Trabzon"] = "trabzon.jpg"
+            };
+
+            return cityImageMap.TryGetValue(cityName.Trim(), out var fileName)
+                ? $"/images/cities/{fileName}"
+                : "/images/cities/default-city.svg";
+        }
+
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {

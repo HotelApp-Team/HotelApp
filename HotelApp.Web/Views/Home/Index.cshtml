@@ -1,71 +1,166 @@
-﻿@model HotelApp.Web.Models.HomePageViewModel
+@using HotelApp.Web.Models
+@model HotelApp.Web.Models.HomePageViewModel
 @{
     ViewData["Title"] = "Ana Sayfa";
-    // Anasayfa hizli arama: tarih input'lari bugunden once secilemez.
-    // Default: check-in = bugün, check-out = yarın.
     var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
     var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+    var quickCities = Model.Cities?.Take(5).ToList() ?? new List<string>();
+
+    var featuredCities = Model.FeaturedCities ?? new List<CityCardViewModel>();
+    var featuredReviews = Model.FeaturedReviews ?? new List<ReviewViewModel>();
+
+    // DB'deki şehir değeri bozulmadan kalır; ekranda Türkçe isim gösterilir.
+    string DisplayCityName(string cityName) => cityName.Trim() switch
+    {
+        "Istanbul" => "İstanbul",
+        "Izmir" => "İzmir",
+        "Aydin" => "Aydın",
+        "Antep" => "Gaziantep",
+        _ => cityName
+    };
 }
 
-<!-- HERO TEXT -->
-<div class="hero">
-    <div class="container text-center text-white">
-        <h1 class="display-4 fw-bold">Mükemmel oteli bul</h1>
-        <p class="fs-5">Dünyanın en iyi otellerini keşfet</p>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content text-center text-white">
+        <span class="hero-eyebrow">
+            <span class="hero-dot"></span>
+            120+ otel · 30+ şehir · 7/24 destek
+        </span>
+        <h1 class="hero-title">Mükemmel oteli bul</h1>
+        <p class="hero-subtitle">Türkiye'nin her köşesindeki kaliteli otelleri tek bir yerde keşfet.</p>
     </div>
-</div>
+</section>
 
-<!-- SEARCH FORM -->
+<!-- SEARCH -->
 <div class="container search-wrapper">
     <div class="search-box">
+        <form method="get" asp-controller="Hotels" asp-action="Search" class="row g-0 search-grid">
 
-        <form method="get" asp-controller="Hotels" asp-action="Search" class="row g-3">
-
-            <div class="col-md-3">
-                <select name="city" class="form-select" required>
-                    <option value="">Şehir seçin</option>
-                    @foreach (var city in Model.Cities)
-                    {
-                        <option value="@city">@city</option>
-                    }
-                </select>
+            <div class="col-md-4 search-cell">
+                <label class="search-label">Şehir</label>
+                <div class="search-field">
+                    <i class="bi bi-geo-alt-fill search-icon"></i>
+                    <select name="city" class="form-select form-select-flush" required>
+                        <option value="">Şehir seçin</option>
+                        @foreach (var city in Model.Cities ?? new List<string>())
+                        {
+                            <option value="@city">@DisplayCityName(city)</option>
+                        }
+                    </select>
+                </div>
             </div>
 
-            <div class="col-md-2">
-                <input type="date" name="checkIn" min="@todayIso" value="@todayIso" class="form-control" required />
+            <div class="col-md-2 search-cell">
+                <label class="search-label">Giriş</label>
+                <div class="search-field">
+                    <i class="bi bi-calendar-event search-icon"></i>
+                    <input type="date" name="checkIn" min="@todayIso" value="@todayIso"
+                           class="form-control form-control-flush" required />
+                </div>
             </div>
 
-            <div class="col-md-2">
-                <input type="date" name="checkOut" min="@todayIso" value="@tomorrowIso" class="form-control" required />
+            <div class="col-md-2 search-cell">
+                <label class="search-label">Çıkış</label>
+                <div class="search-field">
+                    <i class="bi bi-calendar-check search-icon"></i>
+                    <input type="date" name="checkOut" min="@todayIso" value="@tomorrowIso"
+                           class="form-control form-control-flush" required />
+                </div>
             </div>
 
-            <div class="col-md-2">
-                <input type="number" name="guestCount" class="form-control" value="1" min="1" max="20" required />
+            <div class="col-md-2 search-cell">
+                <label class="search-label">Misafir</label>
+                <div class="search-field">
+                    <i class="bi bi-people-fill search-icon"></i>
+                    <input type="number" name="guestCount" value="1" min="1" max="20"
+                           class="form-control form-control-flush" required />
+                </div>
             </div>
 
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    Ara
+            <div class="col-md-2 search-submit">
+                <button type="submit" class="btn btn-primary btn-search">
+                    <i class="bi bi-search me-1"></i> Ara
                 </button>
             </div>
 
         </form>
 
+        @if (quickCities.Any())
+        {
+            <div class="quick-cities">
+                <span class="quick-cities-label">Popüler:</span>
+                @foreach (var c in quickCities)
+                {
+                    <a class="city-chip"
+                       asp-controller="Hotels" asp-action="Search"
+                       asp-route-city="@c"
+                       asp-route-checkIn="@todayIso"
+                       asp-route-checkOut="@tomorrowIso"
+                       asp-route-guestCount="1">@DisplayCityName(c)</a>
+                }
+            </div>
+        }
     </div>
 </div>
 
-<!-- POPULAR HOTELS -->
-<div class="container mt-5">
+<!-- ÖNE ÇIKAN ŞEHİRLER -->
+@if (featuredCities.Any())
+{
+    <section class="container featured-section pb-0">
+        <div class="section-head">
+            <div>
+                <span class="section-eyebrow">Keşfet</span>
+                <h2 class="section-title">Öne Çıkan Şehirler</h2>
+            </div>
+        </div>
 
-    <h3 class="fw-bold mb-4">Popüler Oteller</h3>
+        <div class="cities-grid">
+            @foreach (var c in featuredCities)
+            {
+                @await Html.PartialAsync("_CityCard", c)
+            }
+        </div>
+    </section>
+}
+
+<!-- POPÜLER OTELLER -->
+<section class="container featured-section">
+    <div class="section-head">
+        <div>
+            <span class="section-eyebrow">En çok tercih edilenler</span>
+            <h2 class="section-title">Popüler Oteller</h2>
+        </div>
+    </div>
 
     <div class="row g-4">
         @foreach (var hotel in Model.FeaturedHotels)
         {
-            <div class="col-md-4">
+            <div class="col-md-6 col-lg-4">
                 @await Html.PartialAsync("_HotelCard", hotel)
             </div>
         }
     </div>
+</section>
 
-</div>
+<!-- KULLANICI YORUMLARI -->
+@if (featuredReviews.Any())
+{
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-head testimonials-head">
+                <span class="section-eyebrow">Misafirlerimiz Ne Diyor?</span>
+                <h2 class="section-title">Gerçek konuk yorumları</h2>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var r in featuredReviews)
+                {
+                    <div class="col-md-4">
+                        @await Html.PartialAsync("_TestimonialCard", r)
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
