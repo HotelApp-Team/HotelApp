@@ -13,6 +13,9 @@
         "Antep" => "Gaziantep",
         _ => Model.Name
     };
+
+    // Şehir görseli web katmanındaki sabit görsel helper'ından alınır.
+    var imageUrl = CityImageHelper.GetImageUrl(Model.Name);
 }
 
 <a asp-controller="Hotels"
@@ -22,7 +25,7 @@
    asp-route-checkOut="@tomorrowIso"
    asp-route-guestCount="1"
    class="city-card @(Model.IsBig ? "city-card-big" : "")">
-    <img src="@Model.ImageUrl" alt="@displayCityName" loading="lazy" class="city-card-img" />
+    <img src="@imageUrl" alt="@displayCityName" loading="lazy" class="city-card-img" />
     <div class="city-card-overlay"></div>
     <div class="city-card-content">
         <div>
