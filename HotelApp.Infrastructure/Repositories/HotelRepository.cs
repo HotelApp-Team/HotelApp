@@ -65,7 +65,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     public async Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count)
     {
         return await _context.Hotels
-            .Where(x => x.IsActive && x.City != null && x.City != "")
+            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
             .GroupBy(x => x.City.Trim())
             .Select(g => new
             {
