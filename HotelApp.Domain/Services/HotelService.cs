@@ -150,25 +150,14 @@ namespace HotelApp.Domain.Services
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
 
-        // Anasayfa şehir kartları için aktif otel sayılarına göre öne çıkan şehirleri hazırlar.
+        // Anasayfa şehir kartları için repository'den gelen istatistikleri ekrana uygun DTO'ya mapler.
         public async Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count)
         {
             var safeCount = Math.Clamp(count, 1, 12);
-            var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
+            var cities = await _unitOfWork.HotelRepository.GetFeaturedCityStatsAsync(safeCount);
 
-            return hotels
-                .Where(h => !string.IsNullOrWhiteSpace(h.City))
-                .GroupBy(h => h.City.Trim(), StringComparer.OrdinalIgnoreCase)
-                .Select(g => new
-                {
-                    Name = g.Key,
-                    HotelCount = g.Count(),
-                    AverageRating = g.Average(h => h.AvgRating ?? 0)
-                })
-                .OrderByDescending(x => x.HotelCount)
-                .ThenByDescending(x => x.AverageRating)
-                .ThenBy(x => x.Name)
-                .Take(safeCount)
+            // Repository sorgu sonucunu vitrin karti modeline donusturur.
+            return cities
                 .Select((city, index) => new CityCardDto
                 {
                     Name = city.Name,

@@ -71,8 +71,8 @@ public static class SessionAuthExtensions
                 return;
 
             // Session tokenı bozuksa kullanıcı girişli görünmesin diye auth bilgileri temizlenir.
+            // Cookie ayrıca aşağıda doğrulanır; geçerliyse session yeniden kurulabilir.
             context.Session.ClearAuthSession();
-            context.Response.Cookies.Delete(RememberMeCookieName);
         }
 
         // Cookie yoksa veya boşsa kullanıcı anonim kabul edilir.

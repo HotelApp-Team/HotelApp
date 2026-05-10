@@ -183,64 +183,6 @@ using (var scope = app.Services.CreateScope())
     }
 
     db.SaveChanges();
-
-    // Anasayfa yorum kartlari bos kalmasin diye demo yorum verisini garanti eder.
-    // Idempotent calisir; veritabaninda zaten 3 yorum varsa yeni veri eklemez.
-    var missingReviewCount = 3 - db.Reviews.Count();
-    if (missingReviewCount > 0)
-    {
-        var seedUsers = db.Users
-            .Where(u => u.IsActive)
-            .OrderBy(u => u.Id)
-            .Take(5)
-            .ToList();
-
-        var seedHotels = db.Hotels
-            .Where(h => h.IsActive)
-            .OrderBy(h => h.Id)
-            .Take(10)
-            .ToList();
-
-        var seedComments = new[]
-        {
-            "Otel temiz, konumu çok iyi ve rezervasyon süreci beklediğimden hızlı ilerledi.",
-            "Arama filtreleri sayesinde ihtiyacımıza uygun oteli kolayca bulduk.",
-            "Personel ilgiliydi, oda rahattı ve fiyat bilgileri net gösterildi."
-        };
-
-        var addedReviewCount = 0;
-        foreach (var hotel in seedHotels)
-        {
-            foreach (var user in seedUsers)
-            {
-                // Ayni kullanicinin ayni otele ikinci kez yorum yapmasini engeller.
-                var hasReview = db.Reviews.Any(r => r.UserId == user.Id && r.HotelId == hotel.Id);
-                if (hasReview)
-                    continue;
-
-                db.Reviews.Add(new Review
-                {
-                    HotelId = hotel.Id,
-                    UserId = user.Id,
-                    Rating = (byte)(5 - Math.Min(addedReviewCount, 1)),
-                    Comment = seedComments[addedReviewCount % seedComments.Length],
-                    CreatedAt = DateTime.UtcNow.AddDays(-addedReviewCount)
-                });
-
-                addedReviewCount++;
-                if (addedReviewCount >= missingReviewCount)
-                    break;
-            }
-
-            if (addedReviewCount >= missingReviewCount)
-                break;
-        }
-
-        if (addedReviewCount > 0)
-        {
-            db.SaveChanges();
-        }
-    }
 }
 
 // Exception handler EN BASTA olmali ki sonraki tum middleware/controller hatalarini yakalasin
