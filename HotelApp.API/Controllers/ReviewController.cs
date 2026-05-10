@@ -20,7 +20,7 @@ namespace HotelApp.API.Controllers
             _logger = logger;
         }
 
-        // GET api/reviews/featured : Anasayfada gosterilecek one cikan yorumlari getirir.
+        // E53 - GET api/reviews/featured : Anasayfada gosterilecek one cikan yorumlari getirir.
         [AllowAnonymous]
         [HttpGet("featured")]
         public async Task<IActionResult> GetFeaturedReviews([FromQuery] int count = 3)

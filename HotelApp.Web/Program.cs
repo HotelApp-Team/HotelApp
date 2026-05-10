@@ -43,7 +43,7 @@ app.UseSession();
 // Beni Hatırla cookie'si varsa request başında geçerli JWT'yi session'a geri yükler.
 app.Use(async (context, next) =>
 {
-    context.RestoreAuthSessionFromRememberMeCookie();
+    context.RestoreAuthSessionFromRememberMeCookie(app.Configuration);
     await next();
 });
 

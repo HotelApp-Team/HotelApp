@@ -60,7 +60,7 @@ public class HotelsController : ControllerBase
         return Ok(cities);
     }
 
-    // GET /api/hotels/featured-cities : Anasayfada gosterilecek one cikan sehir kartlarini getirir.
+    // E52 - GET /api/hotels/featured-cities : Anasayfada gosterilecek one cikan sehir kartlarini getirir.
     [HttpGet("featured-cities")]
     public async Task<IActionResult> GetFeaturedCities([FromQuery] int count = 5)
     {
