@@ -60,6 +60,31 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .OrderBy(x => x)
             .ToListAsync();
     }
+
+    // Anasayfa sehir kartlari icin gruplama ve siralama sorgusunu DB tarafinda yapar.
+    public async Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count)
+    {
+        return await _context.Hotels
+            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
+            .GroupBy(x => x.City.Trim())
+            .Select(g => new
+            {
+                Name = g.Key,
+                HotelCount = g.Count(),
+                AverageRating = g.Average(x => x.AvgRating ?? 0)
+            })
+            .OrderByDescending(x => x.HotelCount)
+            .ThenByDescending(x => x.AverageRating)
+            .ThenBy(x => x.Name)
+            .Take(count)
+            .Select(city => new CityCardDto
+            {
+                Name = city.Name,
+                HotelCount = city.HotelCount
+            })
+            .ToListAsync();
+    }
+
     public IQueryable<Hotel> Query()
     {
         return _context.Hotels

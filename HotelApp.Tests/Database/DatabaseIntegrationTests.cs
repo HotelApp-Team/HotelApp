@@ -181,18 +181,39 @@ public class DatabaseIntegrationTests
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
-        await _database.ExecuteNonQueryAsync(
+        // Test kendi otelini ve kullanicisini olusturur; seed yorumlardan etkilenmez.
+        var hotelId = await _database.ExecuteScalarIntAsync(
+            """
+            INSERT INTO Hotels (Name, Description, Address, City, Country, StarRating, Phone, Email)
+            VALUES (@HotelName, 'Trigger test hotel', 'Trigger Test Address', 'TestCity', 'Turkiye', 5, '5554444444', 'trigger-hotel@hotelapp.test');
+
+            SELECT CAST(SCOPE_IDENTITY() AS INT);
+            """,
+            parameters => parameters.AddWithValue("@HotelName", $"CI Review Trigger Hotel {Guid.NewGuid():N}"));
+
+        var userId = await _database.ExecuteScalarIntAsync(
             """
             INSERT INTO Users (FirstName, LastName, Email, PasswordHash, Phone, IsActive, IsEmailVerified)
-            VALUES ('Review', 'User', 'review-user@hotelapp.test', 'test-hash', '5553333333', 1, 1);
+            VALUES ('Review', 'User', @Email, 'test-hash', '5553333333', 1, 1);
 
-            DECLARE @UserId INT = SCOPE_IDENTITY();
+            SELECT CAST(SCOPE_IDENTITY() AS INT);
+            """,
+            parameters => parameters.AddWithValue("@Email", $"review-user-{Guid.NewGuid():N}@hotelapp.test"));
 
+        await _database.ExecuteNonQueryAsync(
+            """
             INSERT INTO Reviews (HotelId, UserId, Rating, Comment)
-            VALUES (1, @UserId, 4, 'Clean and comfortable.');
-            """);
+            VALUES (@HotelId, @UserId, 4, 'Clean and comfortable.');
+            """,
+            parameters =>
+            {
+                parameters.AddWithValue("@HotelId", hotelId);
+                parameters.AddWithValue("@UserId", userId);
+            });
 
-        var avgRating = await _database.ExecuteScalarDecimalAsync("SELECT AvgRating FROM Hotels WHERE Id = 1");
+        var avgRating = await _database.ExecuteScalarDecimalAsync(
+            "SELECT AvgRating FROM Hotels WHERE Id = @HotelId",
+            parameters => parameters.AddWithValue("@HotelId", hotelId));
 
         Assert.Equal(4.0m, avgRating);
     }

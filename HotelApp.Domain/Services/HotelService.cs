@@ -150,6 +150,22 @@ namespace HotelApp.Domain.Services
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
 
+        // Anasayfa şehir kartları için repository'den gelen istatistikleri ekrana uygun DTO'ya mapler.
+        public async Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count)
+        {
+            var safeCount = Math.Clamp(count, 1, 12);
+            var cities = await _unitOfWork.HotelRepository.GetFeaturedCityStatsAsync(safeCount);
+
+            // Repository sorgu sonucuna sadece vitrin karti siralama bilgisini ekler.
+            return cities
+                .Select((city, index) => new CityCardDto
+                {
+                    Name = city.Name,
+                    HotelCount = city.HotelCount,
+                    IsBig = index == 0
+                })
+                .ToList();
+        }
 
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {

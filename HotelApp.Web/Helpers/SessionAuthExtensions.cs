@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HotelApp.Web.Helpers;
 
@@ -59,29 +61,26 @@ public static class SessionAuthExtensions
 
     // Beni Hatırla cookie'si varsa geçerli tokenı session'a geri yükler.
     // Böylece tarayıcı kapansa bile geçerli JWT süresi boyunca kullanıcı tekrar login olmadan devam eder.
-    public static void RestoreAuthSessionFromRememberMeCookie(this HttpContext context)
+    public static void RestoreAuthSessionFromRememberMeCookie(this HttpContext context, IConfiguration configuration)
     {
-        // Session zaten geçerliyse cookie'den tekrar yükleme yapmaya gerek yok.
-        if (context.Session.IsAuthenticated())
-            return;
+        // Session'da token varsa önce imza/issuer/audience kontrolüyle gerçekten geçerli mi bakılır.
+        var sessionToken = context.Session.GetString(JwtSessionKey);
+        if (!string.IsNullOrWhiteSpace(sessionToken))
+        {
+            if (TryValidateJwtToken(sessionToken, configuration, out _))
+                return;
+
+            // Session tokenı bozuksa kullanıcı girişli görünmesin diye auth bilgileri temizlenir.
+            // Cookie ayrıca aşağıda doğrulanır; geçerliyse session yeniden kurulabilir.
+            context.Session.ClearAuthSession();
+        }
 
         // Cookie yoksa veya boşsa kullanıcı anonim kabul edilir.
         if (!context.Request.Cookies.TryGetValue(RememberMeCookieName, out var token) || string.IsNullOrWhiteSpace(token))
             return;
 
-        var handler = new JwtSecurityTokenHandler();
-
-        // Cookie'deki değer JWT formatında değilse güvenli tarafta kalıp cookie'yi siler.
-        if (!handler.CanReadToken(token))
-        {
-            context.Response.Cookies.Delete(RememberMeCookieName);
-            return;
-        }
-
-        var jwt = handler.ReadJwtToken(token);
-
-        // Token süresi dolduysa eski cookie silinir ve session yüklenmez.
-        if (jwt.ValidTo < DateTime.UtcNow)
+        // Cookie'deki token imza, issuer, audience veya süre kontrolünden geçmezse temizlenir.
+        if (!TryValidateJwtToken(token, configuration, out var jwt) || jwt is null)
         {
             context.Response.Cookies.Delete(RememberMeCookieName);
             return;
@@ -99,6 +98,47 @@ public static class SessionAuthExtensions
         }
 
         context.Session.SetAuthSession(token, email, fullName);
+    }
+
+    // JWT token'ın sadece okunabilir olmasını değil, gerçekten bizim ayarlarla imzalanmış olmasını doğrular.
+    private static bool TryValidateJwtToken(string token, IConfiguration configuration, out JwtSecurityToken? jwt)
+    {
+        jwt = null;
+        var secretKey = configuration["Jwt:SecretKey"];
+
+        // Secret key yoksa güvenli tarafta kalıp tokenı geçersiz sayar.
+        if (string.IsNullOrWhiteSpace(secretKey))
+            return false;
+
+        var handler = new JwtSecurityTokenHandler();
+
+        // JWT formatı bozuksa validation denemeden false döner.
+        if (!handler.CanReadToken(token))
+            return false;
+
+        var validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration["Jwt:Issuer"],
+            ValidAudience = configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+
+        try
+        {
+            handler.ValidateToken(token, validationParameters, out var validatedToken);
+            jwt = validatedToken as JwtSecurityToken;
+            return jwt is not null;
+        }
+        catch
+        {
+            // İmza, süre, issuer veya audience hatasında token geçersiz kabul edilir.
+            return false;
+        }
     }
 
     // Session'daki JWT token'in icindeki rolleri okuyup verilen rol bilgisini iceriyor mu kontrol eder.
