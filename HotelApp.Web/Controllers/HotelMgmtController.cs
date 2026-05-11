@@ -26,9 +26,6 @@ public class HotelMgmtController : Controller
         int page = 1,
         int pageSize = 10)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var query = $"hotels?city={Uri.EscapeDataString(city ?? string.Empty)}" +
                     $"&star={starRating}" +
                     $"&sortBy={Uri.EscapeDataString(sortBy)}" +
@@ -58,9 +55,6 @@ public class HotelMgmtController : Controller
     [HttpGet("Create")]
     public async Task<IActionResult> Create()
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var model = new AdminHotelFormViewModel();
         await LoadAmenitiesAsync(model);
 
@@ -71,9 +65,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(AdminHotelFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             await LoadAmenitiesAsync(model);
@@ -110,9 +101,6 @@ public class HotelMgmtController : Controller
     [HttpGet("Edit/{id}")]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var model = await BuildHotelFormModelAsync(id);
 
         if (model == null)
@@ -128,9 +116,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, AdminHotelFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             await LoadAmenitiesAsync(model, id);
@@ -170,9 +155,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.DeleteAsync($"hotels/{id}");
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
@@ -185,9 +167,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddImage(int hotelId, HotelImageAdminFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "Görsel bilgileri eksik.";
@@ -211,9 +190,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteImage(int hotelId, int imageId)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.DeleteAsync($"hotels/{hotelId}/images/{imageId}");
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
@@ -229,9 +205,6 @@ public class HotelMgmtController : Controller
         int imageId,
         HotelImageAdminFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "Görsel bilgileri eksik veya hatalı.";
@@ -260,9 +233,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignAmenities(int hotelId, List<int> amenityIds)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.PostAsync<object>(
             $"hotels/{hotelId}/amenities",
             new { AmenityIds = amenityIds });
@@ -277,9 +247,6 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveAmenity(int hotelId, int amenityId)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.DeleteAsync(
             $"hotels/{hotelId}/amenities/{amenityId}");
 

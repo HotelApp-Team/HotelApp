@@ -20,9 +20,6 @@ public class AmenityController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
         var model = new AdminAmenityPageViewModel
@@ -42,9 +39,6 @@ public class AmenityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(AdminAmenityFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             var pageModel = await BuildAmenityPageModelAsync();
@@ -74,9 +68,6 @@ public class AmenityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, AdminAmenityFormViewModel model)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         if (!ModelState.IsValid)
         {
             var pageModel = await BuildAmenityPageModelAsync();
@@ -107,9 +98,6 @@ public class AmenityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         var response = await _apiService.DeleteAsync($"amenities/{id}");
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
