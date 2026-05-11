@@ -100,10 +100,10 @@ CREATE TABLE Reservations (
     GuestCount INT NOT NULL DEFAULT 1 CHECK (GuestCount > 0),
     TotalPrice DECIMAL(10,2) NOT NULL CHECK (TotalPrice >= 0),
     PaymentMethod NVARCHAR(50) NOT NULL,
-    Status NVARCHAR(20) NOT NULL DEFAULT 'Pending',
+    Status NVARCHAR(20) NOT NULL DEFAULT 'Confirmed',
     CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT CHK_Dates CHECK (CheckOutDate > CheckInDate),
-    CONSTRAINT CHK_Status CHECK (Status IN ('Pending','Confirmed','Cancelled','Completed')),
+    CONSTRAINT CHK_Status CHECK (Status IN ('Confirmed','Cancelled','Completed')),
     CONSTRAINT FK_Reservation_Users FOREIGN KEY(UserId) REFERENCES Users(Id),
     CONSTRAINT FK_Reservation_HotelRoomId FOREIGN KEY(HotelRoomId) REFERENCES HotelRooms(Id)
 );
@@ -263,7 +263,7 @@ BEGIN
     LEFT JOIN (
         SELECT HotelRoomId, COUNT(*) AS ReservedCount
         FROM Reservations
-        WHERE Status IN ('Pending', 'Confirmed')
+        WHERE Status = 'Confirmed'
           AND CheckInDate < @CheckOutDate
           AND CheckOutDate > @CheckInDate
         GROUP BY HotelRoomId
@@ -324,7 +324,7 @@ BEGIN
         SELECT @ReservedCount = COUNT(*)
         FROM Reservations
         WHERE HotelRoomId = @HotelRoomId
-          AND Status IN ('Pending', 'Confirmed')
+          AND Status = 'Confirmed'
           AND CheckInDate < @CheckOutDate
           AND CheckOutDate > @CheckInDate;
 

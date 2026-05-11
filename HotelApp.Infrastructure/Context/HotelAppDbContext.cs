@@ -169,7 +169,7 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
-                .HasDefaultValue("Pending");
+                .HasDefaultValue("Confirmed");
             entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
 
             entity.HasOne(d => d.HotelRoom).WithMany(p => p.Reservations)
