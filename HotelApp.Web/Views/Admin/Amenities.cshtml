@@ -1,0 +1,115 @@
+﻿@model HotelApp.Web.Models.AdminAmenityPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Olanak Yönetimi";
+}
+
+<h2 class="mb-4">Olanak Yönetimi</h2>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+    </div>
+}
+
+<div class="card p-3 mb-4">
+    <h4 class="mb-3">Yeni Olanak Ekle</h4>
+
+    <form asp-controller="Amenity" asp-action="Create" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+
+        <div class="col-md-5">
+            <label asp-for="CreateForm.Name" class="form-label">Olanak Adı</label>
+            <input asp-for="CreateForm.Name" class="form-control" />
+            <span asp-validation-for="CreateForm.Name" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-5">
+            <label asp-for="CreateForm.Icon" class="form-label">Icon</label>
+            <input asp-for="CreateForm.Icon" class="form-control" placeholder="wifi, pool, parking..." />
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Ekle</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ad</th>
+                <th>Icon</th>
+                <th class="text-end">İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Amenities.Any())
+            {
+                foreach (var amenity in Model.Amenities.OrderBy(x => x.Name))
+                {
+                    <tr>
+                        <td>@amenity.Id</td>
+                        <td>@amenity.Name</td>
+                        <td>@amenity.Icon</td>
+                        <td class="text-end">
+                            <div class="d-flex flex-column gap-2">
+                                <form asp-controller="Amenity"
+                                      asp-action="Edit"
+                                      asp-route-id="@amenity.Id"
+                                      method="post"
+                                      class="row g-2 justify-content-end">
+                                    @Html.AntiForgeryToken()
+
+                                    <div class="col-md-4">
+                                        <input name="Name" value="@amenity.Name" class="form-control form-control-sm" />
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <input name="Icon" value="@amenity.Icon" class="form-control form-control-sm" />
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-sm btn-warning w-100">Güncelle</button>
+                                    </div>
+                                </form>
+
+                                <form asp-controller="Amenity"
+                                      asp-action="Delete"
+                                      asp-route-id="@amenity.Id"
+                                      method="post"
+                                      onsubmit="return confirm('Bu olanak silinsin mi?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Henüz olanak kaydı bulunmuyor.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

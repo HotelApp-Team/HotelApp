@@ -1,0 +1,305 @@
+﻿@model HotelApp.Web.Models.AdminHotelFormViewModel
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = Model.Id > 0 ? "Otel Düzenle" : "Yeni Otel";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">@ViewData["Title"]</h2>
+    <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-outline-secondary">Listeye Dön</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<form method="post"
+      asp-controller="HotelMgmt"
+      asp-action="@(Model.Id > 0 ? "Edit" : "Create")"
+      asp-route-id="@Model.Id">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Otel Adı</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="City" class="form-label">Şehir</label>
+            <input asp-for="City" class="form-control" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Country" class="form-label">Ülke</label>
+            <input asp-for="Country" class="form-control" />
+            <span asp-validation-for="Country" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Description" class="form-label">Açıklama</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Address" class="form-label">Adres</label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Phone" class="form-label">Telefon</label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Email" class="form-label">E-posta</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="StarRating" class="form-label">Yıldız</label>
+            <input asp-for="StarRating" class="form-control" />
+            <span asp-validation-for="StarRating" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Latitude" class="form-label">Latitude</label>
+            <input asp-for="Latitude" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Longitude" class="form-label">Longitude</label>
+            <input asp-for="Longitude" class="form-control" />
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label">Aktif</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+    </div>
+</form>
+
+@if (Model.Id > 0)
+{
+    <hr class="my-5" />
+
+    <h4>Görseller</h4>
+
+    <form asp-controller="HotelMgmt"
+          asp-action="AddImage"
+          asp-route-hotelId="@Model.Id"
+          method="post"
+          class="row g-3 mb-4">
+        @Html.AntiForgeryToken()
+
+        <div class="col-md-6">
+            <label class="form-label">Görsel URL</label>
+            <input name="ImageUrl" class="form-control" />
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Sıra</label>
+            <input name="DisplayOrder" type="number" class="form-control" value="0" />
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input name="IsMain" type="checkbox" class="form-check-input" value="true" />
+                <label class="form-check-label">Ana görsel</label>
+            </div>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">Ekle</button>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Sıra</th>
+                <th>Ana</th>
+                <th class="text-end">İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Images.Any())
+            {
+                foreach (var image in Model.Images.OrderBy(x => x.DisplayOrder))
+                {
+                    <tr>
+                        <td colspan="4">
+                            <div class="row g-2 align-items-center">
+
+                                <div class="col-md-8">
+                                    <form asp-controller="HotelMgmt"
+                                          asp-action="UpdateImage"
+                                          asp-route-hotelId="@Model.Id"
+                                          asp-route-imageId="@image.Id"
+                                          method="post"
+                                          class="row g-2 align-items-center">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <div class="col-md-5">
+                                            <input name="ImageUrl"
+                                                   value="@image.ImageUrl"
+                                                   class="form-control form-control-sm" />
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <input name="DisplayOrder"
+                                                   value="@image.DisplayOrder"
+                                                   type="number"
+                                                   class="form-control form-control-sm" />
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <input type="hidden" name="IsMain" value="false" />
+
+                                            <div class="form-check">
+                                                <input name="IsMain"
+                                                       type="checkbox"
+                                                       value="true"
+                                                       class="form-check-input"
+                                                       checked="@image.IsMain" />
+
+                                                <label class="form-check-label">
+                                                    Ana
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-warning">
+                                                Güncelle
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="col-md-4 text-end">
+                                    <form asp-controller="HotelMgmt"
+                                          asp-action="DeleteImage"
+                                          asp-route-hotelId="@Model.Id"
+                                          asp-route-imageId="@image.Id"
+                                          method="post"
+                                          onsubmit="return confirm('Görsel silinsin mi?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger">
+                                            Sil
+                                        </button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Henüz görsel eklenmemiş.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr class="my-5" />
+
+    <h4>Olanak Atama</h4>
+
+    <form asp-controller="HotelMgmt"
+          asp-action="AssignAmenities"
+          asp-route-hotelId="@Model.Id"
+          method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-2">
+            @if (Model.AllAmenities.Any())
+            {
+                foreach (var amenity in Model.AllAmenities.OrderBy(x => x.Name))
+                {
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   name="amenityIds"
+                                   value="@amenity.Id"
+                                   checked="@amenity.IsAssigned" />
+                            <label class="form-check-label">@amenity.Name</label>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-muted">Tanımlı olanak bulunamadı.</div>
+            }
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-outline-success">Olanakları Güncelle</button>
+        </div>
+    </form>
+
+    @if (Model.AllAmenities.Any(x => x.IsAssigned))
+    {
+        <div class="mt-4">
+            <h5>Atanmış Olanaklar</h5>
+
+            @foreach (var amenity in Model.AllAmenities
+                .Where(x => x.IsAssigned)
+                .OrderBy(x => x.Name))
+            {
+                <form asp-controller="HotelMgmt"
+                      asp-action="RemoveAmenity"
+                      asp-route-hotelId="@Model.Id"
+                      asp-route-amenityId="@amenity.Id"
+                      method="post"
+                      class="d-inline-block me-2 mb-2"
+                      onsubmit="return confirm('Bu olanak kaldırılsın mı?');">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-danger">
+                        @amenity.Name
+                    </button>
+                </form>
+            }
+        </div>
+    }
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
