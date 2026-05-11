@@ -14,10 +14,13 @@ public class AuthController : Controller
     // API ile konuşmak için ApiService'i kullanacağız.
     // DI ile Program.cs'te kaydedildiği için otomatik olarak sağlanır.
     private readonly ApiService _apiService;
+    // IConfiguration JWT imza/issuer/audience'a IsAuthenticated icinde erismek icin gerekli.
+    private readonly IConfiguration _configuration;
 
-    public AuthController(ApiService apiService)
+    public AuthController(ApiService apiService, IConfiguration configuration)
     {
         _apiService = apiService;
+        _configuration = configuration;
     }
 
     // Giriş sayfasını açar.
@@ -27,7 +30,7 @@ public class AuthController : Controller
     public async Task<IActionResult> Login(string? returnUrl = null)
     {
         // Zaten giriş yapmışsa: ReturnUrl varsa oraya (sadece site içi adresse), yoksa ana sayfaya yönlendir.
-        if (HttpContext.Session.IsAuthenticated())
+        if (HttpContext.Session.IsAuthenticated(_configuration))
         {
             // Url.IsLocalUrl: Open redirect saldirisi engeli (https://kotusite.com gibi disari yonlendirilmesin).
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -107,7 +110,7 @@ public class AuthController : Controller
     public async Task<IActionResult> Register()
     {
         // Zaten giriş yapmışsa ana sayfaya yönlendir.
-        if (HttpContext.Session.IsAuthenticated())
+        if (HttpContext.Session.IsAuthenticated(_configuration))
             return RedirectToAction("Index", "Home");
 
         // Form modeline hero istatistikleri de eklenir; sayilar API endpointinden gelir.
@@ -177,7 +180,7 @@ public class AuthController : Controller
         // Kullanici zaten login ise (orn. ayni dogrulama linki ikinci kez aciliyor),
         // dogrulama akisi calistirmak yerine ana sayfaya yonlendiriyoruz.
         // Boylece sag ustte "Hosgeldin X" goruyorken "dogrulama basarisiz" celiskisi yasanmaz.
-        if (HttpContext.Session.IsAuthenticated())
+        if (HttpContext.Session.IsAuthenticated(_configuration))
             return RedirectToAction("Index", "Home");
 
         // Token yoksa direkt hata sayfasini goster.

@@ -16,30 +16,24 @@ public static class SessionAuthExtensions
     public const string UserFullNameSessionKey = "UserFullName";
     public const string RememberMeCookieName = "HotelApp.RememberMeToken";
 
-    public static bool IsAuthenticated(this ISession session)
+    // Token gecerliligini imza + issuer + audience + sure dahil tam dogrular.
+    // IConfiguration parametresi appsettings'teki Jwt:SecretKey/Issuer/Audience'a erismek icin gerekli.
+    // Token yok, bozuk, imza tutmuyor veya suresi dolmussa session temizlenir ve false doner.
+    public static bool IsAuthenticated(this ISession session, IConfiguration configuration)
     {
         var token = session.GetString(JwtSessionKey);
         // Token hiç yok: kullanıcı giriş yapmamış.
         if(string.IsNullOrEmpty(token))
             return false;
 
-        var handler = new JwtSecurityTokenHandler();
-
-        // Token formatı JWT'ye uymuyor. Session'ı temizle.
-        if(!handler.CanReadToken(token))
+        // Imza, issuer, audience ve lifetime kontrollerinin hepsi burada yapilir.
+        // Sadece ValidTo kontrolu yetmez cunku payload manipule edilmis token da geçebilirdi.
+        if (!TryValidateJwtToken(token, configuration, out _))
         {
             session.ClearAuthSession();
             return false;
         }
 
-        // Token okunabiliyorsa süresini kontrol et.
-        var jwt = handler.ReadJwtToken(token);
-        if(jwt.ValidTo < DateTime.UtcNow)
-        {
-            // Token süresi dolmuş. Auth session bilgilerini temizle.
-            session.ClearAuthSession();
-            return false;
-        }
         return true;
     }
 
@@ -142,20 +136,19 @@ public static class SessionAuthExtensions
     }
 
     // Session'daki JWT token'in icindeki rolleri okuyup verilen rol bilgisini iceriyor mu kontrol eder.
-    // Token yoksa, bozuksa veya rol yoksa false doner; navbar ve view kararlarinda kullanilir.
-    // AdminFilter token decode mantigiyla ayni pattern; tek noktadan rol kontrolu icin merkezilesmistir.
-    public static bool IsInRole(this ISession session, string roleName)
+    // IConfiguration parametresi imza dogrulamasini IsAuthenticated uzerinden tetiklemek icin gerekli;
+    // boylece manipule edilmis "Admin" claim'i ile yetki kazanilamaz.
+    public static bool IsInRole(this ISession session, IConfiguration configuration, string roleName)
     {
-        // Once token gecerliligini IsAuthenticated uzerinden dogrula.
-        // Bu cagri ayni zamanda suresi dolmus veya bozuk token icin session'i temizliyor;
-        // boylece IsInRole sade kalir ve expired token'da yanlislikla "rol var" demez.
-        if (!session.IsAuthenticated())
+        // Once tam JWT validation yapan IsAuthenticated calistirilir (imza dahil).
+        // Bu cagri suresi dolmus veya imzasi bozuk token icin session'i da temizler.
+        if (!session.IsAuthenticated(configuration))
             return false;
 
         var token = session.GetString(JwtSessionKey)!;
         var handler = new JwtSecurityTokenHandler();
 
-        // IsAuthenticated CanReadToken kontrolunu zaten yapti; yine de defensive guard.
+        // IsAuthenticated icindeki TryValidateJwtToken zaten gecti; burada sadece claim okumak guvenli.
         try
         {
             var jwt = handler.ReadJwtToken(token);
