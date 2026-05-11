@@ -70,13 +70,13 @@ public class ApiService
     {
         return (int)statusCode switch
         {
-            401 => "Bu islem icin once giris yapmaniz gerekiyor.",
-            403 => "Bu islemi yapma yetkiniz yok.",
-            404 => "Aradiginiz kayit bulunamadi.",
-            408 => "Sunucu beklenenden uzun surede cevap verdi. Lutfen tekrar deneyin.",
-            429 => "Cok fazla istek gonderdiniz. Lutfen biraz sonra tekrar deneyin.",
-            >= 500 => "Sunucuda bir sorun olustu. Lutfen daha sonra tekrar deneyin.",
-            _ => "Istek tamamlanamadi. Lutfen tekrar deneyin."
+            401 => "Bu işlem için önce giriş yapmanız gerekiyor.",
+            403 => "Bu işlemi yapma yetkiniz yok.",
+            404 => "Aradığınız kayıt bulunamadı.",
+            408 => "Sunucu beklenenden uzun sürede cevap verdi. Lütfen tekrar deneyin.",
+            429 => "Çok fazla istek gönderdiniz. Lütfen biraz sonra tekrar deneyin.",
+            >= 500 => "Sunucuda bir sorun oluştu. Lütfen daha sonra tekrar deneyin.",
+            _ => "İstek tamamlanamadı. Lütfen tekrar deneyin."
         };
     }
 
