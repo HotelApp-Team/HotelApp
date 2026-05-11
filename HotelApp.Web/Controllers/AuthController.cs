@@ -24,7 +24,7 @@ public class AuthController : Controller
     // Kullanıcı korumalı sayfalara erişmeye çalıştığında buraya yönlendirilir.
     // Sistem onu Login'e yonlendirirken URL'ye ?returnUrl=/Reservations/My ekler.
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Login(string? returnUrl = null)
     {
         // Zaten giriş yapmışsa: ReturnUrl varsa oraya (sadece site içi adresse), yoksa ana sayfaya yönlendir.
         if (HttpContext.Session.IsAuthenticated())
@@ -42,7 +42,12 @@ public class AuthController : Controller
             ViewBag.SuccessMessage = successMessage;
         }
 
-        return View(new LoginViewModel { ReturnUrl = returnUrl });
+        // Form modeline hero istatistikleri de eklenir; sayilar API endpointinden gelir.
+        return View(new LoginViewModel
+        {
+            ReturnUrl = returnUrl,
+            HeroStats = await GetHeroStatsAsync()
+        });
     }
 
     // Login formu gönderildiğinde çalışır.
@@ -53,7 +58,10 @@ public class AuthController : Controller
     {
         // Validation kuralları sağlanmıyorsa formu hata mesajıyla geri gösterir.
         if (!ModelState.IsValid)
+        {
+            model.HeroStats = await GetHeroStatsAsync();
             return View(model);
+        }
 
         // API'ye göndermek için sadece gerekli alanları paketliyoruz.
         // ReturnUrl ilgilendirmez, dışarda bırakıyoruz.
@@ -73,6 +81,7 @@ public class AuthController : Controller
         if (!response.Success)
         {
             ModelState.AddModelError(string.Empty, response.Message);
+            model.HeroStats = await GetHeroStatsAsync();
             return View(model);
         }
 
@@ -95,13 +104,17 @@ public class AuthController : Controller
 
     // Kayıt sayfasını açar.
     [HttpGet]
-    public IActionResult Register()
+    public async Task<IActionResult> Register()
     {
         // Zaten giriş yapmışsa ana sayfaya yönlendir.
         if (HttpContext.Session.IsAuthenticated())
             return RedirectToAction("Index", "Home");
 
-        return View(new RegisterViewModel());
+        // Form modeline hero istatistikleri de eklenir; sayilar API endpointinden gelir.
+        return View(new RegisterViewModel
+        {
+            HeroStats = await GetHeroStatsAsync()
+        });
     }
 
     // Kayıt formu gönderildiğinde çalışır.
@@ -111,7 +124,10 @@ public class AuthController : Controller
     {
         // Validation kuralları sağlanmıyorsa formu hata mesajıyla geri göster.
         if (!ModelState.IsValid)
+        {
+            model.HeroStats = await GetHeroStatsAsync();
             return View(model);
+        }
 
         // API'ye göndermek için sadece backend'in beklediği alanları paketliyoruz.
         // ConfirmPassword UI için var, API'ye gönderilmez.
@@ -131,6 +147,7 @@ public class AuthController : Controller
         if (!response.Success)
         {
             ModelState.AddModelError(string.Empty, response.Message);
+            model.HeroStats = await GetHeroStatsAsync();
             return View(model);
         }
 
@@ -253,6 +270,13 @@ public class AuthController : Controller
         HttpContext.Session.Clear();
         ClearRememberMeCookie();
         return RedirectToAction("Index", "Home");
+    }
+
+    // Auth sayfalarinda gosterilecek otel ve sehir sayilarini API'deki hero-stats endpointinden alir.
+    private async Task<HeroStatsViewModel?> GetHeroStatsAsync()
+    {
+        var response = await _apiService.GetAsync<HeroStatsViewModel>("hotels/hero-stats");
+        return response.Success ? response.Data : null;
     }
 
     // Login cevabındaki JWT tokenı Beni Hatırla seçimine göre güvenli cookie'ye yazar.

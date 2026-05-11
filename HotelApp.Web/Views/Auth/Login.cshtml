@@ -4,58 +4,105 @@
 @{
     @* Tarayici sekmesinde gorunecek baslik (Layout otomatik aliyor). *@
     ViewData["Title"] = "Giriş Yap";
+    ViewData["IsAuthPage"] = true;
+
+    // Hero sayaçlarını ham DB sayısından kullanıcıya güven veren 10'luk ifadeye çevirir.
+    int RoundStatForHero(int count) => count >= 10 ? (count / 10) * 10 : count;
 }
 
-@* Form'u ortalamak icin Bootstrap grid sistemi: 5 sutunluk dar bir kutu. *@
-<div class="row justify-content-center">
-    <div class="col-md-6">
+@* AUTH SPLIT — sol gorsel + sag form. Form alanlari (asp-for, validation, antiforgery) AYNEN korunur. *@
+<section class="auth-split">
+    <div class="auth-card">
 
-        <h1 class="mb-4">Giriş Yap</h1>
-
-        @if (ViewBag.SuccessMessage != null)
-        {
-            <div class="alert alert-success">@ViewBag.SuccessMessage</div>
-        }
-
-        <form asp-action="Login" asp-controller="Auth" method="post">
-            @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
-            @Html.AntiForgeryToken()
-
-            @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-            @* Kullaniciya gorunmeyen alan — geri donus adresini POST'a tasir. *@
-            <input type="hidden" asp-for="ReturnUrl" />
-
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" autocomplete="username" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+        @* SOL: hero gorseli + serif slogan + istatistikler (anasayfa diliyle ayni) *@
+        <aside class="auth-visual">
+            <div class="auth-visual-overlay"></div>
+            <div class="auth-visual-content">
+                <span class="hero-eyebrow">
+                    <span class="hero-dot"></span>
+                    @if (Model.HeroStats is not null)
+                    {
+                        <text>@RoundStatForHero(Model.HeroStats.HotelCount)+ otel · @RoundStatForHero(Model.HeroStats.CityCount)+ şehir · </text>
+                    }
+                    7/24 destek
+                </span>
+                <div class="auth-visual-bottom">
+                    <h2 class="auth-visual-title">Tekrar hoş geldin.<br />Maceran kaldığın yerden devam etsin.</h2>
+                    <div class="auth-stats">
+                        @if (Model.HeroStats is not null)
+                        {
+                            <div class="auth-stat"><b>@RoundStatForHero(Model.HeroStats.HotelCount)+</b><span>otel</span></div>
+                            <div class="auth-stat"><b>@RoundStatForHero(Model.HeroStats.CityCount)+</b><span>şehir</span></div>
+                        }
+                        <div class="auth-stat"><b>4.7★</b><span>memnuniyet</span></div>
+                    </div>
+                </div>
             </div>
+        </aside>
 
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" autocomplete="current-password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+        @* SAG: form *@
+        <div class="auth-form-col">
+            <div class="auth-form-inner">
+
+                <span class="section-eyebrow">Hesabım</span>
+                <h1 class="auth-title">Giriş Yap</h1>
+                <p class="auth-sub">Rezervasyonlarına ve favori otellerine ulaş.</p>
+
+                @if (ViewBag.SuccessMessage != null)
+                {
+                    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+                }
+
+                <form asp-action="Login" asp-controller="Auth" method="post" class="auth-form">
+                    @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
+                    @Html.AntiForgeryToken()
+
+                    @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    @* Kullaniciya gorunmeyen alan — geri donus adresini POST'a tasir. *@
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="mb-3 auth-field">
+                        <label asp-for="Email" class="form-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-envelope auth-input-icon"></i>
+                            <input asp-for="Email" autocomplete="username" class="form-control auth-input" placeholder="ornek@email.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3 auth-field">
+                        <label asp-for="Password" class="form-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-lock auth-input-icon"></i>
+                            <input asp-for="Password" autocomplete="current-password" class="form-control auth-input" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="auth-row-between mb-3">
+                        @* Checkbox icin Bootstrap'in form-check yapisi farkli. *@
+                        <div class="form-check m-0">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-auth">Giriş Yap</button>
+
+                    @* Kayit sayfasina yonlendiren alt link (UX icin guzel). *@
+                    <div class="text-center mt-3 auth-foot">
+                        <span>Hesabın yok mu?</span>
+                        <a asp-action="Register">Kayıt Ol <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </form>
+
             </div>
-
-            @* Checkbox icin Bootstrap'in form-check yapisi farkli. *@
-            <div class="mb-3 form-check">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label asp-for="RememberMe" class="form-check-label"></label>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
-
-            @* Kayit sayfasina yonlendiren alt link (UX icin guzel). *@
-            <div class="text-center mt-3">
-                <span>Hesabın yok mu?</span>
-                <a asp-action="Register">Kayıt Ol</a>
-            </div>
-        </form>
+        </div>
 
     </div>
-</div>
+</section>
 
 @* Validation'in tarayicida da (sen submit'e basmadan) calismasi icin gerekli. *@
 @section Scripts {
