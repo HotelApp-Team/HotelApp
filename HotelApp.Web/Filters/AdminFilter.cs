@@ -1,8 +1,6 @@
 using HotelApp.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace HotelApp.Web.Filters;
 
@@ -12,32 +10,39 @@ namespace HotelApp.Web.Filters;
 
 public class AdminFilter : ActionFilterAttribute
 {
+    private readonly IConfiguration _configuration;
+
+    // IConfiguration JWT imza/issuer/audience dogrulamasini IsAuthenticated/IsInRole icine tasiyabilmek icin.
+    // Aksi halde filter sadece payload claim'lerine bakar ve sahte imzali Admin claim'ini kabul ederdi.
+    public AdminFilter(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        // Admin sayfasına girmeden önce kullanıcının gerçekten giriş yapmış olup olmadığını kontrol eder.
-        // Token yoksa, bozuksa veya süresi dolmuşsa IsAuthenticated() session bilgilerini temizleyip false döner.
-        if (!context.HttpContext.Session.IsAuthenticated())
+        // IsAuthenticated artik imza + issuer + audience + sure kontrolu yapiyor.
+        // Gecersizse session temizlenir ve Login'e yonlendirilir.
+        if (!context.HttpContext.Session.IsAuthenticated(_configuration))
         {
             context.Result = new RedirectToActionResult("Login", "Auth", null);
             return;
         }
 
-        // Auth kontrolu IsAuthenticated() icinde yapildi.
-        // Burada sadece token icindeki role bilgisini okuyup Admin yetkisini kontrol ediyoruz.
-        var token = context.HttpContext.Session.GetString("JWToken")!;
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(token);
-
-        // Token icindeki role bilgisini oku ve Admin degilse ana sayfaya gonder.
-        var roles = jwt.Claims
-            .Where(c => c.Type == ClaimTypes.Role || c.Type == "role")
-            .Select(c => c.Value);
-
-        if (!roles.Contains("Admin"))
+        // IsInRole de IsAuthenticated(configuration) cagirir; signature dogrulanmamis token Admin claim'i tasisa bile kabul edilmez.
+        if (!context.HttpContext.Session.IsInRole(_configuration, "Admin"))
         {
+            // Sessiz redirect yerine kullaniciya neden Home'a dustugunu kisa bir mesajla bildiriyoruz.
+            // Controller.TempData session uzerinden bir sonraki request'te _Layout'taki Error alert'inde gosterilir.
+            if (context.Controller is Controller ctrl)
+            {
+                ctrl.TempData["Error"] = "Bu sayfaya erisim yetkiniz yok.";
+            }
+
             context.Result = new RedirectToActionResult("Index", "Home", null);
             return;
         }
+
         base.OnActionExecuting(context);
     }
 }

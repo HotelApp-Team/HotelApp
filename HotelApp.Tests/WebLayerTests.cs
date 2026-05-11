@@ -2,6 +2,7 @@ using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -209,7 +210,17 @@ public class WebLayerTests
         };
         var apiService = new ApiService(httpClient, accessor);
 
-        return new WebAuthController(apiService)
+        // S5-02 sonrasi AuthController ctor IConfiguration alir (IsAuthenticated icin Jwt:* gerekli).
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:SecretKey"] = "BuCokGizliBirAnahtarOlmaliEnAz32Karakter12345",
+                ["Jwt:Issuer"] = "HotelApp.API",
+                ["Jwt:Audience"] = "HotelApp.Client"
+            })
+            .Build();
+
+        return new WebAuthController(apiService, configuration)
         {
             ControllerContext = new ControllerContext
             {

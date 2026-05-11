@@ -39,28 +39,45 @@ public class ApiService
         }
     }
 
-    // API basarisiz dondugunde body icindeki hata mesajini okumaya calisir.
-    // Standart message alani yoksa genel bir mesaj dondurur.
+    // API basarisiz dondugunde once body icindeki standart hata mesajini okur.
+    // Body yoksa veya parse edilemezse status code'a gore kullanici dostu Turkce mesaj uretir.
+    // Boylece "Durum kodu: 401" gibi teknik metinler kullaniciya gosterilmez.
     private async Task<string> GetErrorMessageAsync(HttpResponseMessage response)
     {
         var json = await response.Content.ReadAsStringAsync();
 
-        if (string.IsNullOrWhiteSpace(json))
-            return $"Istek basarisiz oldu. Durum kodu: {(int)response.StatusCode}";
-
-        try
+        if (!string.IsNullOrWhiteSpace(json))
         {
-            var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(json, _jsonOptions);
+            try
+            {
+                var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(json, _jsonOptions);
 
-            if (!string.IsNullOrWhiteSpace(errorResponse?.Message))
-                return errorResponse.Message;
+                if (!string.IsNullOrWhiteSpace(errorResponse?.Message))
+                    return errorResponse.Message;
+            }
+            catch (JsonException)
+            {
+                // Hata cevabi bizim standart modelimize uymuyorsa asagidaki status mesajina dusulur.
+            }
         }
-        catch (JsonException)
+
+        return GetFriendlyStatusMessage(response.StatusCode);
+    }
+
+    // Status code'a karsilik kullaniciya gosterilecek nazik metni doner.
+    // 401/403 ozellikle teknik gozukmesin diye Trello S5-02 kapsaminda buraya tasindi.
+    private static string GetFriendlyStatusMessage(System.Net.HttpStatusCode statusCode)
+    {
+        return (int)statusCode switch
         {
-            // Hata cevabi bizim standart modelimize uymuyorsa genel mesaj verecegiz.
-        }
-
-        return $"Istek basarisiz oldu. Durum kodu: {(int)response.StatusCode}";
+            401 => "Bu islem icin once giris yapmaniz gerekiyor.",
+            403 => "Bu islemi yapma yetkiniz yok.",
+            404 => "Aradiginiz kayit bulunamadi.",
+            408 => "Sunucu beklenenden uzun surede cevap verdi. Lutfen tekrar deneyin.",
+            429 => "Cok fazla istek gonderdiniz. Lutfen biraz sonra tekrar deneyin.",
+            >= 500 => "Sunucuda bir sorun olustu. Lutfen daha sonra tekrar deneyin.",
+            _ => "Istek tamamlanamadi. Lutfen tekrar deneyin."
+        };
     }
 
     // Ortak basarili response nesnesi olusturur.

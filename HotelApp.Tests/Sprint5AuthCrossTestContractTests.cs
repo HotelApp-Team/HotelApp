@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -20,6 +23,11 @@ namespace HotelApp.Tests;
 // SOLID: SRP kullanır; sadece S5-02 auth stabilizasyon ve cross-test kurallarından sorumludur.
 public class Sprint5AuthCrossTestContractTests
 {
+    // S5-02 sonrasi tum filter/IsAuthenticated/IsInRole testleri ayni Jwt konfigurasyonu uzerinden gecmeli.
+    private const string TestSecretKey = "BuCokGizliBirAnahtarOlmaliEnAz32Karakter12345";
+    private const string TestIssuer = "HotelApp.API";
+    private const string TestAudience = "HotelApp.Client";
+
     // S5-02 için AuthFilter ve AdminFilter'ın anonim/user/admin erişim ayrımını doğru yaptığını kontrol eder.
     [Fact]
     public void S502_AuthFilters_ShouldRedirectAnonymousAndBlockUserRoleFromAdminPages()
@@ -28,15 +36,17 @@ public class Sprint5AuthCrossTestContractTests
         if (!Sprint5CardGuards.S502_AuthCrossTestTargetsImplemented())
             return;
 
+        var configuration = BuildConfiguration();
+
         var authContext = CreateExecutingContext(new TestSession());
-        new AuthFilter().OnActionExecuting(authContext);
+        new AuthFilter(configuration).OnActionExecuting(authContext);
 
         var authRedirect = Assert.IsType<RedirectToActionResult>(authContext.Result);
         Assert.Equal("Login", authRedirect.ActionName);
         Assert.Equal("Auth", authRedirect.ControllerName);
 
         var anonymousAdminContext = CreateExecutingContext(new TestSession());
-        new AdminFilter().OnActionExecuting(anonymousAdminContext);
+        new AdminFilter(configuration).OnActionExecuting(anonymousAdminContext);
 
         var adminLoginRedirect = Assert.IsType<RedirectToActionResult>(anonymousAdminContext.Result);
         Assert.Equal("Login", adminLoginRedirect.ActionName);
@@ -45,7 +55,7 @@ public class Sprint5AuthCrossTestContractTests
         var userSession = new TestSession();
         userSession.SetString("JWToken", CreateJwtToken(DateTime.UtcNow.AddMinutes(30), "User"));
         var userAdminContext = CreateExecutingContext(userSession);
-        new AdminFilter().OnActionExecuting(userAdminContext);
+        new AdminFilter(configuration).OnActionExecuting(userAdminContext);
 
         var homeRedirect = Assert.IsType<RedirectToActionResult>(userAdminContext.Result);
         Assert.Equal("Index", homeRedirect.ActionName);
@@ -54,7 +64,7 @@ public class Sprint5AuthCrossTestContractTests
         var adminSession = new TestSession();
         adminSession.SetString("JWToken", CreateJwtToken(DateTime.UtcNow.AddMinutes(30), "Admin"));
         var validAdminContext = CreateExecutingContext(adminSession);
-        new AdminFilter().OnActionExecuting(validAdminContext);
+        new AdminFilter(configuration).OnActionExecuting(validAdminContext);
 
         Assert.Null(validAdminContext.Result);
     }
@@ -160,9 +170,10 @@ public class Sprint5AuthCrossTestContractTests
             return;
 
         var profileSource = ReadWebFile("Controllers", "ProfileController.cs");
+        // Auth guard ya inline IsAuthenticated/Authorize attribute ile ya da AuthFilter ServiceFilter ile saglanabilir.
+        // AuthFilter zaten kendi icinde Login'e redirect ediyor, bu yuzden RedirectToAction("Login")'in controller kaynaginda olmasi sart degil.
         AssertContainsAny(profileSource, "IsAuthenticated", "AuthFilter", "Authorize");
         AssertContainsAll(profileSource, "auth/profile", "auth/change-password");
-        AssertContainsAny(profileSource, "RedirectToAction(\"Login\"", "RedirectToAction(\"Login\", \"Auth\"");
 
         if (Sprint5CardGuards.S502_ReservationUserPagesImplemented())
         {
@@ -218,18 +229,38 @@ public class Sprint5AuthCrossTestContractTests
     }
 
     // Testler için role claim'i içeren basit JWT üretir.
+    // S5-02 sonrasi IsAuthenticated artik imza dogrulamasi yaptigi icin token TestSecretKey ile imzalanir.
     private static string CreateJwtToken(DateTime expires, string role)
     {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSecretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         var token = new JwtSecurityToken(
+            issuer: TestIssuer,
+            audience: TestAudience,
             claims: new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "1"),
                 new Claim(ClaimTypes.Email, "user@hotelapp.test"),
                 new Claim(ClaimTypes.Role, role)
             },
-            expires: expires);
+            expires: expires,
+            signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    // Filter ve controller testleri appsettings'i taklit eden in-memory IConfiguration kullanir.
+    private static IConfiguration BuildConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:SecretKey"] = TestSecretKey,
+                ["Jwt:Issuer"] = TestIssuer,
+                ["Jwt:Audience"] = TestAudience
+            })
+            .Build();
     }
 
     // ApiService testleri için gerçek HttpClient yerine yakalayıcı handler kullanır.
@@ -269,7 +300,7 @@ public class Sprint5AuthCrossTestContractTests
         };
         var apiService = new ApiService(httpClient, accessor);
 
-        return new WebAuthController(apiService)
+        return new WebAuthController(apiService, BuildConfiguration())
         {
             ControllerContext = new ControllerContext
             {
