@@ -10,9 +10,18 @@ namespace HotelApp.Web.Filters;
 
 public class AuthFilter : ActionFilterAttribute
 {
+    private readonly IConfiguration _configuration;
+
+    // IConfiguration JWT imza/issuer/audience parametrelerini IsAuthenticated icine tasimak icin gerekli.
+    // Bu olmadan filter sadece token suresine bakardi ve imzasi sahte tokenlari kabul ederdi.
+    public AuthFilter(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        if (!context.HttpContext.Session.IsAuthenticated())
+        if (!context.HttpContext.Session.IsAuthenticated(_configuration))
         {
             context.Result = new RedirectToActionResult("Login", "Auth", null);
             return;

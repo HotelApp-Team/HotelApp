@@ -1,10 +1,11 @@
 @using HotelApp.Web.Helpers
+@inject IConfiguration Configuration
 @{
-    // Oturum helper'ı token geçerliliğini kontrol eder; navbar kararını buna göre verir.
+    // Oturum helper'ı token geçerliliğini imza + issuer + audience + sure ile dogrular.
     var fullName = Context.Session.GetString("UserFullName");
-    var isLoggedIn = Context.Session.IsAuthenticated();
-    // IsInRole token icindeki rol claim'lerine bakar; sadece admin'lere ozel link gosterimi icin.
-    var isAdmin = isLoggedIn && Context.Session.IsInRole("Admin");
+    var isLoggedIn = Context.Session.IsAuthenticated(Configuration);
+    // IsInRole de ayni configuration ile signature kontrolu yapan IsAuthenticated'i cagirir.
+    var isAdmin = isLoggedIn && Context.Session.IsInRole(Configuration, "Admin");
 }
 <ul class="navbar-nav">
     @if (isLoggedIn)

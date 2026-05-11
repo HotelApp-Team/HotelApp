@@ -1,4 +1,4 @@
-using HotelApp.Web.Helpers;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +8,9 @@ namespace HotelApp.Web.Controllers;
 // ProfileController sınıfının amacı, web tarafındaki kullanıcı profil ekranını yönetmektir.
 // Profil görüntüleme, profil güncelleme ve şifre değiştirme formu için sayfa modelini API ile konuşturur.
 // SOLID: SRP kullanır; sadece profil sayfası akışlarından sorumludur.
+// AuthFilter class seviyesinde tutulur ki Index, UpdateProfile, ChangePassword aksiyonlarinin hepsi otomatik korunsun.
+// Boylece her aksiyonda manuel Session.IsAuthenticated() tekrari kalmaz; ReservationsController ile ayni pattern.
+[ServiceFilter(typeof(AuthFilter))]
 public class ProfileController : Controller
 {
     private readonly ApiService _apiService;
@@ -22,10 +25,6 @@ public class ProfileController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        // Kullanıcı giriş yapmış mı kontrol eder.
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         // API'den giriş yapan kullanıcının profil bilgilerini çeker.
         var response = await _apiService.GetAsync<UserResponse>("auth/profile");
 
@@ -59,10 +58,6 @@ public class ProfileController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile([Bind(Prefix = "Profile")] ProfileViewModel model)
     {
-        // Kullanıcı giriş yapmış mı kontrol eder.
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         // Form validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
         if (!ModelState.IsValid)
         {
@@ -107,10 +102,6 @@ public class ProfileController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword([Bind(Prefix = "ChangePassword")] ChangePasswordViewModel model)
     {
-        // Kullanıcı giriş yapmış mı kontrol eder.
-        if (!HttpContext.Session.IsAuthenticated())
-            return RedirectToAction("Login", "Auth");
-
         // Şifre formu validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
         if (!ModelState.IsValid)
         {
