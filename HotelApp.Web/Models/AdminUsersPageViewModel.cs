@@ -10,5 +10,8 @@ public class AdminUsersPageViewModel
     public int CurrentPage { get; set; } = 1;
     public int PageSize { get; set; } = 10;
     public int TotalCount { get; set; }
+    public int ActiveCount { get; set; }
+    public int PassiveCount { get; set; }
+    public int AdminCount { get; set; }
     public List<AdminUserViewModel> Users { get; set; } = new();
 }

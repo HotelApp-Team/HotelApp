@@ -61,6 +61,25 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
+    // Hero istatistigi icin aktif otel sayisini sadece COUNT sorgusu ile hesaplar.
+    public async Task<int> GetActiveHotelCountAsync()
+    {
+        return await _context.Hotels
+            .AsNoTracking()
+            .CountAsync(x => x.IsActive);
+    }
+
+    // Hero istatistigi icin aktif otellerin bulundugu farkli sehir sayisini hesaplar.
+    public async Task<int> GetActiveCityCountAsync()
+    {
+        return await _context.Hotels
+            .AsNoTracking()
+            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
+            .Select(x => x.City.Trim())
+            .Distinct()
+            .CountAsync();
+    }
+
     // Anasayfa sehir kartlari icin gruplama ve siralama sorgusunu DB tarafinda yapar.
     public async Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count)
     {

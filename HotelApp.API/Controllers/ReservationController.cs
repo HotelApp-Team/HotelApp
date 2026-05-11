@@ -68,7 +68,7 @@ namespace HotelApp.API.Controllers
                 return Forbid();
 
             await LogInfoAsync(
-                $"Rezervasyon faturası görüntülendi: ReservationId={id}",
+                $"Rezervasyon faturası görüntülendi: ReservationId:{id}",
                 userId: userId);
 
             return Ok(reservation);
@@ -83,7 +83,7 @@ namespace HotelApp.API.Controllers
             var reservation = await _reservationService.CreateReservationAsync(userId, dto);
 
             await LogInfoAsync(
-                $"Yeni rezervasyon oluşturuldu: ReservationId={reservation.Id}, HotelName={reservation.HotelName}, HotelRoomId={reservation.HotelRoomId}",
+                $"Yeni rezervasyon oluşturuldu: ReservationId:{reservation.Id}, HotelName:{reservation.HotelName}, HotelRoomId:{reservation.HotelRoomId}",
                 userId: userId);
 
             return CreatedAtAction(nameof(GetById), new { id = reservation.Id }, reservation);

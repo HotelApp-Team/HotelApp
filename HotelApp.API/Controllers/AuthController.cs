@@ -66,7 +66,7 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginAsync(userLoginDto);
 
         await LogInfoAsync(
-            $"Kullanıcı giriş yaptı. RememberMe: {(userLoginDto.RememberMe ? "Evet" : "Hayır")}",
+            $"Kullanıcı giriş yaptı.",
             userEmail: result.Email);
 
         return Ok(result);
@@ -189,7 +189,7 @@ public class AuthController : ControllerBase
         var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
 
         await LogInfoAsync(
-            $"Kullanıcı şifresini değiştirdi: UserId={userId}",
+            $"Kullanıcı şifresini değiştirdi: UserId:{userId}",
             userId: userId,
             userEmail: userEmail);
 

@@ -1,16 +1,27 @@
 @model HotelApp.Web.Models.AdminDashboardViewModel
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Yönetici Paneli";
     Layout = "_AdminLayout";
     var trCulture = new System.Globalization.CultureInfo("tr-TR");
+
+    // Rezervasyon durumunu kullanıcıya Türkçe gösterir.
+    string GetReservationStatusText(string? status) => status switch
+    {
+        "Confirmed" => "Onaylandı",
+        "Cancelled" => "İptal Edildi",
+        "Completed" => "Tamamlandı",
+        "Pending" => "Beklemede",
+        "Rejected" => "Reddedildi",
+        _ => string.IsNullOrWhiteSpace(status) ? "-" : status
+    };
 }
 
-<div class="container py-4">
+<div class="accordion-flush py-4">
 
     <div class="d-flex align-items-center mb-4">
         <h2 class="mb-0">
             <i class="bi bi-speedometer2 text-primary me-2"></i>
-            Admin Dashboard
+            Yönetici Paneli
         </h2>
     </div>
 
@@ -29,7 +40,7 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small mb-1">Toplam Kullanici</div>
+                    <div class="text-muted small mb-1">Toplam Kullanıcı</div>
                     <div class="h3 mb-0 fw-bold">@Model.TotalUsers</div>
                 </div>
             </div>
@@ -97,8 +108,8 @@
                                 <th>#</th>
                                 <th>Otel</th>
                                 <th>Misafir</th>
-                                <th>Giris</th>
-                                <th>Cikis</th>
+                                <th>Giriş</th>
+                                <th>Çıkış</th>
                                 <th>Durum</th>
                                 <th class="text-end">Tutar</th>
                             </tr>
@@ -124,7 +135,7 @@
                                                 _ => "bg-warning text-dark"
                                             };
                                         }
-                                        <span class="badge @badgeClass">@(item.Status ?? "-")</span>
+                                        <span class="badge @badgeClass">@GetReservationStatusText(item.Status)</span>
                                     </td>
                                     <td class="text-end fw-semibold">
                                         @item.TotalPrice.ToString("C", trCulture)
@@ -139,7 +150,7 @@
             {
                 <div class="text-center text-muted py-4">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                    Henuz rezervasyon yok.
+                    Henüz rezervasyon yok.
                 </div>
             }
 

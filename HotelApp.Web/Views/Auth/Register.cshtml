@@ -4,70 +4,130 @@
 @{
     @* Tarayici sekmesinde gorunecek baslik (Layout otomatik aliyor). *@
     ViewData["Title"] = "Kayıt Ol";
+    ViewData["IsAuthPage"] = true;
+
+    // Hero sayaçlarını ham DB sayısından kullanıcıya güven veren 10'luk ifadeye çevirir.
+    int RoundStatForHero(int count) => count >= 10 ? (count / 10) * 10 : count;
 }
 
-@* Form'u ortalamak icin Bootstrap grid sistemi: 5 sutunluk dar bir kutu. *@
-<div class="row justify-content-center">
-    <div class="col-md-6">
+@* AUTH SPLIT — sol gorsel + sag form. Form alanlari (asp-for, validation, antiforgery) AYNEN korunur. *@
+<section class="auth-split auth-register-page">
+    <div class="auth-card">
 
-        <h1 class="mb-4">Kayıt Ol</h1>
-
-        <form asp-action="Register" asp-controller="Auth" method="post">
-            @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
-            @Html.AntiForgeryToken()
-
-            @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label asp-for="FirstName" class="form-label"></label>
-                    <input asp-for="FirstName" autocomplete="given-name" class="form-control" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
+        @* SOL: hero gorseli + serif slogan + istatistikler (anasayfa diliyle ayni) *@
+        <aside class="auth-visual">
+            <div class="auth-visual-overlay"></div>
+            <div class="auth-visual-content">
+                <span class="hero-eyebrow">
+                    <span class="hero-dot"></span>
+                    @if (Model.HeroStats is not null)
+                    {
+                        <text>@RoundStatForHero(Model.HeroStats.HotelCount)+ otel · @RoundStatForHero(Model.HeroStats.CityCount)+ şehir · </text>
+                    }
+                    7/24 destek
+                </span>
+                <div class="auth-visual-bottom">
+                    <h2 class="auth-visual-title">Aramıza katıl.<br />3000+ misafirin tercih ettiği platform.</h2>
+                    <div class="auth-stats">
+                        @if (Model.HeroStats is not null)
+                        {
+                            <div class="auth-stat"><b>@RoundStatForHero(Model.HeroStats.HotelCount)+</b><span>otel</span></div>
+                            <div class="auth-stat"><b>@RoundStatForHero(Model.HeroStats.CityCount)+</b><span>şehir</span></div>
+                        }
+                        <div class="auth-stat"><b>4.7★</b><span>memnuniyet</span></div>
+                    </div>
                 </div>
-
-                <div class="col-6 mb-3">
-                    <label asp-for="LastName" class="form-label"></label>
-                    <input asp-for="LastName" autocomplete="family-name" class="form-control" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
             </div>
+        </aside>
 
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" autocomplete="email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+        @* SAG: form *@
+        <div class="auth-form-col">
+            <div class="auth-form-inner">
+
+                <span class="section-eyebrow">Yeni Hesap</span>
+                <h1 class="auth-title">Kayıt Ol</h1>
+                <p class="auth-sub">30 saniyede üye ol; rezervasyon, favori şehirler ve geçmiş konaklamalar tek panelde.</p>
+
+                <form asp-action="Register" asp-controller="Auth" method="post" class="auth-form">
+                    @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
+                    @Html.AntiForgeryToken()
+
+                    @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3 auth-field">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <div class="auth-input-wrap">
+                                <i class="bi bi-person auth-input-icon"></i>
+                                <input asp-for="FirstName" autocomplete="given-name" class="form-control auth-input" placeholder="Adınız" />
+                            </div>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-6 mb-3 auth-field">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <div class="auth-input-wrap">
+                                <i class="bi bi-person auth-input-icon"></i>
+                                <input asp-for="LastName" autocomplete="family-name" class="form-control auth-input" placeholder="Soyadınız" />
+                            </div>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 auth-field">
+                        <label asp-for="Email" class="form-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-envelope auth-input-icon"></i>
+                            <input asp-for="Email" autocomplete="email" class="form-control auth-input" placeholder="ornek@email.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3 auth-field">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-telephone auth-input-icon"></i>
+                            <input asp-for="Phone" autocomplete="tel" class="form-control auth-input" placeholder="+90 5xx xxx xx xx" />
+                        </div>
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3 auth-field">
+                            <label asp-for="Password" class="form-label"></label>
+                            <div class="auth-input-wrap">
+                                <i class="bi bi-lock auth-input-icon"></i>
+                                @* Guvenlik: Password input'larina value verilmez (DOM'da plaintext sifre gozukmesin diye). *@
+                                <input asp-for="Password" autocomplete="new-password" class="form-control auth-input" placeholder="••••••••" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-6 mb-3 auth-field">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <div class="auth-input-wrap">
+                                <i class="bi bi-lock-fill auth-input-icon"></i>
+                                <input asp-for="ConfirmPassword" autocomplete="new-password" class="form-control auth-input" placeholder="••••••••" />
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-auth">Kayıt Ol</button>
+
+                    @* Giris sayfasina yonlendiren alt link (UX icin guzel). *@
+                    <div class="text-center mt-3 auth-foot">
+                        <span>Hesabın var mı?</span>
+                        <a asp-action="Login">Giriş Yap <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </form>
+
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Phone" class="form-label"></label>
-                <input asp-for="Phone" autocomplete="tel" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                @* Guvenlik: Password input'larina value verilmez (DOM'da plaintext sifre gozukmesin diye). *@
-                <input asp-for="Password" autocomplete="new-password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" autocomplete="new-password" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Kayıt Ol</button>
-
-            @* Kayit sayfasina yonlendiren alt link (UX icin guzel). *@
-            <div class="text-center mt-3">
-                <span>Hesabın var mı?</span>
-                <a asp-action="Login">Giriş Yap</a>
-            </div>
-        </form>
     </div>
-</div>
+</section>
 
 @* Validation'in tarayicida da (sen submit'e basmadan) calismasi icin gerekli. *@
 @section Scripts {

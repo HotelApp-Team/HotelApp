@@ -41,7 +41,7 @@ public class AdminUserMgmtController : Controller
             .Where(x => !string.IsNullOrWhiteSpace(x.Value))
             .Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value!)}"));
 
-        var response = await _apiService.GetAsync<PagedResponseViewModel<AdminUserViewModel>>(query);
+        var response = await _apiService.GetAsync<AdminUsersResponseViewModel>(query);
 
         // Filtre değerlerini tekrar view model'e koyar; sayfa yenilenince seçimler kaybolmaz.
         var model = new AdminUsersPageViewModel
@@ -59,8 +59,11 @@ public class AdminUserMgmtController : Controller
             return View(model);
         }
 
-        // API'den gelen sayfalı kullanıcı sonucunu view model'e mapler.
+        // API'den gelen sayfalı kullanıcı sonucunu ve özet sayaçları view model'e mapler.
         model.TotalCount = response.Data?.TotalCount ?? 0;
+        model.ActiveCount = response.Data?.ActiveCount ?? 0;
+        model.PassiveCount = response.Data?.PassiveCount ?? 0;
+        model.AdminCount = response.Data?.AdminCount ?? 0;
         model.Users = response.Data?.Data ?? new();
 
         return View(model);
