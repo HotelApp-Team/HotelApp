@@ -19,5 +19,9 @@ namespace HotelApp.Domain.Interfaces
             int guestCount,
             string paymentMethod);
         Task<IEnumerable<VwReservationDetail>> GetReservationDetailsByUserIdAsync(int userId);
+
+        // Check-out tarihi gecmis Confirmed rezervasyonlari tek SQL UPDATE'i ile Completed yapar.
+        // Donus: etkilenen kayit sayisi. Periyodik calistirma icin Background Service tarafindan cagrilir.
+        Task<int> MarkPastConfirmedAsCompletedAsync();
     }
 }

@@ -107,5 +107,18 @@ namespace HotelApp.Infrastructure.Repositories
 
             return reservation;
         }
+
+        // Check-out tarihi bugunden onceki "Confirmed" rezervasyonlari tek SQL UPDATE'i ile "Completed" yapar.
+        // ExecuteUpdateAsync entity'leri belege yuklemeden direkt UPDATE calistirir; binlerce kayit icin de hizli.
+        // Donus: SQL'in etkiledigi satir sayisi.
+        public async Task<int> MarkPastConfirmedAsCompletedAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            return await _dbSet
+                .Where(r => r.Status == "Confirmed" && r.CheckOutDate < today)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(r => r.Status, "Completed"));
+        }
     }
 }

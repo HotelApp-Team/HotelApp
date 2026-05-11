@@ -14,5 +14,9 @@ namespace HotelApp.Domain.Services
         Task<ReservationDto?> GetReservationByIdAsync(int id);
         Task<ReservationDto> CreateReservationAsync(int userId, CreateReservationDto dto);
         Task CancelReservationAsync(int id, int userId, bool isAdmin);
+
+        // Check-out tarihi gecmis Confirmed rezervasyonlari Completed durumuna gecirir.
+        // Donus: guncellenen kayit sayisi. Background Service tarafindan periyodik cagrilir.
+        Task<int> MarkPastReservationsCompletedAsync();
     }
 }
