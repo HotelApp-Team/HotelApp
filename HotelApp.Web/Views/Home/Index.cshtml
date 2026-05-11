@@ -18,14 +18,23 @@
         "Antep" => "Gaziantep",
         _ => cityName
     };
+
+    // Hero sayaçlarını ham DB sayısından kullanıcıya güven veren 10'luk ifadeye çevirir.
+    int RoundStatForHero(int count) => count >= 10 ? (count / 10) * 10 : count;
 }
+
+
 
 <!-- HERO -->
 <section class="hero">
     <div class="hero-content text-center text-white">
         <span class="hero-eyebrow">
             <span class="hero-dot"></span>
-            120+ otel · 30+ şehir · 7/24 destek
+            @if (Model.HeroStats is not null)
+            {
+                <text>@RoundStatForHero(Model.HeroStats.HotelCount)+ otel · @RoundStatForHero(Model.HeroStats.CityCount)+ şehir · </text>
+            }
+            7/24 destek
         </span>
         <h1 class="hero-title">Mükemmel oteli bul</h1>
         <p class="hero-subtitle">Türkiye'nin her köşesindeki kaliteli otelleri tek bir yerde keşfet.</p>
