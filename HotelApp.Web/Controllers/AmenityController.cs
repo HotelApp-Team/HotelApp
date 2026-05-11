@@ -1,4 +1,5 @@
-﻿using HotelApp.Web.Helpers;
+﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelApp.Web.Controllers;
 
 [Route("Admin/Amenities")]
+[ServiceFilter(typeof(AdminFilter))]
 public class AmenityController : Controller
 {
     private readonly ApiService _apiService;

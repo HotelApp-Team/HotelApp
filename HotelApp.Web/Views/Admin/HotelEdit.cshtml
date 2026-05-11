@@ -24,7 +24,6 @@
       asp-controller="HotelMgmt"
       asp-action="@(Model.Id > 0 ? "Edit" : "Create")"
       asp-route-id="@Model.Id">
-    @Html.AntiForgeryToken()
     <input asp-for="Id" type="hidden" />
 
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -112,7 +111,6 @@
           asp-route-hotelId="@Model.Id"
           method="post"
           class="row g-3 mb-4">
-        @Html.AntiForgeryToken()
 
         <div class="col-md-6">
             <label class="form-label">Görsel URL</label>
@@ -162,8 +160,6 @@
                                           method="post"
                                           class="row g-2 align-items-center">
 
-                                        @Html.AntiForgeryToken()
-
                                         <div class="col-md-5">
                                             <input name="ImageUrl"
                                                    value="@image.ImageUrl"
@@ -210,7 +206,6 @@
                                           method="post"
                                           onsubmit="return confirm('Görsel silinsin mi?');">
 
-                                        @Html.AntiForgeryToken()
 
                                         <button type="submit"
                                                 class="btn btn-sm btn-danger">
@@ -241,7 +236,6 @@
           asp-action="AssignAmenities"
           asp-route-hotelId="@Model.Id"
           method="post">
-        @Html.AntiForgeryToken()
 
         <div class="row g-2">
             @if (Model.AllAmenities.Any())
@@ -287,8 +281,6 @@
                       method="post"
                       class="d-inline-block me-2 mb-2"
                       onsubmit="return confirm('Bu olanak kaldırılsın mı?');">
-
-                    @Html.AntiForgeryToken()
 
                     <button type="submit"
                             class="btn btn-sm btn-outline-danger">

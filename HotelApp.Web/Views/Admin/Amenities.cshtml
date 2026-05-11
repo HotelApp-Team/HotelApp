@@ -27,7 +27,6 @@
     <h4 class="mb-3">Yeni Olanak Ekle</h4>
 
     <form asp-controller="Amenity" asp-action="Create" method="post" class="row g-3">
-        @Html.AntiForgeryToken()
 
         <div class="col-md-5">
             <label asp-for="CreateForm.Name" class="form-label">Olanak Adı</label>
@@ -72,7 +71,6 @@
                                       asp-route-id="@amenity.Id"
                                       method="post"
                                       class="row g-2 justify-content-end">
-                                    @Html.AntiForgeryToken()
 
                                     <div class="col-md-4">
                                         <input name="Name" value="@amenity.Name" class="form-control form-control-sm" />
@@ -92,7 +90,6 @@
                                       asp-route-id="@amenity.Id"
                                       method="post"
                                       onsubmit="return confirm('Bu olanak silinsin mi?');">
-                                    @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-sm btn-danger">Sil</button>
                                 </form>
                             </div>
