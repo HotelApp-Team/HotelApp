@@ -1,3 +1,4 @@
+using HotelApp.API.BackgroundServices;
 using HotelApp.API.Middleware;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
@@ -71,6 +72,10 @@ builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+
+// Hosted (background) service'ler: hosting katmaninda calisir, scoped service'leri scope factory ile cagirir.
+// ReservationCompletionWorker: check-out gecmis Confirmed rezervasyonlari saatlik tarayip Completed yapar.
+builder.Services.AddHostedService<ReservationCompletionWorker>();
 
 // Yardimci service kayitlari
 builder.Services.AddScoped<IJwtService>(sp =>
