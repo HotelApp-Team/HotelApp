@@ -15,6 +15,12 @@ public interface IHotelRepository : IRepository<Hotel>
     Task<IEnumerable<Hotel>> GetActiveAsync();
     Task<List<string>> GetActiveCitiesAsync();
 
+    // Anasayfa hero alaninda gosterilecek aktif otel sayisini DB tarafinda hesaplar.
+    Task<int> GetActiveHotelCountAsync();
+
+    // Anasayfa hero alaninda gosterilecek aktif sehir sayisini DB tarafinda hesaplar.
+    Task<int> GetActiveCityCountAsync();
+
     // Anasayfa vitrinindeki sehir kartlari icin DB tarafinda gruplanmis veriyi getirir.
     Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count);
 

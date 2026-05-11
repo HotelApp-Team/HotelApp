@@ -51,8 +51,8 @@ public class AdminService : IAdminService
         };
     }
 
-    // E37 için admin kullanıcı listesini hazırlar ve güvenli DTO olarak döndürür.
-    public async Task<PagedResponseDto<AdminUserDto>> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
+    // E37 için admin kullanıcı listesini hazırlar ve özet sayaçlarla birlikte güvenli DTO olarak döndürür.
+    public async Task<AdminUsersResponseDto> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
     {
         // Sayfalama değerleri hatalıysa DB sorgusuna gitmeden durduruyoruz.
         ValidatePaging(page, pageSize);
@@ -60,10 +60,16 @@ public class AdminService : IAdminService
         // Kullanıcıları filtrelenmiş ve sayfalanmış şekilde AdminRepository'den alıyoruz.
         var (users, totalCount) = await _unitOfWork.AdminRepository.GetPagedUsersForAdminAsync(search, isActive, page, pageSize);
 
+        // Özet kartları sayfadaki 10 kayıt yerine toplam kullanıcı havuzuna göre hesaplanır.
+        var (activeCount, passiveCount, adminCount) = await _unitOfWork.AdminRepository.GetUserSummaryForAdminAsync(search);
+
         // Entity listesini dışarıya açılacak güvenli DTO listesine çeviriyoruz.
-        return new PagedResponseDto<AdminUserDto>
+        return new AdminUsersResponseDto
         {
             TotalCount = totalCount,
+            ActiveCount = activeCount,
+            PassiveCount = passiveCount,
+            AdminCount = adminCount,
             Page = page,
             PageSize = pageSize,
             Data = users.Select(MapToAdminUserDto).ToList()

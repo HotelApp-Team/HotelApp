@@ -37,12 +37,12 @@ public class AdminController : ControllerBase
 
     // E37 - GET api/admin/users : Admin paneli için kullanıcı listesini getirir.
     [HttpGet("users")]
-    public async Task<ActionResult> GetUsersForAdminAsync(string? search = null, bool? isActive = null, int page = 1, int pageSize = 10)
+    public async Task<ActionResult<AdminUsersResponseDto>> GetUsersForAdminAsync(string? search = null, bool? isActive = null, int page = 1, int pageSize = 10)
     {
         // Filtre ve sayfalama bilgilerini AdminService katmanına gönderiyoruz.
         var result = await _adminService.GetUsersForAdminAsync(search, isActive, page, pageSize);
 
-        // Service'ten gelen güvenli DTO cevabını 200 OK ile döndürüyoruz.
+        // Service'ten gelen güvenli DTO cevabını özet sayaçlarla birlikte 200 OK ile döndürüyoruz.
         return Ok(result);
     }
 
@@ -100,7 +100,7 @@ public class AdminController : ControllerBase
         if (TryGetCurrentUserId(out var currentAdminId))
         {
             await LogInfoAsync(
-                $"Admin log listesi görüntülendi: Page={filter.PageNumber}, PageSize={filter.PageSize}",
+                $"Admin log listesi görüntülendi.",
                 userId: currentAdminId);
         }
 

@@ -150,6 +150,20 @@ namespace HotelApp.Domain.Services
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
         }
 
+        // Anasayfa hero alaninda gosterilecek otel ve sehir sayilarini UnitOfWork uzerinden hazirlar.
+        public async Task<HeroStatsDto> GetHeroStatsAsync()
+        {
+            var hotelCount = await _unitOfWork.HotelRepository.GetActiveHotelCountAsync();
+            var cityCount = await _unitOfWork.HotelRepository.GetActiveCityCountAsync();
+
+            // Repository'den gelen ham sayilari API response DTO'suna mapler.
+            return new HeroStatsDto
+            {
+                HotelCount = hotelCount,
+                CityCount = cityCount
+            };
+        }
+
         // Anasayfa şehir kartları için repository'den gelen istatistikleri ekrana uygun DTO'ya mapler.
         public async Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count)
         {

@@ -113,6 +113,32 @@ namespace HotelApp.Infrastructure.Repositories
             return (users, totalCount);
         }
 
+        // Admin kullanıcı özet kartları için sayfalamadan bağımsız toplamları hesaplar.
+        public async Task<(int ActiveCount, int PassiveCount, int AdminCount)> GetUserSummaryForAdminAsync(string? search)
+        {
+            // Kullanıcı özetinde arama filtresi korunur, sayfalama ve aktiflik filtresi uygulanmaz.
+            var query = _context.Users
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Search doluysa özet sayaçlar da aynı arama kapsamına göre hesaplanır.
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keywords = search.Trim();
+
+                query = query.Where(x =>
+                    x.FirstName.Contains(keywords) ||
+                    x.LastName.Contains(keywords) ||
+                    x.Email.Contains(keywords));
+            }
+
+            var activeCount = await query.CountAsync(x => x.IsActive);
+            var passiveCount = await query.CountAsync(x => !x.IsActive);
+            var adminCount = await query.CountAsync(x => x.Roles.Any(role => role.Name == "Admin"));
+
+            return (activeCount, passiveCount, adminCount);
+        }
+
         // Admin işlemleri için tek kullanıcıyı rolleriyle birlikte getirir.
         public async Task<User?> GetUserByIdAsync(int userId)
         {

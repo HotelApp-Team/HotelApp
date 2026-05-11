@@ -55,6 +55,22 @@ public class ApiControllerTests
     }
 
     [Fact]
+    public async Task Hotels_GetHeroStats_OkVeSayaclariDoner()
+    {
+        var controller = new HotelsController(new FakeHotelService
+        {
+            HeroStats = new HeroStatsDto { HotelCount = 124, CityCount = 32 }
+        }, new FakeLoggerService());
+
+        var result = await controller.GetHeroStats();
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var stats = Assert.IsType<HeroStatsDto>(ok.Value);
+        Assert.Equal(124, stats.HotelCount);
+        Assert.Equal(32, stats.CityCount);
+    }
+
+    [Fact]
     public async Task Amenities_GetAll_OkDoner()
     {
         var controller = new AmenitiesController(new FakeAmenityService
@@ -376,6 +392,7 @@ internal class FakeHotelService : IHotelService
     public ArgumentException? SearchException { get; set; }
     public PagedResponseDto<HotelListDto> FilteredHotels { get; set; } = new();
     public HotelSearchResponseDto SearchResult { get; set; } = new();
+    public HeroStatsDto HeroStats { get; set; } = new();
 
     public Task<IEnumerable<HotelListDto>> GetAllAsync() => Task.FromResult(Enumerable.Empty<HotelListDto>());
     public Task<HotelDetailDto?> GetByIdAsync(int id) => Task.FromResult(HotelById);
@@ -385,6 +402,7 @@ internal class FakeHotelService : IHotelService
     public Task UpdateAsync(HotelUpdateDto dto) => Task.CompletedTask;
     public Task DeleteAsync(int id) => Task.CompletedTask;
     public Task<List<string>> GetCitiesAsync() => Task.FromResult(new List<string>());
+    public Task<HeroStatsDto> GetHeroStatsAsync() => Task.FromResult(HeroStats);
     public Task<List<CityCardDto>> GetFeaturedCitiesAsync(int count) => Task.FromResult(new List<CityCardDto>());
 
     public Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)

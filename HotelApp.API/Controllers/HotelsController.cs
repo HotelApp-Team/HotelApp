@@ -60,6 +60,14 @@ public class HotelsController : ControllerBase
         return Ok(cities);
     }
 
+    // GET /api/hotels/hero-stats : Anasayfa hero alaninda gosterilecek otel ve sehir sayilarini getirir.
+    [HttpGet("hero-stats")]
+    public async Task<IActionResult> GetHeroStats()
+    {
+        var stats = await _hotelService.GetHeroStatsAsync();
+        return Ok(stats);
+    }
+
     // E52 - GET /api/hotels/featured-cities : Anasayfada gosterilecek one cikan sehir kartlarini getirir.
     [HttpGet("featured-cities")]
     public async Task<IActionResult> GetFeaturedCities([FromQuery] int count = 5)
@@ -80,7 +88,7 @@ public class HotelsController : ControllerBase
             var result = await _hotelService.SearchAsync(dto, page, pageSize);
 
             await LogInfoAsync(
-                $"Otel arama yapıldı: City={dto.City}, Star={dto.StarRating}");
+                $"Otel arama yapıldı.");
 
             return Ok(result);
         }
@@ -101,7 +109,7 @@ public class HotelsController : ControllerBase
         await _hotelService.CreateAsync(dto);
 
         await LogInfoAsync(
-            $"Yeni otel oluşturuldu: Name={dto.Name}, City={dto.City}");
+            $"Yeni otel oluşturuldu: Hotel Adı:{dto.Name}, Şehir:{dto.City}");
 
         return StatusCode(201);
     }
@@ -120,7 +128,7 @@ public class HotelsController : ControllerBase
         await _hotelService.UpdateAsync(dto);
 
         await LogInfoAsync(
-            $"Otel güncellendi: HotelId={dto.Id}");
+            $"Otel güncellendi: HotelId:{dto.Id}");
 
         return NoContent();
     }
@@ -133,7 +141,7 @@ public class HotelsController : ControllerBase
         await _hotelService.DeleteAsync(id);
 
         await LogInfoAsync(
-            $"Otel silindi: HotelId={id}");
+            $"Otel silindi: HotelId:{id}");
 
         return NoContent();
     }
