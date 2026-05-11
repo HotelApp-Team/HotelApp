@@ -36,7 +36,7 @@ public class AdminFilter : ActionFilterAttribute
             // Controller.TempData session uzerinden bir sonraki request'te _Layout'taki Error alert'inde gosterilir.
             if (context.Controller is Controller ctrl)
             {
-                ctrl.TempData["Error"] = "Bu sayfaya erisim yetkiniz yok.";
+                ctrl.TempData["Error"] = "Bu sayfaya erişim yetkiniz yok.";
             }
 
             context.Result = new RedirectToActionResult("Index", "Home", null);
