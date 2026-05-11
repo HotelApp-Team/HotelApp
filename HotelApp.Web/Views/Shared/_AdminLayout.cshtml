@@ -1,10 +1,12 @@
 @using HotelApp.Web.Helpers
+@inject IConfiguration Configuration
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 
     // Üst menü kullanıcı bilgisini _LoginPartial ile aynı şekilde session üzerinden alır.
-    var isLoggedIn = Context.Session.IsAuthenticated();
-    var isAdmin = isLoggedIn && Context.Session.IsInRole("Admin");
+    // IConfiguration JWT imza dogrulamasi icin gerekli; sadece payload claim'ine güvenmiyoruz.
+    var isLoggedIn = Context.Session.IsAuthenticated(Configuration);
+    var isAdmin = isLoggedIn && Context.Session.IsInRole(Configuration, "Admin");
     var userName = Context.Session.GetString("UserFullName") ?? "Yönetici";
     var userEmail = Context.Session.GetString("UserEmail") ?? "admin@hotel.com";
 }

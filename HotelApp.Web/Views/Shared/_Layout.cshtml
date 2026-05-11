@@ -1,4 +1,5 @@
 @using HotelApp.Web.Helpers
+@inject IConfiguration Configuration
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -129,7 +130,7 @@
                     <h6 class="fw-bold mb-3">HESABIM</h6>
                     <ul class="list-unstyled small">
                         @* Footer hesap linkleri kullanıcının oturum durumuna göre gösterilir. *@
-                        @if (Context.Session.IsAuthenticated())
+                        @if (Context.Session.IsAuthenticated(Configuration))
                         {
                             <li class="mb-2"><a class="text-decoration-none" asp-controller="Profile" asp-action="Index">Profilim</a></li>
                             <li class="mb-2">
