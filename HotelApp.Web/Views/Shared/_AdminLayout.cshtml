@@ -35,11 +35,30 @@
                         <i class="bi bi-speedometer2"></i> Panel
                     </a>
                 </li>
-                <li class="nav-item"><a class="nav-link text-white" href="#">Oteller</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="#">Odalar</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="#">Rezervasyonlar</a></li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminUserMgmt" asp-action="Index">Kullanıcılar</a>
+                    <<a class="nav-link text-white" asp-controller="HotelMgmt" asp-action="Index">
+                        <i class="bi bi-building"></i> Oteller
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">
+                        <i class="bi bi-door-open"></i> Odalar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">
+                        <i class="bi bi-calendar-check"></i> Rezervasyonlar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-controller="Amenity" asp-action="Index">
+                        <i class="bi bi-stars"></i> Olanaklar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-controller="AdminUserMgmt" asp-action="Index">
+                        <i class="bi bi-people-fill"></i> Kullanıcılar
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" asp-controller="AdminLog" asp-action="Index">
