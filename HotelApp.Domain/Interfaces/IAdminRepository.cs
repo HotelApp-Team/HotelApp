@@ -33,6 +33,9 @@ public interface IAdminRepository
     // Admin kullanıcı listesi için arama, aktiflik filtresi ve sayfalama sorgusunu yapar.
     Task<(List<User> Data, int TotalCount)> GetPagedUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize);
 
+    // Admin kullanıcı özet kartları için sayfalamadan bağımsız toplamları döndürür.
+    Task<(int ActiveCount, int PassiveCount, int AdminCount)> GetUserSummaryForAdminAsync(string? search);
+
     // Admin işlemleri için kullanıcıyı rolleriyle birlikte getirir.
     Task<User?> GetUserByIdAsync(int userId);
 

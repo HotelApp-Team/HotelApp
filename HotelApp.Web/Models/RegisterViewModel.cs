@@ -40,4 +40,7 @@ public class RegisterViewModel
     [Phone(ErrorMessage = "Geçerli bir telefon giriniz!")]
     [Display(Name = "Telefon")]
     public string? Phone { get; set; } = null!;
+
+    // Auth ekranindaki sol gorsel alaninda gosterilecek hero istatistiklerini tasir.
+    public HeroStatsViewModel? HeroStats { get; set; }
 }
