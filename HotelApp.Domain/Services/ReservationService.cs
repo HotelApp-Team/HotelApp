@@ -124,6 +124,14 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Check-out tarihi gecmis Confirmed rezervasyonlari Completed yapan toplu UPDATE'i tetikler.
+        // Repository ExecuteUpdateAsync kullaniyor; SaveChanges cagirmaya gerek yok.
+        // Donus: etkilenen kayit sayisi (loglama/observability icin).
+        public async Task<int> MarkPastReservationsCompletedAsync()
+        {
+            return await _unitOfWork.ReservationRepository.MarkPastConfirmedAsCompletedAsync();
+        }
+
         public static ReservationDto MapToDto(Reservation reservation)
         {
             return new ReservationDto
