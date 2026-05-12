@@ -4,6 +4,15 @@
 *@
 @model HotelApp.Web.Models.HotelCardViewModel
 
+@{
+    var imageUrl = string.IsNullOrWhiteSpace(Model.MainImageUrl)
+        ? "/images/no-image.jpg"
+        : Model.MainImageUrl;
+
+    var checkIn = Context.Request.Query["checkIn"].ToString();
+    var checkOut = Context.Request.Query["checkOut"].ToString();
+    var guestCount = Context.Request.Query["guestCount"].ToString();
+}
 <article class="hotel-card">
 
     <div class="hotel-card-media">
@@ -66,7 +75,12 @@
                         @Model.MinPrice.Value.ToString("N0", new System.Globalization.CultureInfo("tr-TR")) TL
                     </div>
                 </div>
-                <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@Model.Id"
+                <a asp-controller="Hotels"
+                   asp-action="Detail"
+                   asp-route-id="@Model.Id"
+                   asp-route-checkIn="@checkIn"
+                   asp-route-checkOut="@checkOut"
+                   asp-route-guestCount="@guestCount"
                    class="btn btn-outline-primary btn-detail">
                     Detay <i class="bi bi-arrow-right"></i>
                 </a>
@@ -74,7 +88,12 @@
         }
         else
         {
-            <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@Model.Id"
+            <a asp-controller="Hotels"
+               asp-action="Detail"
+               asp-route-id="@Model.Id"
+               asp-route-checkIn="@checkIn"
+               asp-route-checkOut="@checkOut"
+               asp-route-guestCount="@guestCount"
                class="btn btn-outline-primary w-100 mt-2">
                 Detay <i class="bi bi-arrow-right ms-1"></i>
             </a>

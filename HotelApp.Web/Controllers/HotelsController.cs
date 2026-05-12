@@ -87,7 +87,11 @@ namespace HotelApp.Web.Controllers
 
             return View(model);
         }
-        public async Task<IActionResult> Detail(int id)
+        public async Task<IActionResult> Detail(
+            int id,
+            DateTime? checkIn,
+            DateTime? checkOut,
+            int? guestCount)
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
@@ -130,9 +134,27 @@ namespace HotelApp.Web.Controllers
             model.Reviews = reviewsResponse.Success
                 ? reviewsResponse.Data ?? new List<ReviewViewModel>()
                 : new List<ReviewViewModel>();
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var defaultCheckIn = checkIn.HasValue
+                ? DateOnly.FromDateTime(checkIn.Value)
+                : today;
+
+            var defaultCheckOut = checkOut.HasValue
+                ? DateOnly.FromDateTime(checkOut.Value)
+                : defaultCheckIn.AddDays(1);
+
+            if (defaultCheckOut <= defaultCheckIn)
+            {
+                defaultCheckOut = defaultCheckIn.AddDays(1);
+            }
+
             model.BookingForm = new CreateReservationViewModel
             {
-                HotelId = id
+                HotelId = id,
+                CheckInDate = defaultCheckIn,
+                CheckOutDate = defaultCheckOut,
+                GuestCount = guestCount.GetValueOrDefault(1)
             };
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;

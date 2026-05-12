@@ -43,18 +43,50 @@
             </div>
 
             <div class="col-md-2">
-                <input type="date" name="checkIn"
+                <input type="date"
+                       id="checkIn"
+                       name="checkIn"
                        value="@(Model.CheckIn?.ToString("yyyy-MM-dd") ?? todayIso)"
                        min="@todayIso"
-                       class="form-control" required />
+                       class="form-control"
+                       required />
             </div>
 
             <div class="col-md-2">
-                <input type="date" name="checkOut"
+                <input type="date"
+                       id="checkOut"
+                       name="checkOut"
                        value="@(Model.CheckOut?.ToString("yyyy-MM-dd") ?? tomorrowIso)"
-                       min="@todayIso"
-                       class="form-control" required />
+                       min="@tomorrowIso"
+                       class="form-control"
+                       required />
             </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    const checkIn = document.getElementById("checkIn");
+                    const checkOut = document.getElementById("checkOut");
+
+                    function updateCheckout() {
+
+                        const selectedDate = new Date(checkIn.value);
+
+                        selectedDate.setDate(selectedDate.getDate() + 1);
+
+                        const nextDay = selectedDate.toISOString().split("T")[0];
+
+                        checkOut.min = nextDay;
+
+                        if (!checkOut.value || checkOut.value < nextDay) {
+                            checkOut.value = nextDay;
+                        }
+                    }
+
+                    updateCheckout();
+
+                    checkIn.addEventListener("change", updateCheckout);
+                });
+            </script>
 
             <div class="col-md-1">
                 <input type="number" name="guestCount" value="@Model.GuestCount" class="form-control" placeholder="Kişi" min="1" max="20" required />

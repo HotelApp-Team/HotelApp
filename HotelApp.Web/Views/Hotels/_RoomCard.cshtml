@@ -47,6 +47,14 @@
     </div>
 </div>
 
-@await Html.PartialAsync("_BookingModal", Model)
+@await Html.PartialAsync(
+    "_BookingModal",
+    Model,
+    new ViewDataDictionary(ViewData)
+    {
+        ["CheckInIso"] = ViewData["CheckInIso"],
+        ["CheckOutIso"] = ViewData["CheckOutIso"],
+        ["GuestCount"] = ViewData["GuestCount"]
+    })
 
 
