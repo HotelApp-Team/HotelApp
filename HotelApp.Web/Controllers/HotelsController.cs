@@ -87,12 +87,27 @@ namespace HotelApp.Web.Controllers
 
             return View(model);
         }
-        public async Task<IActionResult> Detail(
-            int id,
-            DateTime? checkIn,
-            DateTime? checkOut,
-            int? guestCount)
+        public async Task<IActionResult> Detail(int id)
         {
+            DateTime? checkIn = null;
+            DateTime? checkOut = null;
+            int? guestCount = null;
+
+            if (DateTime.TryParse(Request.Query["checkIn"], out var parsedCheckIn))
+            {
+                checkIn = parsedCheckIn;
+            }
+
+            if (DateTime.TryParse(Request.Query["checkOut"], out var parsedCheckOut))
+            {
+                checkOut = parsedCheckOut;
+            }
+
+            if (int.TryParse(Request.Query["guestCount"], out var parsedGuestCount))
+            {
+                guestCount = parsedGuestCount;
+            }
+
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
@@ -136,6 +151,7 @@ namespace HotelApp.Web.Controllers
                 : new List<ReviewViewModel>();
 
             var today = DateOnly.FromDateTime(DateTime.Today);
+
             var defaultCheckIn = checkIn.HasValue
                 ? DateOnly.FromDateTime(checkIn.Value)
                 : today;
