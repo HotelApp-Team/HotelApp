@@ -6,6 +6,7 @@ public class AdminHotelListPageViewModel
 {
     public string? City { get; set; }
     public byte? StarRating { get; set; }
+    public bool? IsActive { get; set; }
     public string SortBy { get; set; } = "name";
     public string SortOrder { get; set; } = "asc";
     public int Page { get; set; } = 1;

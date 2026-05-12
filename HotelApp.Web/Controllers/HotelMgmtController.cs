@@ -21,16 +21,18 @@ public class HotelMgmtController : Controller
     public async Task<IActionResult> Index(
         string? city,
         byte? starRating,
+        bool? isActive,
         string sortBy = "name",
         string sortOrder = "asc",
         int page = 1,
         int pageSize = 10)
     {
         var query = $"hotels?city={Uri.EscapeDataString(city ?? string.Empty)}" +
-                    $"&star={starRating}" +
-                    $"&sortBy={Uri.EscapeDataString(sortBy)}" +
-                    $"&sortOrder={Uri.EscapeDataString(sortOrder)}" +
-                    $"&page={page}&pageSize={pageSize}";
+            $"&star={starRating}" +
+            $"&isActive={isActive}" +
+            $"&sortBy={Uri.EscapeDataString(sortBy)}" +
+            $"&sortOrder={Uri.EscapeDataString(sortOrder)}" +
+            $"&page={page}&pageSize={pageSize}";
 
         var response = await _apiService.GetAsync<PagedHotelListResponse>(query);
 
@@ -38,6 +40,7 @@ public class HotelMgmtController : Controller
         {
             City = city,
             StarRating = starRating,
+            IsActive = isActive,
             SortBy = sortBy,
             SortOrder = sortOrder,
             Page = page,

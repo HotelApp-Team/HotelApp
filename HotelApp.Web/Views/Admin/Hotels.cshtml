@@ -40,6 +40,15 @@
     </div>
 
     <div class="col-md-2">
+        <label class="form-label">Durum</label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="">Hepsi</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
         <label class="form-label">Sıralama</label>
         <select asp-for="SortBy" class="form-select">
             <option value="name">Ada göre</option>

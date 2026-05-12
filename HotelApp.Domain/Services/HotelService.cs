@@ -214,11 +214,12 @@ namespace HotelApp.Domain.Services
             };
         }
 
-        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
         {
             var (data, totalCount) =
                 await _unitOfWork.HotelRepository.GetPagedFilteredAsync(
-                    city, star, sortBy, sortOrder, page, pageSize);
+                    city, star, isActive, sortBy, sortOrder, page, pageSize);
+
 
             var mapped = data.Select(MapToListDto).ToList();
 

@@ -1,6 +1,10 @@
 ﻿@model HotelApp.Web.Models.HotelDetailPageVm
 @{
     ViewData["Title"] = Model.Name;
+
+    ViewData["CheckInIso"] = Model.BookingForm.CheckInDate.ToString("yyyy-MM-dd");
+    ViewData["CheckOutIso"] = Model.BookingForm.CheckOutDate.ToString("yyyy-MM-dd");
+    ViewData["GuestCount"] = Model.BookingForm.GuestCount <= 0 ? 1 : Model.BookingForm.GuestCount;
 }
 
 @if (TempData["Error"] != null)
