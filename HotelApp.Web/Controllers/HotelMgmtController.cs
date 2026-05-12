@@ -233,13 +233,45 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignAmenities(int hotelId, List<int> amenityIds)
     {
-        var response = await _apiService.PostAsync<object>(
-            $"hotels/{hotelId}/amenities",
-            new { AmenityIds = amenityIds });
+        amenityIds ??= new List<int>();
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
-            response.Success ? "Olanaklar güncellendi." : response.Message ?? "Olanaklar güncellenemedi.";
+        var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"hotels/{hotelId}");
+        if (!hotelResponse.Success || hotelResponse.Data == null)
+        {
+            TempData["ErrorMessage"] = "Otel olanak bilgileri alınamadı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
 
+        var existingIds = hotelResponse.Data.Amenities.Select(x => x.Id).ToList();
+        var selectedIds = amenityIds.Distinct().ToList();
+
+        var toAdd = selectedIds.Except(existingIds).ToList();
+        var toRemove = existingIds.Except(selectedIds).ToList();
+
+        if (toAdd.Any())
+        {
+            var addResponse = await _apiService.PostAsync<object>(
+                $"hotels/{hotelId}/amenities",
+                new { AmenityIds = toAdd });
+
+            if (!addResponse.Success)
+            {
+                TempData["ErrorMessage"] = addResponse.Message ?? "Olanak eklenemedi.";
+                return RedirectToAction(nameof(Edit), new { id = hotelId });
+            }
+        }
+
+        foreach (var amenityId in toRemove)
+        {
+            var removeResponse = await _apiService.DeleteAsync($"hotels/{hotelId}/amenities/{amenityId}");
+            if (!removeResponse.Success)
+            {
+                TempData["ErrorMessage"] = removeResponse.Message ?? "Bazı olanaklar kaldırılamadı.";
+                return RedirectToAction(nameof(Edit), new { id = hotelId });
+            }
+        }
+
+        TempData["SuccessMessage"] = "Olanaklar güncellendi.";
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 

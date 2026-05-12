@@ -37,7 +37,7 @@ public class AmenityController : Controller
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(AdminAmenityFormViewModel model)
+    public async Task<IActionResult> Create([Bind(Prefix = "CreateForm")] AdminAmenityFormViewModel model)
     {
         if (!ModelState.IsValid)
         {

@@ -140,8 +140,11 @@ namespace HotelApp.Domain.Services
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
                 IsActive = hotel.IsActive,
-                MainImageUrl = hotel.HotelImages
-                 .FirstOrDefault(x => x.IsMain)?.ImageUrl
+                MainImageUrl = hotel.HotelImages.FirstOrDefault(x => x.IsMain)?.ImageUrl,
+                MinPrice = hotel.HotelRooms
+                .Where(x => x.IsActive)
+                .Select(x => (decimal?)x.PricePerNight)
+                .Min()
             };
         }
 
