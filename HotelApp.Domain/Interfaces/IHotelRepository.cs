@@ -25,7 +25,7 @@ public interface IHotelRepository : IRepository<Hotel>
     Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count);
 
     IQueryable<Hotel> Query();
-    Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize);
+    Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize);
     Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize);
 
 }

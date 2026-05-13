@@ -89,6 +89,25 @@ namespace HotelApp.Web.Controllers
         }
         public async Task<IActionResult> Detail(int id)
         {
+            DateTime? checkIn = null;
+            DateTime? checkOut = null;
+            int? guestCount = null;
+
+            if (DateTime.TryParse(Request.Query["checkIn"], out var parsedCheckIn))
+            {
+                checkIn = parsedCheckIn;
+            }
+
+            if (DateTime.TryParse(Request.Query["checkOut"], out var parsedCheckOut))
+            {
+                checkOut = parsedCheckOut;
+            }
+
+            if (int.TryParse(Request.Query["guestCount"], out var parsedGuestCount))
+            {
+                guestCount = parsedGuestCount;
+            }
+
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
@@ -130,9 +149,28 @@ namespace HotelApp.Web.Controllers
             model.Reviews = reviewsResponse.Success
                 ? reviewsResponse.Data ?? new List<ReviewViewModel>()
                 : new List<ReviewViewModel>();
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var defaultCheckIn = checkIn.HasValue
+                ? DateOnly.FromDateTime(checkIn.Value)
+                : today;
+
+            var defaultCheckOut = checkOut.HasValue
+                ? DateOnly.FromDateTime(checkOut.Value)
+                : defaultCheckIn.AddDays(1);
+
+            if (defaultCheckOut <= defaultCheckIn)
+            {
+                defaultCheckOut = defaultCheckIn.AddDays(1);
+            }
+
             model.BookingForm = new CreateReservationViewModel
             {
-                HotelId = id
+                HotelId = id,
+                CheckInDate = defaultCheckIn,
+                CheckOutDate = defaultCheckOut,
+                GuestCount = guestCount.GetValueOrDefault(1)
             };
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;

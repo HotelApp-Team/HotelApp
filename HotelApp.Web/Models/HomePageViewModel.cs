@@ -28,6 +28,7 @@ public class HotelCardViewModel
     public string? MainImageUrl { get; set; }
 
     public decimal? MinPrice { get; set; }
+    public bool IsActive { get; set; }
 }
 
 public class PagedHotelListResponse

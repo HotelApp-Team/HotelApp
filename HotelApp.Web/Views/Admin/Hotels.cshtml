@@ -40,6 +40,15 @@
     </div>
 
     <div class="col-md-2">
+        <label class="form-label">Durum</label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="">Hepsi</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
         <label class="form-label">Sıralama</label>
         <select asp-for="SortBy" class="form-select">
             <option value="name">Ada göre</option>
@@ -95,6 +104,16 @@
                         <td>@hotel.City</td>
                         <td>@hotel.Country</td>
                         <td>@hotel.StarRating</td>
+                        <td>
+                            @if (hotel.IsActive)
+                            {
+                                <span class="badge bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pasif</span>
+                            }
+                        </td>
                         <td>@(hotel.MinPrice.HasValue? hotel.MinPrice.Value.ToString("0.00") + " ₺" : "-")</td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-2">
@@ -117,13 +136,58 @@
             else
             {
                 <tr>
-                    <td colspan="7" class="text-center text-muted">Kayıt bulunamadı.</td>
+                    <td colspan="8" class="text-center text-muted">Kayıt bulunamadı.</td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
 
-<div class="mt-3 text-muted small">
-    Toplam kayıt: @Model.TotalCount
+<div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="text-muted small">
+        Toplam kayıt: @Model.TotalCount
+    </div>
+
+    @if (Model.TotalCount > Model.PageSize)
+    {
+        var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+
+        <nav>
+            <ul class="pagination mb-0">
+                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-controller="HotelMgmt"
+                       asp-action="Index"
+                       asp-route-city="@Model.City"
+                       asp-route-starRating="@Model.StarRating"
+                       asp-route-isActive="@Model.IsActive"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-sortOrder="@Model.SortOrder"
+                       asp-route-page="@(Model.Page - 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                        Önceki
+                    </a>
+                </li>
+
+                <li class="page-item disabled">
+                    <span class="page-link">@Model.Page / @totalPages</span>
+                </li>
+
+                <li class="page-item @(Model.Page >= totalPages ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-controller="HotelMgmt"
+                       asp-action="Index"
+                       asp-route-city="@Model.City"
+                       asp-route-starRating="@Model.StarRating"
+                       asp-route-isActive="@Model.IsActive"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-sortOrder="@Model.SortOrder"
+                       asp-route-page="@(Model.Page + 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                        Sonraki
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>

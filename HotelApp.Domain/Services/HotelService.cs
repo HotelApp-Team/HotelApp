@@ -140,8 +140,11 @@ namespace HotelApp.Domain.Services
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
                 IsActive = hotel.IsActive,
-                MainImageUrl = hotel.HotelImages
-                 .FirstOrDefault(x => x.IsMain)?.ImageUrl
+                MainImageUrl = hotel.HotelImages.FirstOrDefault(x => x.IsMain)?.ImageUrl,
+                MinPrice = hotel.HotelRooms
+                .Where(x => x.IsActive)
+                .Select(x => (decimal?)x.PricePerNight)
+                .Min()
             };
         }
 
@@ -211,11 +214,12 @@ namespace HotelApp.Domain.Services
             };
         }
 
-        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
         {
             var (data, totalCount) =
                 await _unitOfWork.HotelRepository.GetPagedFilteredAsync(
-                    city, star, sortBy, sortOrder, page, pageSize);
+                    city, star, isActive, sortBy, sortOrder, page, pageSize);
+
 
             var mapped = data.Select(MapToListDto).ToList();
 
