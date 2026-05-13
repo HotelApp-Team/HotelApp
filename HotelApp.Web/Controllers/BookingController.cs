@@ -14,6 +14,37 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+       
+
+        [ServiceFilter(typeof(AuthFilter))]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateReservationViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Rezervasyon bilgileri eksik veya hatalı.";
+                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
+            }
+
+            if (model.CheckOutDate <= model.CheckInDate)
+            {
+                TempData["Error"] = "Çıkış tarihi giriş tarihinden sonra olmalıdır";
+                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
+            }
+
+            var response = await _apiService.PostAsync<object>("reservations", model);
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message;
+                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
+            }
+            TempData["Success"] = "Rezervasyon başarıyla oluşturuldu.";
+            return RedirectToAction("My", "Reservations");
+        }
+
+
         [ServiceFilter(typeof(AuthFilter))]
         [HttpGet]
         public async Task<IActionResult> Create(int hotelId, int hotelRoomId, DateTime? checkIn, DateTime? checkOut, int? guestCount)
@@ -43,34 +74,6 @@ namespace HotelApp.Web.Controllers
             };
 
             return View(model);
-        }
-
-        [ServiceFilter(typeof(AuthFilter))]
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateReservationViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["Error"] = "Rezervasyon bilgileri eksik veya hatalı.";
-                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
-            }
-
-            if (model.CheckOutDate <= model.CheckInDate)
-            {
-                TempData["Error"] = "Çıkış tarihi giriş tarihinden sonra olmalıdır";
-                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
-            }
-
-            var response = await _apiService.PostAsync<object>("reservations", model);
-
-            if (!response.Success)
-            {
-                TempData["Error"] = response.Message;
-                return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
-            }
-            TempData["Success"] = "Rezervasyon başarıyla oluşturuldu.";
-            return RedirectToAction("My", "Reservations");
         }
     }
 }

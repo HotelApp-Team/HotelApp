@@ -130,3 +130,30 @@
     </div>
 </div>
 
+@{
+    var totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
+        : 1;
+}
+
+@if (totalPages > 1)
+{
+    <nav class="p-3">
+        <ul class="pagination mb-0">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(Model.Page == i ? "active" : "")">
+                    <a class="page-link"
+                       asp-controller="ReservationMgmt"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-status="@ViewBag.Status"
+                       asp-route-dateFrom="@ViewBag.From"
+                       asp-route-dateTo="@ViewBag.To">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
