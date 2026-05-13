@@ -1,11 +1,20 @@
 ﻿@model List<RoomTypeAdminViewModel>
 
-@* Kullanımda olan oda tipi silinirse API 409 Conflict döner; kullanıcıya kullanımda mesajı gösterilir. *@
 
 @{
     ViewData["Title"] = "Oda Tipleri Yönetimi";
     Layout = "_AdminLayout";
 }
+
+@if(TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if(TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@* Kullanımda olan oda tipi silinirse API 409 Conflict döner. *@
 
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
