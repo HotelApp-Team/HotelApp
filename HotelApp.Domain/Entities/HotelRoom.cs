@@ -9,6 +9,7 @@ public partial class HotelRoom
     public int RoomTypeId { get; set; }
 
     public decimal PricePerNight { get; set; }
+    public decimal ExtraGuestPricePerNight { get; set; }
 
     public int TotalRooms { get; set; }
 

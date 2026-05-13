@@ -67,6 +67,7 @@ namespace HotelApp.Web.Controllers
                 HotelName = room.HotelName,
                 RoomTypeName = room.RoomTypeName,
                 PricePerNight = room.PricePerNight,
+                ExtraGuestPricePerNight = room.ExtraGuestPricePerNight,
                 MaxGuests = room.MaxGuests,
                 CheckInDate = DateOnly.FromDateTime(checkIn ?? DateTime.Today),
                 CheckOutDate = DateOnly.FromDateTime(checkOut ?? DateTime.Today.AddDays(1)),

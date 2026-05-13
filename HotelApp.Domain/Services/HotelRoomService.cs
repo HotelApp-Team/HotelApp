@@ -27,6 +27,7 @@ namespace HotelApp.Domain.Services
                 HotelId = dto.HotelId,
                 RoomTypeId = dto.RoomTypeId,
                 PricePerNight = dto.PricePerNight,
+                ExtraGuestPricePerNight = dto.ExtraGuestPricePerNight,
                 TotalRooms = dto.TotalRooms,
                 IsActive = true
             };
@@ -57,6 +58,7 @@ namespace HotelApp.Domain.Services
                 HotelId = x.HotelId,
                 RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
+                ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty
@@ -80,6 +82,7 @@ namespace HotelApp.Domain.Services
                 HotelId = room.HotelId,
                 RoomTypeId = room.RoomTypeId,
                 PricePerNight = room.PricePerNight,
+                ExtraGuestPricePerNight = room.ExtraGuestPricePerNight,
                 TotalRooms = room.TotalRooms,
                 IsActive = room.IsActive,
                 HotelName = room.Hotel?.Name ?? string.Empty,
@@ -98,6 +101,7 @@ namespace HotelApp.Domain.Services
                 HotelId = x.HotelId,
                 RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
+                ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
@@ -114,6 +118,7 @@ namespace HotelApp.Domain.Services
                 HotelId = x.HotelId,
                 RoomTypeId = x.RoomTypeId,
                 PricePerNight = x.PricePerNight,
+                ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty
@@ -148,6 +153,7 @@ namespace HotelApp.Domain.Services
             entity.HotelId = dto.HotelId;
             entity.RoomTypeId = dto.RoomTypeId;
             entity.PricePerNight = dto.PricePerNight;
+            entity.ExtraGuestPricePerNight = dto.ExtraGuestPricePerNight;
             entity.TotalRooms = dto.TotalRooms;
             entity.IsActive = dto.IsActive;
 

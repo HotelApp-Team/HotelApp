@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ namespace HotelApp.Domain.DTOs
         public string City { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;
         public decimal PricePerNight { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
         public int MaxGuests { get; set; }
         public int TotalRooms { get; set; }
         public int ReservedCount { get; set; }

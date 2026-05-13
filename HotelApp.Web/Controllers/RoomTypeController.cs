@@ -25,21 +25,45 @@ namespace HotelApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(RoomTypeAdminViewModel model)
         {
-            await _apiService.PostAsync<object>("roomtypes", model);
+            var response = await _apiService.PostAsync<object>("roomtypes", model);
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message ?? "Oda tipi eklenemedi.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Oda tipi eklendi.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> Update(RoomTypeAdminViewModel model)
         {
-            await _apiService.PutAsync<object>($"roomtypes/{model.Id}", model);
+            var response = await _apiService.PutAsync<object>($"roomtypes/{model.Id}", model);
+
+            if (!response.Success)
+            {
+                TempData["Error"]=response.Message ?? "Oda tipi güncellenemedi.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Oda tipi güncellendi.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            await _apiService.DeleteAsync($"roomtypes/{id}");
+            var response = await _apiService.DeleteAsync($"roomtypes/{id}");
+
+            if(!response.Success)
+            {
+                TempData["Error"] = response.Message ?? "Oda tipi silinemedi.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Oda tipi silindi.";
             return RedirectToAction(nameof(Index));
         }
     }

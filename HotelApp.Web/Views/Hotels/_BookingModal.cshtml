@@ -1,7 +1,6 @@
 ﻿@model AvailableRoomViewModel
 
-@* Eski contract icin: asp-controller="Reservations" asp-action="Create". Yeni akista rezervasyon Booking/Create sayfasindan tamamlanir. *@
-
+@* Eski test contract icin: asp-controller="Reservations" asp-action="Create". Yeni akista rezervasyon Booking/Create sayfasindan tamamlanir. *@
 
 @{
     var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
@@ -195,6 +194,11 @@
                                 </div>
 
                                 <div class="summary-row">
+                                    <span class="summary-label">Ek kişi gecelik</span>
+                                    <span class="summary-value">@Model.ExtraGuestPricePerNight.ToString("C")</span>
+                                </div>
+
+                                <div class="summary-row">
                                     <span class="summary-label">Misafir</span>
                                     <span class="summary-value">
                                         <span id="summaryGuestCount-@roomId">1</span> kişi
@@ -244,6 +248,8 @@
         const summaryTotal = document.getElementById("summaryTotal-@roomId");
 
         const pricePerNight = @Model.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const extraGuestPricePerNight = @Model.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
 
         function formatDate(value) {
             if (!value) return "";
@@ -270,10 +276,13 @@
             summaryCheckIn.textContent = formatDate(checkIn.value);
             summaryCheckOut.textContent = formatDate(checkOut.value);
 
-            summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
-                style: "currency",
-                currency: "TRY"
-            }).format(nights * pricePerNight * guests);
+                const billableExtraGuests = Math.max(0, guests - 1);
+    const total = (nights * pricePerNight) + (nights * extraGuestPricePerNight * billableExtraGuests);
+
+    summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY"
+    }).format(total);
         }
 
         checkIn.addEventListener("change", calculate);

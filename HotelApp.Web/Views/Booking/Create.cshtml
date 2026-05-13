@@ -124,6 +124,11 @@
                     </div>
 
                     <div class="summary-row">
+                        <span class="summary-label">Ek kişi gecelik</span>
+                        <span class="summary-value">@Model.ExtraGuestPricePerNight.ToString("C")</span>
+                    </div>
+
+                    <div class="summary-row">
                         <span class="summary-label">Toplam</span>
                         <span class="price-total" id="summaryTotal">@Model.PricePerNight.ToString("C")</span>
                     </div>
@@ -155,6 +160,8 @@
         const summaryTotal = document.getElementById("summaryTotal");
 
         const pricePerNight = @Model.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const extraGuestPricePerNight = @Model.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
 
         function calculate() {
             const start = new Date(checkIn.value);
@@ -173,10 +180,13 @@
             nightCount.textContent = nights;
             summaryGuestCount.textContent = guests;
 
-            summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
-                style: "currency",
-                currency: "TRY"
-            }).format(nights * pricePerNight * guests);
+                const billableExtraGuests = Math.max(0, guests - 1);
+    const total = (nights * pricePerNight) + (nights * extraGuestPricePerNight * billableExtraGuests);
+
+    summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY"
+    }).format(total);
         }
 
         checkIn.addEventListener("change", calculate);

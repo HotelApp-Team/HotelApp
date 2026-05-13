@@ -48,6 +48,7 @@ CREATE TABLE HotelRooms (
     HotelId INT NOT NULL,
     RoomTypeId INT NOT NULL,
     PricePerNight DECIMAL(10,2) NOT NULL CHECK (PricePerNight >= 0),
+    ExtraGuestPricePerNight DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (ExtraGuestPricePerNight >= 0),
     TotalRooms INT NOT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     CONSTRAINT CHK_HotelRooms_Total CHECK (TotalRooms > 0),
@@ -103,7 +104,7 @@ CREATE TABLE Reservations (
     Status NVARCHAR(20) NOT NULL DEFAULT 'Confirmed',
     CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT CHK_Dates CHECK (CheckOutDate > CheckInDate),
-    CONSTRAINT CHK_Status CHECK (Status IN ('Confirmed','Cancelled','Completed')),
+    CONSTRAINT CHK_Status CHECK (Status IN ('Confirmed','Rejected','Cancelled','Completed')),
     CONSTRAINT FK_Reservation_Users FOREIGN KEY(UserId) REFERENCES Users(Id),
     CONSTRAINT FK_Reservation_HotelRoomId FOREIGN KEY(HotelRoomId) REFERENCES HotelRooms(Id)
 );
@@ -201,6 +202,7 @@ SELECT
     rt.Name AS RoomTypeName,
     rt.MaxGuests,
     hr.PricePerNight,
+    hr.ExtraGuestPricePerNight,
     hr.TotalRooms,
     hr.IsActive
 FROM HotelRooms hr
@@ -256,6 +258,7 @@ BEGIN
         rd.RoomTypeName,
         rd.MaxGuests,
         rd.PricePerNight,
+        rd.ExtraGuestPricePerNight,
         rd.TotalRooms,
         ISNULL(booked.ReservedCount, 0) AS ReservedCount,
         rd.TotalRooms - ISNULL(booked.ReservedCount, 0) AS AvailableRooms
@@ -293,19 +296,33 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DECLARE @PricePerNight DECIMAL(10,2), @TotalRooms INT, @MaxGuests INT;
+        DECLARE
+            @PricePerNight DECIMAL(10,2),
+            @ExtraGuestPricePerNight DECIMAL(10,2),
+            @TotalRooms INT,
+            @MaxGuests INT;
 
         SELECT
             @PricePerNight = hr.PricePerNight,
+            @ExtraGuestPricePerNight = hr.ExtraGuestPricePerNight,
             @TotalRooms = hr.TotalRooms,
             @MaxGuests = rt.MaxGuests
         FROM HotelRooms hr
         INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
-        WHERE hr.Id = @HotelRoomId AND hr.IsActive = 1;
+        WHERE hr.Id = @HotelRoomId
+          AND hr.IsActive = 1;
 
         IF @PricePerNight IS NULL
         BEGIN
-            SET @ResultMessage = 'Oda bulunamadi veya aktif degil.';
+            SET @ResultMessage = N'Oda bulunamadý veya aktif deðil.';
+            SET @ReservationId = 0;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
+
+        IF @GuestCount <= 0
+        BEGIN
+            SET @ResultMessage = N'Misafir sayýsý 1 veya daha fazla olmalýdýr.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -313,7 +330,23 @@ BEGIN
 
         IF @GuestCount > @MaxGuests
         BEGIN
-            SET @ResultMessage = 'Misafir sayisi oda kapasitesini asiyor.';
+            SET @ResultMessage = N'Misafir sayýsý oda kapasitesini aþýyor.';
+            SET @ReservationId = 0;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
+
+        IF @CheckInDate < CAST(GETDATE() AS DATE)
+        BEGIN
+            SET @ResultMessage = N'Giriþ tarihi bugünden eski olamaz.';
+            SET @ReservationId = 0;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
+
+        IF @CheckOutDate <= @CheckInDate
+        BEGIN
+            SET @ResultMessage = N'Çýkýþ tarihi giriþ tarihinden sonra olmalýdýr.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -330,14 +363,20 @@ BEGIN
 
         IF (@TotalRooms - @ReservedCount) <= 0
         BEGIN
-            SET @ResultMessage = 'Bu tarih araliginda musait oda yok.';
+            SET @ResultMessage = N'Bu tarih aralýðýnda müsait oda yok.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
         END;
 
         DECLARE @Nights INT = DATEDIFF(DAY, @CheckInDate, @CheckOutDate);
-        DECLARE @TotalPrice DECIMAL(10,2) = @Nights * @PricePerNight;
+
+        DECLARE @BillableExtraGuests INT =
+            CASE WHEN @GuestCount > 1 THEN @GuestCount - 1 ELSE 0 END;
+
+        DECLARE @TotalPrice DECIMAL(10,2) =
+            (@Nights * @PricePerNight)
+            + (@Nights * @ExtraGuestPricePerNight * @BillableExtraGuests);
 
         INSERT INTO Reservations
             (UserId, HotelRoomId, CheckInDate, CheckOutDate, GuestCount, TotalPrice, PaymentMethod, Status)
@@ -345,7 +384,7 @@ BEGIN
             (@UserId, @HotelRoomId, @CheckInDate, @CheckOutDate, @GuestCount, @TotalPrice, @PaymentMethod, 'Confirmed');
 
         SET @ReservationId = SCOPE_IDENTITY();
-        SET @ResultMessage = 'Rezervasyon basariyla olusturuldu.';
+        SET @ResultMessage = N'Rezervasyon baþarýyla oluþturuldu.';
 
         COMMIT TRANSACTION;
     END TRY
@@ -358,6 +397,7 @@ BEGIN
     END CATCH;
 END;
 GO
+
 
 CREATE TRIGGER trg_UpdateHotelRating
 ON Reviews
@@ -397,12 +437,16 @@ VALUES
 ('Family', 'Family test room', 4);
 GO
 
-INSERT INTO HotelRooms (HotelId, RoomTypeId, PricePerNight, TotalRooms)
+INSERT INTO HotelRooms
+    (HotelId, RoomTypeId, PricePerNight, ExtraGuestPricePerNight, TotalRooms)
 VALUES
-(1, 1, 100.00, 1),
-(1, 2, 200.00, 2),
-(1, 3, 300.00, 1),
-(2, 2, 250.00, 3);
+    (@hotelId, 1, 800, 0, 10),     -- Single
+    (@hotelId, 2, 1200, 250, 10),  -- Double
+    (@hotelId, 3, 2500, 500, 5),   -- Suite
+    (@hotelId, 4, 2000, 350, 5),   -- Family
+    (@hotelId, 5, 1800, 300, 6),   -- Deluxe
+    (@hotelId, 6, 1500, 300, 7),   -- Business
+    (@hotelId, 7, 5000, 750, 2);   -- Kral
 GO
 
 INSERT INTO HotelImages (HotelId, ImageUrl, IsMain, DisplayOrder)

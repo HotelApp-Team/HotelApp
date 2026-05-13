@@ -201,7 +201,7 @@ public class AdminService : IAdminService
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException("Durum zorunludur.");
 
-        var allowedStatuses = new[] { "Pending", "Confirmed", "Rejected", "Cancelled", "Completed" };
+        var allowedStatuses = new[] { "Confirmed", "Rejected", "Cancelled", "Completed" };
         if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Gecersiz rezervasyon durumu.");
 
