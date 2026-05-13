@@ -15,6 +15,37 @@ namespace HotelApp.Web.Controllers
         }
 
         [ServiceFilter(typeof(AuthFilter))]
+        [HttpGet]
+        public async Task<IActionResult> Create(int hotelId, int hotelRoomId, DateTime? checkIn, DateTime? checkOut, int? guestCount)
+        {
+            var response = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{hotelId}/rooms");
+
+            var room = response.Data?.FirstOrDefault(x =>
+            x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
+
+            if (room == null)
+            {
+                TempData["Error"] = "Oda bilgisi bulunamadı.";
+                return RedirectToAction("Detail", "Hotels", new { id = hotelId });
+            }
+
+            var model = new BookingPageViewModel
+            {
+                HotelId = hotelId,
+                HotelRoomId = hotelRoomId,
+                HotelName = room.HotelName,
+                RoomTypeName = room.RoomTypeName,
+                PricePerNight = room.PricePerNight,
+                MaxGuests = room.MaxGuests,
+                CheckInDate = DateOnly.FromDateTime(checkIn ?? DateTime.Today),
+                CheckOutDate = DateOnly.FromDateTime(checkOut ?? DateTime.Today.AddDays(1)),
+                GuestCount = guestCount ?? 1
+            };
+
+            return View(model);
+        }
+
+        [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(CreateReservationViewModel model)

@@ -68,18 +68,24 @@ else
                                     Fatura
                                 </a>
 
-                                <form asp-controller="Reservations"
-                                      asp-action="Cancel"
-                                      method="post"
-                                      class="d-inline">
-                                    @Html.AntiForgeryToken()
+                                @if (!reservation.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)
+                                                        && !reservation.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                                                        && reservation.CheckInDate.Date >= DateTime.Today)
+                                {
+                                    <form asp-controller="Reservations"
+                                          asp-action="Cancel"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
 
-                                    <input type="hidden" name="id" value="@reservation.ReservationId" />
+                                        <input type="hidden" name="id" value="@reservation.ReservationId" />
 
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        İptal
-                                    </button>
-                                </form>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            İptal
+                                        </button>
+                                    </form>
+                                }
+
                             </td>
                         </tr>
                     }

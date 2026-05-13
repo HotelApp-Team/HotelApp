@@ -89,11 +89,11 @@
                     if (!Model.IsAuthenticated)
                     {
                         <div class="alert alert-info">
-                            Rezervasyon başlatmak için giriş yapmalısınız.
+                            Rezervasyon baslatmak icin giris yapmalisiniz.
                             <a asp-controller="Auth"
                                asp-action="Login"
                                asp-route-returnUrl="@Context.Request.Path">
-                                Giriş Yap
+                                Giris Yap
                             </a>
                         </div>
                     }
@@ -110,7 +110,7 @@
                 }
                 else
                 {
-                    <p class="text-muted mb-0">Bu otel için henüz oda bilgisi bulunmuyor.</p>
+                    <p class="text-muted mb-0">Bu otel icin henuz oda bilgisi bulunmuyor.</p>
                 }
             </section>
 
@@ -192,3 +192,5 @@
         </div>
     </div>
 </div>
+
+

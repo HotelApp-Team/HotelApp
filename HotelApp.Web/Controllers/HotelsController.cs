@@ -87,7 +87,7 @@ namespace HotelApp.Web.Controllers
 
             return View(model);
         }
-        public async Task<IActionResult> Detail(int id)
+        public async Task<IActionResult> Detail(int id, DateTime? checkIn, DateTime? checkOut, int? guestCount)
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
@@ -136,6 +136,11 @@ namespace HotelApp.Web.Controllers
             };
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;
+
+            model.SearchCheckIn = checkIn;
+            model.SearchCheckOut = checkOut;
+            model.SearchGuestCount = guestCount;
+
 
             return View("Detail", model);
         }
