@@ -1,5 +1,7 @@
 ﻿@model List<RoomTypeAdminViewModel>
 
+@* Kullanımda olan oda tipi silinirse API 409 Conflict döner; kullanıcıya kullanımda mesajı gösterilir. *@
+
 @{
     ViewData["Title"] = "Oda Tipleri Yönetimi";
     Layout = "_AdminLayout";
