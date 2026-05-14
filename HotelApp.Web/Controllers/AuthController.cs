@@ -105,6 +105,113 @@ public class AuthController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    // Şifremi unuttum sayfasını açar.
+    [HttpGet]
+    public async Task<IActionResult> ForgotPassword()
+    {
+        // Giriş yapmış kullanıcı şifre yenileme istemek yerine ana sayfaya yönlendirilir.
+        if (HttpContext.Session.IsAuthenticated(_configuration))
+            return RedirectToAction("Index", "Home");
+
+        // Form modeline hero istatistikleri de eklenir; tasarım login/register ile aynı kalır.
+        return View(new ForgotPasswordViewModel
+        {
+            HeroStats = await GetHeroStatsAsync()
+        });
+    }
+
+    // Şifremi unuttum formu gönderildiğinde API'den reset linki maili ister.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+    {
+        // Validation kuralları sağlanmıyorsa formu hata mesajıyla geri gösterir.
+        if (!ModelState.IsValid)
+        {
+            model.HeroStats = await GetHeroStatsAsync();
+            return View(model);
+        }
+
+        // API'ye sadece email bilgisini gönderiyoruz.
+        var response = await _apiService.PostAsync<ForgotPasswordResponse>("auth/forgot-password", new { model.Email });
+
+        // Başarısızsa hata mesajı ile formu geri gösterir.
+        if (!response.Success)
+        {
+            ModelState.AddModelError(string.Empty, response.Message);
+            model.HeroStats = await GetHeroStatsAsync();
+            return View(model);
+        }
+
+        // API güvenlik için her durumda generic mesaj döner; aynı mesajı kullanıcıya gösteririz.
+        model.IsSubmitted = true;
+        model.Message = response.Data?.Message ?? "Eğer bu email sistemde kayıtlıysa şifre yenileme bağlantısı gönderildi.";
+        model.HeroStats = await GetHeroStatsAsync();
+        return View(model);
+    }
+
+    // Maildeki reset linkinden gelen yeni şifre belirleme sayfasını açar.
+    [HttpGet]
+    public async Task<IActionResult> ResetPassword(string? token)
+    {
+        // Giriş yapmış kullanıcı reset linki kullanmak yerine ana sayfaya yönlendirilir.
+        if (HttpContext.Session.IsAuthenticated(_configuration))
+            return RedirectToAction("Index", "Home");
+
+        // Token yoksa formu açmayız; kullanıcıya kontrollü hata gösteririz.
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return View(new ResetPasswordViewModel
+            {
+                IsInvalidLink = true,
+                Message = "Şifre yenileme linki geçersiz veya süresi dolmuş.",
+                HeroStats = await GetHeroStatsAsync()
+            });
+        }
+
+        // Token hidden input ile POST'a taşınır.
+        return View(new ResetPasswordViewModel
+        {
+            Token = token,
+            HeroStats = await GetHeroStatsAsync()
+        });
+    }
+
+    // Yeni şifre formu gönderildiğinde reset token ile API'de şifreyi günceller.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        // Validation kuralları sağlanmıyorsa formu hata mesajıyla geri gösterir.
+        if (!ModelState.IsValid)
+        {
+            model.HeroStats = await GetHeroStatsAsync();
+            return View(model);
+        }
+
+        // API'ye reset token ve yeni şifre bilgilerini gönderiyoruz.
+        var resetData = new
+        {
+            model.Token,
+            model.NewPassword,
+            model.ConfirmNewPassword
+        };
+
+        var response = await _apiService.PostAsync<ResetPasswordResponse>("auth/reset-password", resetData);
+
+        // Token geçersizse veya API hata dönerse aynı sayfada hata gösterir.
+        if (!response.Success)
+        {
+            ModelState.AddModelError(string.Empty, response.Message);
+            model.HeroStats = await GetHeroStatsAsync();
+            return View(model);
+        }
+
+        // Başarılı reset sonrası kullanıcı yeni şifresiyle giriş yapabilsin diye Login'e yönlendirir.
+        TempData["SuccessMessage"] = response.Data?.Message ?? "Şifreniz başarıyla yenilendi. Yeni şifrenizle giriş yapabilirsiniz.";
+        return RedirectToAction("Login");
+    }
+
     // Kayıt sayfasını açar.
     [HttpGet]
     public async Task<IActionResult> Register()

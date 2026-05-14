@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HotelApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -235,6 +235,9 @@ public partial class HotelAppDbContext : DbContext
 
             entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
 
+            entity.HasIndex(e => e.PasswordResetToken, "IX_Users_PasswordResetToken")
+                .HasFilter("[PasswordResetToken] IS NOT NULL");
+
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.EmailVerificationToken).HasMaxLength(100);
@@ -242,6 +245,7 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(500);
+            entity.Property(e => e.PasswordResetToken).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(20);
 
             entity.HasMany(d => d.Roles).WithMany(p => p.Users)

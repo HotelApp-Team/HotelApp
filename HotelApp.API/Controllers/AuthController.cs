@@ -133,6 +133,37 @@ public class AuthController : ControllerBase
         return Ok(new { Message = result.Message });
     }
 
+    // E54 - POST api/auth/forgot-password : Kullanıcıya şifre yenileme linki gönderilmesini sağlar.
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var result = await _authService.ForgotPasswordAsync(dto);
+
+        // Kullanici var/yok bilgisi disariya acik edilmez; log mesaji da genel tutulur.
+        await LogInfoAsync(
+            result.EmailSendAttempted
+                ? $"Şifre yenileme maili gönderildi: {dto.Email}"
+                : $"Şifre yenileme isteği işlendi: {dto.Email}",
+            userEmail: dto.Email);
+
+        return Ok(new { Message = result.Message });
+    }
+
+    // E55 - POST api/auth/reset-password : Reset token ile kullanıcının yeni şifre belirlemesini sağlar.
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        var result = await _authService.ResetPasswordAsync(dto);
+
+        await LogInfoAsync(
+            $"Kullanıcı şifresini reset token ile yeniledi: {result.Email}",
+            userEmail: result.Email);
+
+        return Ok(new { Message = result.Message });
+    }
+
     // E46 - PUT api/auth/profile : Kullanıcının profil bilgilerini güncellemesini sağlar.
     [Authorize]
     [HttpPut("profile")]

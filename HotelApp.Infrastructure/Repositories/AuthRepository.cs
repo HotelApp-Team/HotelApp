@@ -38,6 +38,13 @@ public class AuthRepository : Repository<User>, IAuthRepository
             .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
     }
 
+    public async Task<User?> GetByPasswordResetTokenAsync(string token)
+    {
+        // Sifre yenileme linkindeki token'a ait kullaniciyi bulur.
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+    }
+
     public async Task<Role?> GetRoleByNameAsync(string roleName)
     {
         return await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
