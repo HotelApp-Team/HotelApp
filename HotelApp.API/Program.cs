@@ -95,7 +95,8 @@ builder.Services.AddScoped<IEmailService>(sp =>
         senderName: emailSettings["SenderName"]!,
         username: emailSettings["Username"]!,
         password: emailSettings["Password"]!,
-        verifyEmailBaseUrl: emailSettings["VerifyEmailBaseUrl"]!
+        verifyEmailBaseUrl: emailSettings["VerifyEmailBaseUrl"]!,
+        resetPasswordBaseUrl: emailSettings["ResetPasswordBaseUrl"]!
     ));
 
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);

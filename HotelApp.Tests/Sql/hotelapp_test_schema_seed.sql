@@ -68,6 +68,9 @@ CREATE TABLE Users (
     IsEmailVerified BIT NOT NULL DEFAULT 0,
     EmailVerificationToken NVARCHAR(100) NULL,
     VerificationTokenExpiry DATETIME2 NULL,
+    PasswordResetToken NVARCHAR(100) NULL,
+    PasswordResetTokenExpiry DATETIME2 NULL,
+    PasswordResetRequestedAt DATETIME2 NULL,
     FailedLoginAttempts INT NOT NULL DEFAULT 0,
     LockoutEndTime DATETIME2 NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
@@ -172,6 +175,7 @@ CREATE INDEX IX_Reservations_UserId ON Reservations(UserId);
 CREATE INDEX IX_Reservations_HotelRoomId ON Reservations(HotelRoomId);
 CREATE INDEX IX_Reviews_HotelId ON Reviews(HotelId);
 CREATE INDEX IX_Users_Email ON Users(Email);
+CREATE INDEX IX_Users_PasswordResetToken ON Users(PasswordResetToken) WHERE PasswordResetToken IS NOT NULL;
 CREATE INDEX IX_Logs_Timestamp ON Logs([Timestamp] DESC);
 CREATE INDEX IX_Logs_Level ON Logs([Level]);
 CREATE INDEX IX_Logs_UserId ON Logs(UserId);

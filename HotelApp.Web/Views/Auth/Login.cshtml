@@ -87,6 +87,9 @@
                             <input asp-for="RememberMe" class="form-check-input" />
                             <label asp-for="RememberMe" class="form-check-label"></label>
                         </div>
+
+                        @* Sifre yenileme akisi kullaniciyi email isteyen public forma yonlendirir. *@
+                        <a asp-action="ForgotPassword" asp-controller="Auth" class="auth-link-small">Şifremi unuttum?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 btn-auth">Giriş Yap</button>

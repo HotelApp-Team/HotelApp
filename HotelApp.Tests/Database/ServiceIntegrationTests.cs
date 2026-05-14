@@ -331,5 +331,7 @@ public class ServiceIntegrationTests
         public Task SendVerificationEmailAsync(string toEmail, string firstName, string token) => Task.CompletedTask;
 
         public Task<bool> SendVerificationEmailSafelyAsync(string toEmail, string firstName, string token) => Task.FromResult(true);
+
+        public Task SendPasswordResetEmailAsync(string toEmail, string firstName, string token) => Task.CompletedTask;
     }
 }

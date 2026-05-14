@@ -14,4 +14,7 @@ public interface IEmailService
     // Mail gonderimini "best effort" dener.
     // Auth akisinin kirilmamasi icin exception yerine basari/basarisizlik sonucu doner.
     Task<bool> SendVerificationEmailSafelyAsync(string toEmail, string firstName, string token);
+
+    // E54 icin kullaniciya sifre yenileme linki gonderir.
+    Task SendPasswordResetEmailAsync(string toEmail, string firstName, string token);
 }

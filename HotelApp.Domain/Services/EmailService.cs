@@ -31,8 +31,11 @@ public class EmailService : IEmailService
     // Dogrulama linkinin temel adresi
     private readonly string _verifyEmailBaseUrl;
 
+    // Sifre yenileme linkinin temel adresi
+    private readonly string _resetPasswordBaseUrl;
+
     // Constructor ile appsettings.json'dan gelen EmailSettings degerlerini aliyoruz
-    public EmailService(string smtpServer, int smtpPort, string senderEmail, string senderName, string username, string password, string verifyEmailBaseUrl)
+    public EmailService(string smtpServer, int smtpPort, string senderEmail, string senderName, string username, string password, string verifyEmailBaseUrl, string resetPasswordBaseUrl)
     {
         _smtpServer = smtpServer;
         _smtpPort = smtpPort;
@@ -41,6 +44,7 @@ public class EmailService : IEmailService
         _username = username;
         _password = password;
         _verifyEmailBaseUrl = verifyEmailBaseUrl;
+        _resetPasswordBaseUrl = resetPasswordBaseUrl;
     }
 
     // E01 ve E43 için doğrulama mailini SMTP üzerinden gönderir.
@@ -94,6 +98,46 @@ public class EmailService : IEmailService
         {
             return false;
         }
+    }
+
+    // E54 için şifre yenileme linkini SMTP üzerinden gönderir.
+    public async Task SendPasswordResetEmailAsync(string toEmail, string firstName, string token)
+    {
+        // Token ile sifre yenileme linkini olusturur.
+        var resetLink = $"{_resetPasswordBaseUrl}?token={Uri.EscapeDataString(token)}";
+
+        // Mail konusu
+        var subject = "HotelApp Sifre Yenileme";
+
+        // Mail icerigi
+        var body = $@"
+        Merhaba {firstName},
+
+        Sifrenizi yenilemek icin asagidaki linke tiklayin:
+        {resetLink}
+
+        Bu link 30 dakika gecerlidir.
+        Eger bu islemi siz yapmadiysaniz bu maili dikkate almayin.";
+
+        using var message = new MailMessage
+        {
+            From = new MailAddress(_senderEmail, _senderName),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = false,
+            BodyEncoding = System.Text.Encoding.UTF8,
+            SubjectEncoding = System.Text.Encoding.UTF8
+        };
+
+        message.To.Add(toEmail);
+
+        using var client = new SmtpClient(_smtpServer, _smtpPort)
+        {
+            Credentials = new NetworkCredential(_username, _password),
+            EnableSsl = true
+        };
+
+        await client.SendMailAsync(message);
     }
 
 }

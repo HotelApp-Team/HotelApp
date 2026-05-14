@@ -497,6 +497,12 @@ internal class FakeAuthService : IAuthService
         ExpiresAt = DateTime.UtcNow.AddMinutes(30)
     });
     public Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto) => Task.FromResult(new ResendVerificationResultDto());
+    public Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto dto) => Task.FromResult(new ForgotPasswordResultDto());
+    public Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto dto) => Task.FromResult(new ResetPasswordResultDto
+    {
+        Email = "test@hotelapp.com",
+        Message = "Şifreniz başarıyla yenilendi."
+    });
 }
 
 internal class FakeUserService : IUserService

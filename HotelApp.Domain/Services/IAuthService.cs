@@ -21,5 +21,11 @@ namespace HotelApp.Domain.Services
         // Email dogrulama mailini yeniden gondermek icin yeni verification token uretir.
         // Controller'in log seviyesi secebilmesi icin hem generic mesaji hem de mail sonucunu doner.
         Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto);
+
+        // E54 icin kullanicinin emailine sifre yenileme linki gonderir.
+        Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto dto);
+
+        // E55 icin reset token ile kullanicinin yeni sifresini kaydeder.
+        Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto dto);
     }
 }
