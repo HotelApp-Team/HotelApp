@@ -13,6 +13,7 @@
 USE HotelAppDB;
 GO
 
+
 SET NOCOUNT ON;
 
 -- 1) Mevcut 'Pending' kayitlarini 'Confirmed'a tasi. Hicbir kayit yoksa 0 row etkilenir.
@@ -97,3 +98,4 @@ GO
 
 PRINT 'Migration tamamlandi.';
 GO
+

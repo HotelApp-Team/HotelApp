@@ -32,9 +32,9 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE dbo.Reservations
         ADD CONSTRAINT CHK_Status
-        CHECK (Status IN ('Confirmed','Rejected','Cancelled','Completed'));
+        CHECK (Status IN ('Confirmed','Cancelled','Completed'));
 
-    PRINT 'Yeni CHK_Status constraint eklendi: Confirmed, Rejected, Cancelled, Completed.';
+    PRINT 'Yeni CHK_Status constraint eklendi: Confirmed, Cancelled, Completed.';
 END
 GO
 

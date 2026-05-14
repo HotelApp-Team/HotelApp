@@ -23,6 +23,7 @@ namespace HotelApp.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoomTypeAdminViewModel model)
         {
             var response = await _apiService.PostAsync<object>("roomtypes", model);
@@ -38,6 +39,7 @@ namespace HotelApp.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(RoomTypeAdminViewModel model)
         {
             var response = await _apiService.PutAsync<object>($"roomtypes/{model.Id}", model);
@@ -53,6 +55,7 @@ namespace HotelApp.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var response = await _apiService.DeleteAsync($"roomtypes/{id}");

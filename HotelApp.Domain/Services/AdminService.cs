@@ -201,7 +201,7 @@ public class AdminService : IAdminService
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException("Durum zorunludur.");
 
-        var allowedStatuses = new[] { "Confirmed", "Rejected", "Cancelled", "Completed" };
+        var allowedStatuses = new[] { "Confirmed", "Cancelled", "Completed" };
         if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Gecersiz rezervasyon durumu.");
 
@@ -219,7 +219,7 @@ public class AdminService : IAdminService
 
     public Task<ReservationDto> ConfirmReservationAsync(int reservationId, bool confirm)
     {
-        var newStatus = confirm ? "Confirmed" : "Rejected";
+        var newStatus = confirm ? "Confirmed" : "Cancelled";
         return UpdateReservationStatusAsync(reservationId, newStatus);
     }
     // User entity'sini admin ekranÄ±na gÃ¼venli ÅŸekilde dÃ¶neceÄŸimiz AdminUserDto'ya Ã§evirir.

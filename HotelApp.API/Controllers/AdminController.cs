@@ -1,5 +1,6 @@
 ﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
+using HotelApp.Web.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;

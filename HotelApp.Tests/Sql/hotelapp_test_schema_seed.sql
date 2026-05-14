@@ -104,7 +104,7 @@ CREATE TABLE Reservations (
     Status NVARCHAR(20) NOT NULL DEFAULT 'Confirmed',
     CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT CHK_Dates CHECK (CheckOutDate > CheckInDate),
-    CONSTRAINT CHK_Status CHECK (Status IN ('Confirmed','Rejected','Cancelled','Completed')),
+    CONSTRAINT CHK_Status CHECK (Status IN ('Confirmed','Cancelled','Completed')),
     CONSTRAINT FK_Reservation_Users FOREIGN KEY(UserId) REFERENCES Users(Id),
     CONSTRAINT FK_Reservation_HotelRoomId FOREIGN KEY(HotelRoomId) REFERENCES HotelRooms(Id)
 );
@@ -434,19 +434,29 @@ INSERT INTO RoomTypes (Name, Description, MaxGuests)
 VALUES
 ('Single', 'Single test room', 1),
 ('Double', 'Double test room', 2),
-('Family', 'Family test room', 4);
+('Suite', 'Suite test room', 3),
+('Family', 'Family test room', 4),
+('Deluxe', 'Deluxe test room', 3),
+('Business', 'Business test room', 2),
+('Kral', 'Kral test room', 4);
 GO
+
+DECLARE @hotelId INT;
+
+SELECT @hotelId = Id
+FROM Hotels
+WHERE Name = 'CI Istanbul Hotel';
 
 INSERT INTO HotelRooms
     (HotelId, RoomTypeId, PricePerNight, ExtraGuestPricePerNight, TotalRooms)
 VALUES
-    (@hotelId, 1, 800, 0, 10),     -- Single
-    (@hotelId, 2, 1200, 250, 10),  -- Double
-    (@hotelId, 3, 2500, 500, 5),   -- Suite
-    (@hotelId, 4, 2000, 350, 5),   -- Family
-    (@hotelId, 5, 1800, 300, 6),   -- Deluxe
-    (@hotelId, 6, 1500, 300, 7),   -- Business
-    (@hotelId, 7, 5000, 750, 2);   -- Kral
+    (@hotelId, 1, 800, 0, 10),
+    (@hotelId, 2, 1200, 250, 10),
+    (@hotelId, 3, 2500, 500, 5),
+    (@hotelId, 4, 2000, 350, 5),
+    (@hotelId, 5, 1800, 300, 6),
+    (@hotelId, 6, 1500, 300, 7),
+    (@hotelId, 7, 5000, 750, 2);
 GO
 
 INSERT INTO HotelImages (HotelId, ImageUrl, IsMain, DisplayOrder)
@@ -486,3 +496,4 @@ VALUES
 (1, 1),
 (2, 2);
 GO
+

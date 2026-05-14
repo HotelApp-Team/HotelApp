@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.37111.16
@@ -13,13 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelApp.Web", "HotelApp.We
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelApp.Tests", "HotelApp.Tests\HotelApp.Tests.csproj", "{A294B487-44CA-4049-8FDD-B201976B77C3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "migrations", "migrations", "{944E2921-CDB3-4681-B5D8-8891A1BDC907}"
-	ProjectSection(SolutionItems) = preProject
-		2026-05-13_add_rejected_status_and_fix_sp.sql = 2026-05-13_add_rejected_status_and_fix_sp.sql
-	EndProjectSection
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
