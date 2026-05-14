@@ -1,6 +1,7 @@
 using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
+using System.Security.Cryptography;
 
 namespace HotelApp.Domain.Services;
 
@@ -256,5 +257,97 @@ public class AuthService : IAuthService
             EmailSent = emailSent,
             EmailSendAttempted = true
         };
+    }
+
+    // E54 için kullanıcıya şifre yenileme linki gönderilmesini sağlar.
+    // Güvenlik için kullanıcı var/yok bilgisini dışarıya sızdırmaz.
+    public async Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto dto)
+    {
+        const string genericMessage = "Eğer bu email sistemde kayıtlıysa şifre yenileme bağlantısı gönderildi.";
+
+        var user = await _unitOfWork.AuthRepository.GetByEmailAsync(dto.Email);
+
+        // Kullanici yoksa veya pasifse ayni mesaji doner; hesap varligi bilgisi sizdirilmez.
+        if (user == null || !user.IsActive)
+            return new ForgotPasswordResultDto
+            {
+                Message = genericMessage,
+                EmailSendAttempted = false
+            };
+
+        // Kisa sure icinde tekrar reset maili istenirse yeni mail gondermeden generic mesaj doner.
+        if (user.PasswordResetRequestedAt.HasValue && user.PasswordResetRequestedAt.Value > DateTime.UtcNow.AddMinutes(-2))
+            return new ForgotPasswordResultDto
+            {
+                Message = genericMessage,
+                EmailSendAttempted = false
+            };
+
+        // Sifre yenileme icin tek kullanimlik token bilgilerini hazirlar.
+        user.PasswordResetToken = GeneratePasswordResetToken();
+        user.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+        user.PasswordResetRequestedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendPasswordResetEmailAsync(
+            user.Email,
+            user.FirstName,
+            user.PasswordResetToken);
+
+        return new ForgotPasswordResultDto
+        {
+            Message = genericMessage,
+            EmailSendAttempted = true
+        };
+    }
+
+    // E55 için reset token ile yeni şifreyi kaydeder ve token alanlarını temizler.
+    public async Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        // Token bos mu kontrol eder.
+        if (string.IsNullOrWhiteSpace(dto.Token))
+            throw new ArgumentException("Şifre yenileme linki geçersiz veya süresi dolmuş.");
+
+        // Yeni sifre tekrar kontrolu servis tarafinda da garanti edilir.
+        if (dto.NewPassword != dto.ConfirmNewPassword)
+            throw new ArgumentException("Şifreler uyuşmuyor.");
+
+        var user = await _unitOfWork.AuthRepository.GetByPasswordResetTokenAsync(dto.Token);
+
+        // Token DB'de yoksa veya kullanici pasifse ayni genel hata mesaji doner.
+        if (user == null || !user.IsActive)
+            throw new ArgumentException("Şifre yenileme linki geçersiz veya süresi dolmuş.");
+
+        // Token suresi dolmus mu kontrol eder.
+        if (!user.PasswordResetTokenExpiry.HasValue || user.PasswordResetTokenExpiry.Value < DateTime.UtcNow)
+            throw new ArgumentException("Şifre yenileme linki geçersiz veya süresi dolmuş.");
+
+        // Yeni sifreyi BCrypt ile hashleyip kullaniciya kaydeder.
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+        // Basarili sifre yenilemede reset token ve kilit bilgilerini temizler.
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiry = null;
+        user.PasswordResetRequestedAt = null;
+        user.FailedLoginAttempts = 0;
+        user.LockoutEndTime = null;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return new ResetPasswordResultDto
+        {
+            Email = user.Email,
+            Message = "Şifreniz başarıyla yenilendi. Yeni şifrenizle giriş yapabilirsiniz."
+        };
+    }
+
+    // E54 için tahmin edilmesi zor, URL-safe reset token üretir.
+    private static string GeneratePasswordResetToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
     }
 }

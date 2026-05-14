@@ -8,6 +8,19 @@
     // Default value: check-in = bugün, check-out = yarın (en az 1 gece kalış).
     var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
     var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+    var initialCheckIn = ViewData["CheckInIso"]?.ToString();
+    var initialCheckOut = ViewData["CheckOutIso"]?.ToString();
+    var initialGuestCount = ViewData["GuestCount"] is int count && count > 0 ? count : 1;
+
+    if (string.IsNullOrWhiteSpace(initialCheckIn))
+    {
+        initialCheckIn = todayIso;
+    }
+
+    if (string.IsNullOrWhiteSpace(initialCheckOut))
+    {
+        initialCheckOut = tomorrowIso;
+    }
 }
 
 <div class="modal fade"
@@ -41,7 +54,7 @@
                                name="CheckInDate"
                                id="checkIn-@roomId"
                                min="@todayIso"
-                               value="@todayIso"
+                               value="@initialCheckIn"
                                class="form-control"
                                required
                                onchange="document.getElementById('checkOut-@roomId').min = this.value;" />
@@ -53,7 +66,7 @@
                                name="CheckOutDate"
                                id="checkOut-@roomId"
                                min="@tomorrowIso"
-                               value="@tomorrowIso"
+                               value="@initialCheckOut"
                                class="form-control"
                                required />
                     </div>
@@ -65,7 +78,7 @@
                                class="form-control"
                                min="1"
                                max="@Model.MaxGuests"
-                               value="1"
+                               value="@initialGuestCount"
                                required />
                     </div>
 

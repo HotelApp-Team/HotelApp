@@ -16,7 +16,7 @@ public class ApiControllerTests
     {
         var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
-        var result = await controller.GetAll(city: null, star: null, page: 0);
+        var result = await controller.GetAll(city: null, star: null, isActive: null, page: 0);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -26,7 +26,7 @@ public class ApiControllerTests
     {
         var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
-        var result = await controller.GetAll(city: null, star: null, pageSize: 101);
+        var result = await controller.GetAll(city: null, star: null, isActive: null, pageSize: 101);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -413,8 +413,8 @@ internal class FakeHotelService : IHotelService
         return Task.FromResult(SearchResult);
     }
 
-    public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
-        => Task.FromResult(FilteredHotels);
+    public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
+    => Task.FromResult(FilteredHotels);
 }
 
 internal class FakeAmenityService : IAmenityService
@@ -497,6 +497,12 @@ internal class FakeAuthService : IAuthService
         ExpiresAt = DateTime.UtcNow.AddMinutes(30)
     });
     public Task<ResendVerificationResultDto> ResendVerificationAsync(ResendVerificationDto dto) => Task.FromResult(new ResendVerificationResultDto());
+    public Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto dto) => Task.FromResult(new ForgotPasswordResultDto());
+    public Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto dto) => Task.FromResult(new ResetPasswordResultDto
+    {
+        Email = "test@hotelapp.com",
+        Message = "Şifreniz başarıyla yenilendi."
+    });
 }
 
 internal class FakeUserService : IUserService

@@ -23,6 +23,7 @@ public class HotelsController : ControllerBase
     public async Task<IActionResult> GetAll(
     [FromQuery] string? city,
     [FromQuery] byte? star,
+    [FromQuery] bool? isActive,
     [FromQuery] string? sortBy = "name",
     [FromQuery] string? sortOrder = "asc",
     [FromQuery] int page = 1,
@@ -35,7 +36,7 @@ public class HotelsController : ControllerBase
             return BadRequest(new { Message = "PageSize 1 ile 100 arasında olmalıdır" });
 
         var result = await _hotelService.GetAllFilteredAsync(
-            city, star, sortBy, sortOrder, page, pageSize);
+            city, star, isActive, sortBy, sortOrder, page, pageSize);
 
         return Ok(result);
     }

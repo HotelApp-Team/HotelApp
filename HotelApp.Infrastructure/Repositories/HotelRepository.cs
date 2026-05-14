@@ -112,12 +112,15 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .AsNoTracking();
     }
 
-    public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, string? sortBy, string? sortOrder, int page, int pageSize)
+    public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
     {
         var query = _context.Hotels
             .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
             .AsQueryable();
+
+        if (isActive.HasValue)
+            query = query.Where(x => x.IsActive == isActive.Value);
 
         if (!string.IsNullOrEmpty(city))
             query = query.Where(x => x.City.ToLower() == city.ToLower());

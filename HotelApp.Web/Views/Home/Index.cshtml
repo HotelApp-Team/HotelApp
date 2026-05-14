@@ -64,8 +64,13 @@
                 <label class="search-label">Giriş</label>
                 <div class="search-field">
                     <i class="bi bi-calendar-event search-icon"></i>
-                    <input type="date" name="checkIn" min="@todayIso" value="@todayIso"
-                           class="form-control form-control-flush" required />
+                    <input type="date"
+                           id="checkIn"
+                           name="checkIn"
+                           min="@todayIso"
+                           value="@todayIso"
+                           class="form-control form-control-flush"
+                           required />
                 </div>
             </div>
 
@@ -73,10 +78,35 @@
                 <label class="search-label">Çıkış</label>
                 <div class="search-field">
                     <i class="bi bi-calendar-check search-icon"></i>
-                    <input type="date" name="checkOut" min="@todayIso" value="@tomorrowIso"
-                           class="form-control form-control-flush" required />
+                    <input type="date"
+                           id="checkOut"
+                           name="checkOut"
+                           min="@tomorrowIso"
+                           value="@tomorrowIso"
+                           class="form-control form-control-flush"
+                           required />
                 </div>
             </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const checkIn = document.getElementById("checkIn");
+                    const checkOut = document.getElementById("checkOut");
+
+                    checkIn.addEventListener("change", function () {
+                        const selectedCheckIn = new Date(checkIn.value);
+
+                        selectedCheckIn.setDate(selectedCheckIn.getDate() + 1);
+
+                        const nextDay = selectedCheckIn.toISOString().split("T")[0];
+
+                        checkOut.min = nextDay;
+
+                        if (!checkOut.value || checkOut.value < nextDay) {
+                            checkOut.value = nextDay;
+                        }
+                    });
+                });
+            </script>
 
             <div class="col-md-2 search-cell">
                 <label class="search-label">Misafir</label>

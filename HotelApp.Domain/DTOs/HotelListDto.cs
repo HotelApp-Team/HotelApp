@@ -16,5 +16,6 @@ namespace HotelApp.Domain.DTOs
         public decimal? AvgRating { get; set; }
         public bool IsActive { get; set; }
         public string? MainImageUrl { get; set; }
+        public decimal? MinPrice { get; set; }
     }
 }
