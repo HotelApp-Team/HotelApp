@@ -40,6 +40,8 @@
         @if (isAdmin)
         {
             @* Admin rolu varsa navbar'da Admin Panel dropdown'i goruntulenir.
+               _AdminLayout sidebar'i ile birebir ayni link'leri ve ikonlari kullanir,
+               boylece kullanici hangi yoldan girerse girsin ayni mental model'i goruyor.
                Bootstrap 5 dropdown bundle script'i _Layout'ta yuklu, ek JS gerekmez. *@
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle text-primary fw-semibold"
@@ -53,13 +55,33 @@
                         </a>
                     </li>
                     <li>
+                        <a class="dropdown-item" asp-controller="HotelMgmt" asp-action="Index">
+                            <i class="bi bi-building me-2"></i>Oteller
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="RoomType" asp-action="Index">
+                            <i class="bi bi-door-open me-2"></i>Oda Tipleri
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="ReservationMgmt" asp-action="Index">
+                            <i class="bi bi-calendar-check me-2"></i>Rezervasyonlar
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Amenity" asp-action="Index">
+                            <i class="bi bi-stars me-2"></i>Olanaklar
+                        </a>
+                    </li>
+                    <li>
                         <a class="dropdown-item" asp-controller="AdminUserMgmt" asp-action="Index">
                             <i class="bi bi-people-fill me-2"></i>Kullanıcılar
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" asp-controller="AdminLog" asp-action="Index">
-                            <i class="bi bi-clock-history me-2"></i>Loglar
+                            <i class="bi bi-clock-history me-2"></i>Sistem Kayıtları
                         </a>
                     </li>
                 </ul>
