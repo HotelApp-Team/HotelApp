@@ -53,6 +53,11 @@ namespace HotelApp.Web.Controllers
                 return RedirectToAction("My");
             }
 
+            // API DTO -> ViewModel JSON mapping'inde rezervasyon id'si bos kalabiliyor
+            // (DTO'da farkli isimde alan). Endpoint URL'inden gelen id zaten dogru,
+            // gosterimde kullanilabilsin diye direkt ata.
+            response.Data.ReservationId = id;
+
             return View(response.Data);
         }
 
@@ -65,6 +70,10 @@ namespace HotelApp.Web.Controllers
                 TempData["Error"] = response.Message ?? "Fatura bilgisi alinamadi.";
                 return RedirectToAction("My");
             }
+
+            // Detail ile ayni neden: URL'deki id'yi gosterim icin ViewModel'a aktar
+            // (fatura ekraninda "Rezervasyon No: #..." dogru cikinsin).
+            response.Data.ReservationId = id;
 
             return View(response.Data);
         }

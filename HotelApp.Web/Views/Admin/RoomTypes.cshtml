@@ -6,14 +6,8 @@
     Layout = "_AdminLayout";
 }
 
-@if(TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-@if(TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+@* TempData["Success"]/["Error"] mesajlari _AdminLayout icinde merkezi olarak gosteriliyor;
+   burada tekrar render edilmesin (yoksa ayni mesaj iki kere cikar). *@
 @* Kullanımda olan oda tipi silinirse API 409 Conflict döner. *@
 
 <div class="d-flex justify-content-between align-items-start mb-4">

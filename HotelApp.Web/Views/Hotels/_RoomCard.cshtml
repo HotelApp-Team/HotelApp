@@ -4,7 +4,18 @@
     var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
     var checkIn = ViewData["CheckIn"]?.ToString();
     var checkOut = ViewData["CheckOut"]?.ToString();
-    var guestCount = ViewData["GuestCount"]?.ToString();
+
+    // Search'ten gelen guestCount bu oda tipinin MaxGuests'inden buyukse
+    // Booking linkinde max'a indir; aksi takdirde Booking sayfasindaki
+    // <input max="@Model.MaxGuests"> validasyonu yuzunden "Değer X veya
+    // daha küçük olmalıdır" hatasi cikiyordu. Min 1 ile koruyoruz.
+    int requestedGuests;
+    if (!int.TryParse(ViewData["GuestCount"]?.ToString(), out requestedGuests) || requestedGuests < 1)
+    {
+        requestedGuests = 1;
+    }
+    var clampedGuests = Math.Min(requestedGuests, Model.MaxGuests);
+    var guestCount = clampedGuests.ToString();
 }
 
 <div class="card mb-3">
