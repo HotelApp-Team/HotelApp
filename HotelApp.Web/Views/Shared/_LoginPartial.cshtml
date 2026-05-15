@@ -10,26 +10,31 @@
 <ul class="navbar-nav">
     @if (isLoggedIn)
     {
-        @* Giris yapmis kullanici icin: rezervasyonlarim, yorumlarim link'leri + isim + (varsa) admin paneli + profil + cikis. *@
-
-        <li class="nav-item">
-            <a class="nav-link text-dark"
-               asp-controller="Reservations"
-               asp-action="My">
-                Rezervasyonlarım
+        @* Giris yapmis kullanici icin: tek "Hosgeldin" dropdown + (varsa) admin paneli + cikis butonu.
+           Eski layoutta Rezervasyonlarim/Yorumlarim/Profilim ayri nav-item'lardi; navbar fazla
+           kalabaliklaniyordu. Tek hesap menusuyle Admin Panel dropdown'i ile gorsel tutarli oldu. *@
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark"
+               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i>Hoşgeldin, <strong>@fullName</strong>
             </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link text-dark"
-               asp-controller="Reviews"
-               asp-action="My">
-                Yorumlarım
-            </a>
-        </li>
-
-        <li class="nav-item d-flex align-items-center me-2">
-            <span class="nav-link text-dark">Hoşgeldin, <strong>@fullName</strong></span>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" asp-controller="Reservations" asp-action="My">
+                        <i class="bi bi-calendar-check me-2"></i>Rezervasyonlarım
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Reviews" asp-action="My">
+                        <i class="bi bi-chat-left-text me-2"></i>Yorumlarım
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                        <i class="bi bi-person-gear me-2"></i>Profilim
+                    </a>
+                </li>
+            </ul>
         </li>
 
         @if (isAdmin)
@@ -60,13 +65,13 @@
                 </ul>
             </li>
         }
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Profile" asp-action="Index">Profilim</a>
-        </li>
+
         <li class="nav-item">
             <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-link nav-link text-dark">Çıkış Yap</button>
+                <button type="submit" class="btn btn-link nav-link text-dark">
+                    <i class="bi bi-box-arrow-right me-1"></i>Çıkış Yap
+                </button>
             </form>
         </li>
     }
