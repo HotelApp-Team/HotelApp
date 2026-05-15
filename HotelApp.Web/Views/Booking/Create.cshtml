@@ -1,0 +1,198 @@
+﻿@model BookingPageViewModel
+
+@{
+    ViewData["Title"] = "Rezervasyonu Tamamla";
+
+    var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<div class="container py-4">
+    <div class="page-header">
+        <h1>Rezervasyonu Tamamla</h1>
+        <p>Konaklama detaylarını kontrol edip rezervasyonunu oluştur.</p>
+    </div>
+
+    <form asp-controller="Booking" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="HotelId" value="@Model.HotelId" />
+        <input type="hidden" name="HotelRoomId" value="@Model.HotelRoomId" />
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="app-card p-4">
+                    <h4 class="mb-4">Konaklama Detayları</h4>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Otel</label>
+                            <div class="form-control">@Model.HotelName</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Oda Tipi</label>
+                            <div class="form-control">@Model.RoomTypeName</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Giriş Tarihi</label>
+                            <input type="date"
+                                   name="CheckInDate"
+                                   id="checkIn"
+                                   value="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+                                   min="@todayIso"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Çıkış Tarihi</label>
+                            <input type="date"
+                                   name="CheckOutDate"
+                                   id="checkOut"
+                                   value="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+                                   min="@todayIso"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Misafir</label>
+                            <input type="number"
+                                   name="GuestCount"
+                                   id="guestCount"
+                                   value="@Model.GuestCount"
+                                   min="1"
+                                   max="@Model.MaxGuests"
+                                   class="form-control"
+                                   required />
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">Ödeme Yöntemi</h4>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ödeme Tipi</label>
+                            <select name="PaymentMethod" class="form-select" required>
+                                <option value="CreditCard">Kredi Kartı</option>
+                                <option value="Cash">Nakit</option>
+                                <option value="Transfer">Havale / EFT</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="alert alert-primary mb-0 w-100">
+                                Rezervasyon bilgileriniz güvenli şekilde işlenir.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="app-card p-4">
+                    <h4 class="mb-4">Rezervasyon Özeti</h4>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Otel</span>
+                        <span class="summary-value">@Model.HotelName</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Oda</span>
+                        <span class="summary-value">@Model.RoomTypeName</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Gece</span>
+                        <span class="summary-value">
+                            <span id="nightCount">1</span> gece
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Misafir</span>
+                        <span class="summary-value">
+                            <span id="summaryGuestCount">@Model.GuestCount</span> kişi
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Gecelik</span>
+                        <span class="summary-value">@Model.PricePerNight.ToString("C")</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Ek kişi gecelik</span>
+                        <span class="summary-value">@Model.ExtraGuestPricePerNight.ToString("C")</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Toplam</span>
+                        <span class="price-total" id="summaryTotal">@Model.PricePerNight.ToString("C")</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4">
+                        Rezervasyonu Onayla
+                    </button>
+
+                    <a asp-controller="Hotels"
+                       asp-action="Detail"
+                       asp-route-id="@Model.HotelId"
+                       class="btn btn-outline-primary w-100 mt-2">
+                        Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    (() => {
+        const checkIn = document.getElementById("checkIn");
+        const checkOut = document.getElementById("checkOut");
+        const guestCount = document.getElementById("guestCount");
+
+        const nightCount = document.getElementById("nightCount");
+        const summaryGuestCount = document.getElementById("summaryGuestCount");
+        const summaryTotal = document.getElementById("summaryTotal");
+
+        const pricePerNight = @Model.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const extraGuestPricePerNight = @Model.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+
+        function calculate() {
+            const start = new Date(checkIn.value);
+            const end = new Date(checkOut.value);
+
+            checkOut.min = checkIn.value;
+
+            let nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (nights < 1 || Number.isNaN(nights)) {
+                nights = 1;
+            }
+
+            const guests = parseInt(guestCount.value || "1", 10);
+
+            nightCount.textContent = nights;
+            summaryGuestCount.textContent = guests;
+
+                const billableExtraGuests = Math.max(0, guests - 1);
+    const total = (nights * pricePerNight) + (nights * extraGuestPricePerNight * billableExtraGuests);
+
+    summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY"
+    }).format(total);
+        }
+
+        checkIn.addEventListener("change", calculate);
+        checkOut.addEventListener("change", calculate);
+        guestCount.addEventListener("input", calculate);
+
+        calculate();
+    })();
+</script>

@@ -1,4 +1,5 @@
 ﻿@model HotelApp.Web.Models.HotelDetailPageVm
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @{
     ViewData["Title"] = Model.Name;
 
@@ -18,7 +19,7 @@
 
 <!-- ================= HERO ================= -->
 <div class="hotel-hero"
-    style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
+     style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
     <div class="overlay"></div>
 
     <div class="container hero-content">
@@ -89,21 +90,13 @@
                 </div>
             </section>
 
-
             <!-- ================= ROOMS ================= -->
             <section id="rooms-section" class="card-box mt-4">
                 <h3>Odalar</h3>
 
                 @if (Model.Rooms != null && Model.Rooms.Any())
                 {
-                    if (Model.IsAuthenticated)
-                    {
-                        @foreach (var room in Model.Rooms)
-                        {
-                            @await Html.PartialAsync("_RoomCard", room)
-                        }
-                    }
-                    else
+                    if (!Model.IsAuthenticated)
                     {
                         <div class="alert alert-info">
                             Rezervasyon başlatmak için giriş yapmalısınız.
@@ -114,6 +107,16 @@
                             </a>
                         </div>
                     }
+
+                    foreach (var room in Model.Rooms)
+                    {
+                        @await Html.PartialAsync("_RoomCard", room, new ViewDataDictionary(ViewData)
+                        {
+                            ["CheckIn"] = Model.SearchCheckIn?.ToString("yyyy-MM-dd"),
+                            ["CheckOut"] = Model.SearchCheckOut?.ToString("yyyy-MM-dd"),
+                            ["GuestCount"] = Model.SearchGuestCount
+                        })
+                    }
                 }
                 else
                 {
@@ -121,6 +124,7 @@
                 }
             </section>
 
+            @* HEAD'den korunan galeri modal HTML'i — gallery item'a tiklayinca buyutulmus carousel acilir. *@
             @if (Model.Images != null && Model.Images.Any())
             {
                 var orderedImages = Model.Images.OrderBy(x => x.DisplayOrder).ToList();
@@ -175,7 +179,6 @@
                     </div>
                 </div>
             }
-
 
             <!-- ================= REVIEWS ================= -->
             <section class="card-box mt-4">
@@ -235,8 +238,8 @@
                             if (!string.IsNullOrWhiteSpace(a.Icon))
                             {
                                 iconClass = a.Icon.StartsWith("bi ")
-                                ? a.Icon
-                                : $"bi bi-{a.Icon}";
+                                    ? a.Icon
+                                    : $"bi bi-{a.Icon}";
                             }
 
                             <li>

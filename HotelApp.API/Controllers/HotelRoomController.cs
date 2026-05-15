@@ -39,6 +39,7 @@ namespace HotelApp.API.Controllers
                 HotelId = hotelId,
                 RoomTypeId = request.RoomTypeId,
                 PricePerNight = request.PricePerNight,
+                ExtraGuestPricePerNight = request.ExtraGuestPricePerNight,
                 TotalRooms = request.TotalRooms
             };
 
@@ -83,6 +84,7 @@ namespace HotelApp.API.Controllers
                 HotelId = hotelId,
                 RoomTypeId = request.RoomTypeId,
                 PricePerNight = request.PricePerNight,
+                ExtraGuestPricePerNight = request.ExtraGuestPricePerNight,
                 TotalRooms = request.TotalRooms,
                 IsActive = request.IsActive
             };

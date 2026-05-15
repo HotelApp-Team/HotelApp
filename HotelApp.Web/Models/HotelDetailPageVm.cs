@@ -28,6 +28,9 @@ public class HotelDetailPageVm
     public CreateReservationViewModel BookingForm { get; set; } = new();
 
     public bool IsAuthenticated { get; set; }
+    public DateTime? SearchCheckIn { get; set; }
+    public DateTime? SearchCheckOut { get; set; }
+    public int? SearchGuestCount { get; set; }
 }
 
 public class HotelImageViewModel

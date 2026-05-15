@@ -8,6 +8,9 @@
     // Default value: check-in = bugün, check-out = yarın (en az 1 gece kalış).
     var todayIso = DateTime.Today.ToString("yyyy-MM-dd");
     var tomorrowIso = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+
+    // Search sayfasindan ViewData ile gelen tarih/misafir bilgileri varsa onlari kullan,
+    // yoksa default'a (bugun/yarin/1 misafir) dus. Modal acildiginda kullanici filtresini korur.
     var initialCheckIn = ViewData["CheckInIso"]?.ToString();
     var initialCheckOut = ViewData["CheckOutIso"]?.ToString();
     var initialGuestCount = ViewData["GuestCount"] is int count && count > 0 ? count : 1;
@@ -28,14 +31,21 @@
      tabindex="-1"
      aria-labelledby="bookingModalLabel-@roomId"
      aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content booking-modal-content">
+            <form asp-controller="Booking" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
 
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form asp-controller="Reservations" asp-action="Create" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bookingModalLabel-@roomId">
-                        @Model.RoomTypeName Rezervasyonu
-                    </h5>
+                <input type="hidden" name="HotelId" value="@Model.HotelId" />
+                <input type="hidden" name="HotelRoomId" value="@roomId" />
+
+                <div class="modal-header booking-modal-header">
+                    <div>
+                        <h5 class="modal-title" id="bookingModalLabel-@roomId">
+                            Rezervasyonu Tamamla
+                        </h5>
+                        <p class="mb-0 text-muted">Konaklama detaylarını kontrol edip rezervasyonunu oluştur.</p>
+                    </div>
 
                     <button type="button"
                             class="btn-close"
@@ -44,72 +54,256 @@
                     </button>
                 </div>
 
-                <div class="modal-body">
-                    <input type="hidden" name="HotelId" value="@Model.HotelId" />
-                    <input type="hidden" name="HotelRoomId" value="@roomId" />
+                <div class="modal-body booking-modal-body">
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="booking-step-card">
+                                <div class="booking-steps">
+                                    <div class="booking-step active">
+                                        <span>1</span>
+                                        <strong>Konaklama</strong>
+                                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Giriş Tarihi</label>
-                        <input type="date"
-                               name="CheckInDate"
-                               id="checkIn-@roomId"
-                               min="@todayIso"
-                               value="@initialCheckIn"
-                               class="form-control"
-                               required
-                               onchange="document.getElementById('checkOut-@roomId').min = this.value;" />
-                    </div>
+                                    <i class="bi bi-chevron-right"></i>
 
-                    <div class="mb-3">
-                        <label class="form-label">Çıkış Tarihi</label>
-                        <input type="date"
-                               name="CheckOutDate"
-                               id="checkOut-@roomId"
-                               min="@tomorrowIso"
-                               value="@initialCheckOut"
-                               class="form-control"
-                               required />
-                    </div>
+                                    <div class="booking-step">
+                                        <span>2</span>
+                                        <strong>Misafir</strong>
+                                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Misafir Sayısı</label>
-                        <input type="number"
-                               name="GuestCount"
-                               class="form-control"
-                               min="1"
-                               max="@Model.MaxGuests"
-                               value="@initialGuestCount"
-                               required />
-                    </div>
+                                    <i class="bi bi-chevron-right"></i>
 
-                    <div class="mb-3">
-                        <label class="form-label">Ödeme Yöntemi</label>
-                        <select name="PaymentMethod" class="form-select" required>
-                            <option value="CreditCard">Kredi Kartı</option>
-                            <option value="Cash">Nakit</option>
-                            <option value="Transfer">Havale/EFT</option>
-                        </select>
-                    </div>
+                                    <div class="booking-step">
+                                        <span>3</span>
+                                        <strong>Ödeme</strong>
+                                    </div>
+                                </div>
 
-                    <div class="alert alert-light border mb-0">
-                        Gecelik fiyat:
-                        <strong>@Model.PricePerNight.ToString("C")</strong>
+                                <div class="booking-section">
+                                    <h6>Konaklama Detayları</h6>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Otel</label>
+                                            <div class="booking-readonly-field">
+                                                <i class="bi bi-building"></i>
+                                                <span>@Model.HotelName</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Oda Tipi</label>
+                                            <div class="booking-readonly-field">
+                                                <i class="bi bi-door-open"></i>
+                                                <span>@Model.RoomTypeName</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Giriş Tarihi</label>
+                                            <input type="date"
+                                                   name="CheckInDate"
+                                                   id="checkIn-@roomId"
+                                                   min="@todayIso"
+                                                   value="@initialCheckIn"
+                                                   class="form-control booking-input"
+                                                   required />
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Çıkış Tarihi</label>
+                                            <input type="date"
+                                                   name="CheckOutDate"
+                                                   id="checkOut-@roomId"
+                                                   min="@tomorrowIso"
+                                                   value="@initialCheckOut"
+                                                   class="form-control booking-input"
+                                                   required />
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Misafir</label>
+                                            <input type="number"
+                                                   name="GuestCount"
+                                                   id="guestCount-@roomId"
+                                                   class="form-control booking-input"
+                                                   min="1"
+                                                   max="@Model.MaxGuests"
+                                                   value="@initialGuestCount"
+                                                   required />
+                                        </div>
+                                    </div>
+
+                                    <div class="booking-info-line">
+                                        <span class="booking-pill success">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Müsait
+                                        </span>
+
+                                        <span>
+                                            <i class="bi bi-moon"></i>
+                                            <strong id="nightCount-@roomId">1</strong> gece
+                                        </span>
+
+                                        <span>
+                                            <i class="bi bi-tag"></i>
+                                            @Model.PricePerNight.ToString("C") / gece
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="booking-section">
+                                    <h6>Ödeme Yöntemi</h6>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Ödeme Tipi</label>
+                                            <select name="PaymentMethod" class="form-select booking-input" required>
+                                                <option value="CreditCard">Kredi Kartı</option>
+                                                <option value="Cash">Nakit</option>
+                                                <option value="Transfer">Havale / EFT</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Güvenlik</label>
+                                            <div class="booking-readonly-field">
+                                                <i class="bi bi-shield-check"></i>
+                                                <span>Rezervasyon bilgileriniz güvenli şekilde işlenir.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="booking-summary app-card">
+                                <h5>Rezervasyon Özeti</h5>
+
+                                <div class="booking-summary-hotel">
+                                    <div class="booking-summary-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+
+                                    <div>
+                                        <strong>@Model.HotelName</strong>
+                                        <span>@Model.RoomTypeName</span>
+                                    </div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Giriş</span>
+                                    <span class="summary-value" id="summaryCheckIn-@roomId">@DateTime.Today.ToString("dd.MM.yyyy")</span>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Çıkış</span>
+                                    <span class="summary-value" id="summaryCheckOut-@roomId">@DateTime.Today.AddDays(1).ToString("dd.MM.yyyy")</span>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Gecelik</span>
+                                    <span class="summary-value">@Model.PricePerNight.ToString("C")</span>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Ek kişi gecelik</span>
+                                    <span class="summary-value">@Model.ExtraGuestPricePerNight.ToString("C")</span>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Misafir</span>
+                                    <span class="summary-value">
+                                        <span id="summaryGuestCount-@roomId">1</span> kişi
+                                    </span>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span class="summary-label">Toplam</span>
+                                    <span class="price-total" id="summaryTotal-@roomId">@Model.PricePerNight.ToString("C")</span>
+                                </div>
+
+                                <div class="booking-secure-note">
+                                    <i class="bi bi-shield-lock"></i>
+                                    Rezervasyonunuz güvenli şekilde oluşturulur.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer booking-modal-footer">
                     <button type="button"
-                            class="btn btn-outline-secondary"
+                            class="btn btn-outline-primary"
                             data-bs-dismiss="modal">
-                        Vazgeç
+                        Geri
                     </button>
 
                     <button type="submit" class="btn btn-primary">
-                        Rezervasyonu Tamamla
+                        Rezervasyonu Onayla
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    (() => {
+        const checkIn = document.getElementById("checkIn-@roomId");
+        const checkOut = document.getElementById("checkOut-@roomId");
+        const guestCount = document.getElementById("guestCount-@roomId");
+
+        const nightCount = document.getElementById("nightCount-@roomId");
+        const summaryCheckIn = document.getElementById("summaryCheckIn-@roomId");
+        const summaryCheckOut = document.getElementById("summaryCheckOut-@roomId");
+        const summaryGuestCount = document.getElementById("summaryGuestCount-@roomId");
+        const summaryTotal = document.getElementById("summaryTotal-@roomId");
+
+        const pricePerNight = @Model.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const extraGuestPricePerNight = @Model.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+
+        function formatDate(value) {
+            if (!value) return "";
+            const date = new Date(value);
+            return date.toLocaleDateString("tr-TR");
+        }
+
+        function calculate() {
+            const start = new Date(checkIn.value);
+            const end = new Date(checkOut.value);
+
+            checkOut.min = checkIn.value;
+
+            let nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (nights < 1 || Number.isNaN(nights)) {
+                nights = 1;
+            }
+
+            const guests = parseInt(guestCount.value || "1", 10);
+
+            nightCount.textContent = nights;
+            summaryGuestCount.textContent = guests;
+            summaryCheckIn.textContent = formatDate(checkIn.value);
+            summaryCheckOut.textContent = formatDate(checkOut.value);
+
+                const billableExtraGuests = Math.max(0, guests - 1);
+    const total = (nights * pricePerNight) + (nights * extraGuestPricePerNight * billableExtraGuests);
+
+    summaryTotal.textContent = new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY"
+    }).format(total);
+        }
+
+        checkIn.addEventListener("change", calculate);
+        checkOut.addEventListener("change", calculate);
+        guestCount.addEventListener("input", calculate);
+
+        calculate();
+    })();
+</script>
 

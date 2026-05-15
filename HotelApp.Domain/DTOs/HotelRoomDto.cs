@@ -19,6 +19,9 @@ namespace HotelApp.Domain.DTOs
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
         public decimal PricePerNight { get; set; }
 
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
+
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
         public int MaxGuests { get; set; }
@@ -34,6 +37,7 @@ namespace HotelApp.Domain.DTOs
         public int HotelId { get; set; }
         public int RoomTypeId { get; set; }
         public decimal PricePerNight { get; set; }
+        public decimal ExtraGuestPricePerNight { get; set; }
         public int TotalRooms { get; set; }
         public bool IsActive { get; set; }
         public string HotelName { get; set; } = string.Empty;  // düzeltildi
@@ -55,6 +59,9 @@ namespace HotelApp.Domain.DTOs
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
         public decimal PricePerNight { get; set; }
 
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
+
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
@@ -69,6 +76,9 @@ namespace HotelApp.Domain.DTOs
         [Required(ErrorMessage = "Fiyat zorunludur.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
         public decimal PricePerNight { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
 
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
@@ -91,6 +101,9 @@ namespace HotelApp.Domain.DTOs
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
         public decimal PricePerNight { get; set; }
 
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
+
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
@@ -107,6 +120,9 @@ namespace HotelApp.Domain.DTOs
         [Required(ErrorMessage = "Fiyat zorunludur.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalı.")]
         public decimal PricePerNight { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Ek kişi ücreti 0 veya daha büyük olmalı.")]
+        public decimal ExtraGuestPricePerNight { get; set; }
 
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]

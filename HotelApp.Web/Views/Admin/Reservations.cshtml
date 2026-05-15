@@ -1,0 +1,159 @@
+﻿@model PagedResponseViewModel<ReservationAdminViewModel>
+
+@{
+    ViewData["Title"] = "Rezervasyon Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "confirmed" => "bg-info",
+            "approved" => "bg-info",
+            "completed" => "bg-success",
+            "cancelled" => "bg-danger",
+            "rejected" => "bg-danger",
+            "pending" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="mb-1">Rezervasyon Yönetimi</h2>
+        <p class="page-subtitle mb-0">Admin panelinden rezervasyonları filtreleyebilir, onaylayabilir veya reddedebilirsin.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Filtreler</h5>
+    </div>
+
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Durum</label>
+                <input name="status" value="@ViewBag.Status" class="form-control" placeholder="Confirmed, Cancelled, Completed" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Başlangıç Tarihi</label>
+                <input name="from" value="@ViewBag.From" type="date" class="form-control" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Bitiş Tarihi</label>
+                <input name="to" value="@ViewBag.To" type="date" class="form-control" />
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filtrele
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>Rezervasyon Listesi</h5>
+        <span class="badge bg-secondary">@Model.TotalCount kayıt</span>
+    </div>
+
+    <div class="card-body p-0">
+        @if (Model.Data == null || !Model.Data.Any())
+        {
+            <div class="p-4 text-center text-muted">
+                Gösterilecek rezervasyon bulunamadı.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı</th>
+                            <th>Otel</th>
+                            <th>Oda Tipi</th>
+                            <th>Giriş</th>
+                            <th>Çıkış</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th class="text-end">İşlem</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var reservation in Model.Data)
+                        {
+                            <tr>
+                                <td>@reservation.UserName</td>
+                                <td>@reservation.HotelName</td>
+                                <td>@reservation.RoomTypeName</td>
+                                <td>@reservation.CheckInDate.ToString("dd.MM.yyyy")</td>
+                                <td>@reservation.CheckOutDate.ToString("dd.MM.yyyy")</td>
+                                <td>@reservation.TotalPrice.ToString("N2") ₺</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(reservation.Status)">
+                                        @reservation.Status
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <input type="hidden" name="confirm" value="true" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check-circle"></i> Onayla
+                                        </button>
+                                    </form>
+
+                                    <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <input type="hidden" name="confirm" value="false" />
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x-circle"></i> Reddet
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@{
+    var totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
+        : 1;
+}
+
+@if (totalPages > 1)
+{
+    <nav class="p-3">
+        <ul class="pagination mb-0">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(Model.Page == i ? "active" : "")">
+                    <a class="page-link"
+                       asp-controller="ReservationMgmt"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-status="@ViewBag.Status"
+                       asp-route-dateFrom="@ViewBag.From"
+                       asp-route-dateTo="@ViewBag.To">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

@@ -14,6 +14,21 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+        // Kullanicinin kendi yorumlarini listeleyen sayfa.
+        [ServiceFilter(typeof(AuthFilter))]
+        public async Task<IActionResult> My()
+        {
+            var response = await _apiService.GetAsync<List<ReviewViewModel>>("reviews/my");
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message;
+                return View(new List<ReviewViewModel>());
+            }
+
+            return View(response.Data ?? new List<ReviewViewModel>());
+        }
+
         // Web projesinde [Authorize] calismaz cunku auth scheme kurulu degil
         // (Program.cs'de AddAuthentication/UseAuthentication yok). Bunun yerine
         // session/JWT tabanli AuthFilter kullaniyoruz.
@@ -24,19 +39,25 @@ namespace HotelApp.Web.Controllers
         {
             model.HotelId = hotelId;
 
-            var response = await _apiService.PostAsync<object>(
-                "reviews", model);
+            var response = await _apiService.PostAsync<object>("reviews", model);
 
-            if (!response.Success)
-            {
-                TempData["Error"] = response.Message;
-            }
-            else
-            {
-                TempData["Success"] = "Yorum başarıyla eklendi.";
-            }
+            TempData[response.Success ? "Success" : "Error"] =
+                response.Success ? "Yorum basariyla eklendi." : response.Message;
 
             return RedirectToAction("Detail", "Hotels", new { id = hotelId });
+        }
+
+        [ServiceFilter(typeof(AuthFilter))]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var response = await _apiService.DeleteAsync($"reviews/{id}");
+
+            TempData[response.Success ? "Success" : "Error"] =
+                response.Success ? "Yorum silindi." : response.Message;
+
+            return RedirectToAction("My");
         }
     }
 }

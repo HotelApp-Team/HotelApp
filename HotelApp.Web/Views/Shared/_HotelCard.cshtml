@@ -5,14 +5,11 @@
 @model HotelApp.Web.Models.HotelCardViewModel
 
 @{
-    var imageUrl = string.IsNullOrWhiteSpace(Model.MainImageUrl)
-        ? "/images/no-image.jpg"
-        : Model.MainImageUrl;
-
     var checkIn = Context.Request.Query["checkIn"].ToString();
     var checkOut = Context.Request.Query["checkOut"].ToString();
     var guestCount = Context.Request.Query["guestCount"].ToString();
 }
+
 <article class="hotel-card">
 
     <div class="hotel-card-media">
@@ -94,8 +91,8 @@
                asp-route-checkIn="@checkIn"
                asp-route-checkOut="@checkOut"
                asp-route-guestCount="@guestCount"
-               class="btn btn-outline-primary w-100 mt-2">
-                Detay <i class="bi bi-arrow-right ms-1"></i>
+               class="btn btn-outline-primary btn-detail">
+                Detay <i class="bi bi-arrow-right"></i>
             </a>
         }
 
