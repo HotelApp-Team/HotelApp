@@ -1,4 +1,7 @@
-﻿namespace HotelApp.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace HotelApp.Domain.Entities;
 
 public partial class HotelRoom
 {
@@ -9,6 +12,7 @@ public partial class HotelRoom
     public int RoomTypeId { get; set; }
 
     public decimal PricePerNight { get; set; }
+
     public decimal ExtraGuestPricePerNight { get; set; }
 
     public int TotalRooms { get; set; }

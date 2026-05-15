@@ -1,4 +1,4 @@
-
+ï»¿
 USE HotelAppDB;
 GO
 
@@ -74,7 +74,7 @@ BEGIN
 
         IF @PricePerNight IS NULL
         BEGIN
-            SET @ResultMessage = N'Oda bulunamadý veya aktif deðil.';
+            SET @ResultMessage = N'Oda bulunamadÄ± veya aktif deÄŸil.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -82,7 +82,7 @@ BEGIN
 
         IF @GuestCount <= 0
         BEGIN
-            SET @ResultMessage = N'Misafir sayýsý 1 veya daha fazla olmalýdýr.';
+            SET @ResultMessage = N'Misafir sayÄ±sÄ± 1 veya daha fazla olmalÄ±dÄ±r.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -90,7 +90,7 @@ BEGIN
 
         IF @GuestCount > @MaxGuests
         BEGIN
-            SET @ResultMessage = N'Misafir sayýsý oda kapasitesini aþýyor.';
+            SET @ResultMessage = N'Misafir sayÄ±sÄ± oda kapasitesini aÅŸÄ±yor.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -98,7 +98,7 @@ BEGIN
 
         IF @CheckInDate < CAST(GETDATE() AS DATE)
         BEGIN
-            SET @ResultMessage = N'Giriþ tarihi bugünden eski olamaz.';
+            SET @ResultMessage = N'GiriÅŸ tarihi bugÃ¼nden eski olamaz.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -106,7 +106,7 @@ BEGIN
 
         IF @CheckOutDate <= @CheckInDate
         BEGIN
-            SET @ResultMessage = N'Çýkýþ tarihi giriþ tarihinden sonra olmalýdýr.';
+            SET @ResultMessage = N'Ã‡Ä±kÄ±ÅŸ tarihi giriÅŸ tarihinden sonra olmalÄ±dÄ±r.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -123,7 +123,7 @@ BEGIN
 
         IF (@TotalRooms - @ReservedCount) <= 0
         BEGIN
-            SET @ResultMessage = N'Bu tarih aralýðýnda müsait oda yok.';
+            SET @ResultMessage = N'Bu tarih aralÄ±ÄŸÄ±nda mÃ¼sait oda yok.';
             SET @ReservationId = 0;
             ROLLBACK TRANSACTION;
             RETURN;
@@ -144,7 +144,7 @@ BEGIN
             (@UserId, @HotelRoomId, @CheckInDate, @CheckOutDate, @GuestCount, @TotalPrice, @PaymentMethod, 'Confirmed');
 
         SET @ReservationId = SCOPE_IDENTITY();
-        SET @ResultMessage = N'Rezervasyon baþarýyla oluþturuldu.';
+        SET @ResultMessage = N'Rezervasyon baÅŸarÄ±yla oluÅŸturuldu.';
 
         COMMIT TRANSACTION;
     END TRY
@@ -171,6 +171,6 @@ PRINT 'HotelRooms.ExtraGuestPricePerNight kolonu eklendi.';
 END
 ELSE
 BEGIN
-PRINT 'HotelRooms.ExtraGuestPricePerNight zaten var, atlandý';
+PRINT 'HotelRooms.ExtraGuestPricePerNight zaten var, atlandÄ±';
 END
 GO
