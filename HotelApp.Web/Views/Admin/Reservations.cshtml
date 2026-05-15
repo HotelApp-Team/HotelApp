@@ -1,159 +1,186 @@
-﻿@model PagedResponseViewModel<ReservationAdminViewModel>
+@model PagedResponseViewModel<ReservationAdminViewModel>
 
 @{
     ViewData["Title"] = "Rezervasyon Yönetimi";
     Layout = "_AdminLayout";
+
+    var totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
+        : 1;
+    if (totalPages < 1) totalPages = 1;
 }
 
 @functions {
+    // Durum rozetinin rengini Sistem Kayitlari/Dashboard ile ayni mantikla atar.
     string GetStatusBadgeClass(string status)
     {
         return status?.ToLowerInvariant() switch
         {
-            "confirmed" => "bg-info",
-            "approved" => "bg-info",
-            "completed" => "bg-success",
+            "confirmed" => "bg-success",
+            "approved" => "bg-success",
+            "completed" => "bg-secondary",
             "cancelled" => "bg-danger",
             "rejected" => "bg-danger",
-            "pending" => "bg-warning",
-            _ => "bg-secondary"
+            _ => "bg-warning text-dark"
         };
     }
+
+    // Durum metnini kullaniciya Turkce gosterir.
+    string GetStatusText(string? status) => status switch
+    {
+        "Confirmed" => "Onaylandı",
+        "Cancelled" => "İptal Edildi",
+        "Completed" => "Tamamlandı",
+        _ => string.IsNullOrWhiteSpace(status) ? "-" : status
+    };
 }
 
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h2 class="mb-1">Rezervasyon Yönetimi</h2>
-        <p class="page-subtitle mb-0">Admin panelinden rezervasyonları filtreleyebilir, onaylayabilir veya reddedebilirsin.</p>
-    </div>
-</div>
+<div class="container-fluid py-4">
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>Filtreler</h5>
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-calendar-check text-primary me-2"></i>
+            Rezervasyon Yönetimi
+        </h2>
     </div>
 
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Durum</label>
-                <input name="status" value="@ViewBag.Status" class="form-control" placeholder="Confirmed, Cancelled, Completed" />
+    @* Filtre formu *@
+    <form method="get" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Durum</label>
+                    <input name="status" value="@ViewBag.Status" class="form-control" placeholder="Confirmed, Cancelled, Completed" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Başlangıç Tarihi</label>
+                    <input name="from" value="@ViewBag.From" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Bitiş Tarihi</label>
+                    <input name="to" value="@ViewBag.To" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Filtrele
+                    </button>
+                </div>
             </div>
+        </div>
+    </form>
 
-            <div class="col-md-3">
-                <label class="form-label">Başlangıç Tarihi</label>
-                <input name="from" value="@ViewBag.From" type="date" class="form-control" />
-            </div>
+    @* Liste kart *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul text-primary me-2"></i>
+                Rezervasyon Listesi
+            </h5>
+            <span class="text-muted small">Toplam: <strong>@Model.TotalCount</strong></span>
+        </div>
+        <div class="card-body p-0">
 
-            <div class="col-md-3">
-                <label class="form-label">Bitiş Tarihi</label>
-                <input name="to" value="@ViewBag.To" type="date" class="form-control" />
-            </div>
-
-            <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Filtrele
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5>Rezervasyon Listesi</h5>
-        <span class="badge bg-secondary">@Model.TotalCount kayıt</span>
-    </div>
-
-    <div class="card-body p-0">
-        @if (Model.Data == null || !Model.Data.Any())
-        {
-            <div class="p-4 text-center text-muted">
-                Gösterilecek rezervasyon bulunamadı.
-            </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Kullanıcı</th>
-                            <th>Otel</th>
-                            <th>Oda Tipi</th>
-                            <th>Giriş</th>
-                            <th>Çıkış</th>
-                            <th>Tutar</th>
-                            <th>Durum</th>
-                            <th class="text-end">İşlem</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var reservation in Model.Data)
-                        {
-                            <tr>
-                                <td>@reservation.UserName</td>
-                                <td>@reservation.HotelName</td>
-                                <td>@reservation.RoomTypeName</td>
-                                <td>@reservation.CheckInDate.ToString("dd.MM.yyyy")</td>
-                                <td>@reservation.CheckOutDate.ToString("dd.MM.yyyy")</td>
-                                <td>@reservation.TotalPrice.ToString("N2") ₺</td>
-                                <td>
-                                    <span class="badge @GetStatusBadgeClass(reservation.Status)">
-                                        @reservation.Status
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@reservation.Id" />
-                                        <input type="hidden" name="confirm" value="true" />
-                                        <button type="submit" class="btn btn-success btn-sm">
-                                            <i class="bi bi-check-circle"></i> Onayla
-                                        </button>
-                                    </form>
-
-                                    <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@reservation.Id" />
-                                        <input type="hidden" name="confirm" value="false" />
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-x-circle"></i> Reddet
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-</div>
-
-@{
-    var totalPages = Model.PageSize > 0
-        ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
-        : 1;
-}
-
-@if (totalPages > 1)
-{
-    <nav class="p-3">
-        <ul class="pagination mb-0">
-            @for (var i = 1; i <= totalPages; i++)
+            @if (Model.Data == null || !Model.Data.Any())
             {
-                <li class="page-item @(Model.Page == i ? "active" : "")">
-                    <a class="page-link"
-                       asp-controller="ReservationMgmt"
-                       asp-action="Index"
-                       asp-route-page="@i"
-                       asp-route-status="@ViewBag.Status"
-                       asp-route-dateFrom="@ViewBag.From"
-                       asp-route-dateTo="@ViewBag.To">
-                        @i
-                    </a>
-                </li>
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Gösterilecek rezervasyon bulunamadı.
+                </div>
             }
-        </ul>
-    </nav>
-}
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Otel</th>
+                                <th>Oda Tipi</th>
+                                <th>Giriş</th>
+                                <th>Çıkış</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reservation in Model.Data)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@reservation.UserName</td>
+                                    <td>@reservation.HotelName</td>
+                                    <td>@reservation.RoomTypeName</td>
+                                    <td class="small text-nowrap">@reservation.CheckInDate.ToString("dd.MM.yyyy")</td>
+                                    <td class="small text-nowrap">@reservation.CheckOutDate.ToString("dd.MM.yyyy")</td>
+                                    <td class="fw-semibold">@reservation.TotalPrice.ToString("N2") ₺</td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(reservation.Status)">
+                                            @GetStatusText(reservation.Status)
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="action-group">
+                                            <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@reservation.Id" />
+                                                <input type="hidden" name="confirm" value="true" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle"></i> Onayla
+                                                </button>
+                                            </form>
+
+                                            <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@reservation.Id" />
+                                                <input type="hidden" name="confirm" value="false" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle"></i> Reddet
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* Sayfalama — Sistem Kayitlari ile ayni stilde *@
+                @if (totalPages > 1)
+                {
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                        <span class="small text-muted">
+                            Sayfa @Model.Page / @totalPages
+                        </span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="ReservationMgmt"
+                                       asp-action="Index"
+                                       asp-route-page="@(Model.Page - 1)"
+                                       asp-route-status="@ViewBag.Status"
+                                       asp-route-from="@ViewBag.From"
+                                       asp-route-to="@ViewBag.To">
+                                        <i class="bi bi-chevron-left"></i> Önceki
+                                    </a>
+                                </li>
+                                <li class="page-item @(Model.Page >= totalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="ReservationMgmt"
+                                       asp-action="Index"
+                                       asp-route-page="@(Model.Page + 1)"
+                                       asp-route-status="@ViewBag.Status"
+                                       asp-route-from="@ViewBag.From"
+                                       asp-route-to="@ViewBag.To">
+                                        Sonraki <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+
+</div>

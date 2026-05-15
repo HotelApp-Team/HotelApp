@@ -1,110 +1,133 @@
-﻿@model HotelApp.Web.Models.AdminAmenityPageViewModel
+@model HotelApp.Web.Models.AdminAmenityPageViewModel
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Olanak Yönetimi";
 }
 
-<h2 class="mb-4">Olanak Yönetimi</h2>
+@* TempData["Success"]/["Error"] mesajlari _AdminLayout icinde merkezi olarak gosteriliyor. *@
 
-@if (TempData["SuccessMessage"] is string successMessage)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @successMessage
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+<div class="container-fluid py-4">
+
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-stars text-primary me-2"></i>
+            Olanak Yönetimi
+        </h2>
     </div>
-}
 
-@if (TempData["ErrorMessage"] is string errorMessage)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @errorMessage
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+    @* Yeni olanak ekleme card *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-plus-circle text-primary me-2"></i>
+                Yeni Olanak Ekle
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-controller="Amenity" asp-action="Create" method="post" class="row g-3">
+                <div class="col-md-5">
+                    <label asp-for="CreateForm.Name" class="form-label small text-muted">Olanak Adı</label>
+                    <input asp-for="CreateForm.Name" class="form-control" placeholder="Örn. Havuz" />
+                    <span asp-validation-for="CreateForm.Name" class="text-danger small"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="CreateForm.Icon" class="form-label small text-muted">İkon</label>
+                    <input asp-for="CreateForm.Icon" class="form-control" placeholder="wifi, pool, parking..." />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle me-1"></i>Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-}
 
-<div class="card p-3 mb-4">
-    <h4 class="mb-3">Yeni Olanak Ekle</h4>
-
-    <form asp-controller="Amenity" asp-action="Create" method="post" class="row g-3">
-
-        <div class="col-md-5">
-            <label asp-for="CreateForm.Name" class="form-label">Olanak Adı</label>
-            <input asp-for="CreateForm.Name" class="form-control" />
-            <span asp-validation-for="CreateForm.Name" class="text-danger"></span>
+    @* Liste kart — RoomTypes ile ayni inline edit pattern'i *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul text-primary me-2"></i>
+                Olanaklar
+            </h5>
+            <span class="text-muted small">Toplam: <strong>@Model.Amenities.Count()</strong></span>
         </div>
+        <div class="card-body p-0">
 
-        <div class="col-md-5">
-            <label asp-for="CreateForm.Icon" class="form-label">Icon</label>
-            <input asp-for="CreateForm.Icon" class="form-control" placeholder="wifi, pool, parking..." />
-        </div>
-
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Ekle</button>
-        </div>
-    </form>
-</div>
-
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Ad</th>
-                <th>Icon</th>
-                <th class="text-end">İşlem</th>
-            </tr>
-        </thead>
-        <tbody>
             @if (Model.Amenities.Any())
             {
-                foreach (var amenity in Model.Amenities.OrderBy(x => x.Name))
-                {
-                    <tr>
-                        <td>@amenity.Id</td>
-                        <td>@amenity.Name</td>
-                        <td>@amenity.Icon</td>
-                        <td class="text-end">
-                            <div class="d-flex flex-column gap-2">
-                                <form asp-controller="Amenity"
-                                      asp-action="Edit"
-                                      asp-route-id="@amenity.Id"
-                                      method="post"
-                                      class="row g-2 justify-content-end">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ad</th>
+                                <th>İkon</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var amenity in Model.Amenities.OrderBy(x => x.Name))
+                            {
+                                <tr>
+                                    <td colspan="3" class="p-0 border-0">
+                                        @* Inline edit formu (Update). Sil ayri form, form attribute ile bagli. *@
+                                        <form asp-controller="Amenity"
+                                              asp-action="Edit"
+                                              asp-route-id="@amenity.Id"
+                                              method="post"
+                                              class="d-grid align-items-center"
+                                              style="grid-template-columns: 2fr 2fr 240px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #F1F5F9;">
 
-                                    <div class="col-md-4">
-                                        <input name="Name" value="@amenity.Name" class="form-control form-control-sm" />
-                                    </div>
+                                            <input name="Name"
+                                                   value="@amenity.Name"
+                                                   class="form-control"
+                                                   required />
 
-                                    <div class="col-md-4">
-                                        <input name="Icon" value="@amenity.Icon" class="form-control form-control-sm" />
-                                    </div>
+                                            <input name="Icon"
+                                                   value="@amenity.Icon"
+                                                   class="form-control"
+                                                   placeholder="wifi, pool, parking..." />
 
-                                    <div class="col-md-2">
-                                        <button type="submit" class="btn btn-sm btn-warning w-100">Güncelle</button>
-                                    </div>
-                                </form>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-pencil-square"></i> Güncelle
+                                                </button>
 
-                                <form asp-controller="Amenity"
-                                      asp-action="Delete"
-                                      asp-route-id="@amenity.Id"
-                                      method="post"
-                                      onsubmit="return confirm('Bu olanak silinsin mi?');">
-                                    <button type="submit" class="btn btn-sm btn-danger">Sil</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
+                                                <button type="submit"
+                                                        form="delete-amenity-@amenity.Id"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Bu olanak silinsin mi?');">
+                                                    <i class="bi bi-trash"></i> Sil
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <form id="delete-amenity-@amenity.Id"
+                                              asp-controller="Amenity"
+                                              asp-action="Delete"
+                                              asp-route-id="@amenity.Id"
+                                              method="post"
+                                              class="d-none">
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
-                <tr>
-                    <td colspan="4" class="text-center text-muted">Henüz olanak kaydı bulunmuyor.</td>
-                </tr>
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Henüz olanak kaydı bulunmuyor.
+                </div>
             }
-        </tbody>
-    </table>
+
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
