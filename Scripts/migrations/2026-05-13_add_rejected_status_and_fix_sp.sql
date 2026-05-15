@@ -1,11 +1,47 @@
-﻿
+-- ============================================================================
+-- Migration: 2026-05-13 — Reservations status sadelestirme + sp_MakeReservation
+-- revize + HotelRooms.ExtraGuestPricePerNight kolonu
+-- ============================================================================
+-- Sebep:
+--   * sp_MakeReservation icinde MaxGuests, GuestCount<=0, gecmis tarih ve
+--     CheckOutDate<=CheckInDate validasyonlari eksikti.
+--   * Pricing modelinde ek misafir farki desteklenmiyordu (oda basi sabit fiyat
+--     yerine misafir basi katki: HotelRooms.ExtraGuestPricePerNight).
+--   * Pending status 2026-05-12 migration'inda kalktigi icin SP'deki "Status
+--     IN ('Pending','Confirmed')" referansi gereksizdi.
+--
+-- Calistirma: SSMS uzerinden HotelAppDB veritabaninda bir kez calistir.
+-- Idempotent: birden fazla kez calistirilabilir, hata vermez.
+--
+-- Adim sirasi onemli:
+--   1) HotelRooms.ExtraGuestPricePerNight kolonu eklenir (SP'nin bu kolona
+--      bagimliligi var, kolon olmadan SP olusturulamaz).
+--   2) Eski CHK_Status constraint'i kaldirilir.
+--   3) Yeni CHK_Status constraint'i eklenir.
+--   4) sp_MakeReservation CREATE OR ALTER ile guncellenir.
+-- ============================================================================
+
 USE HotelAppDB;
 GO
 
 SET NOCOUNT ON;
 GO
 
--- 1) Eski CHK_Status constraint'i kaldir.
+-- 1) HotelRooms.ExtraGuestPricePerNight kolonu (SP'den ONCE olusturulmali).
+IF COL_LENGTH('dbo.HotelRooms', 'ExtraGuestPricePerNight') IS NULL
+BEGIN
+    ALTER TABLE dbo.HotelRooms
+        ADD ExtraGuestPricePerNight DECIMAL(10,2) NULL
+        CONSTRAINT DF_HotelRooms_ExtraGuestPricePerNight DEFAULT 0;
+    PRINT 'HotelRooms.ExtraGuestPricePerNight kolonu eklendi.';
+END
+ELSE
+BEGIN
+    PRINT 'HotelRooms.ExtraGuestPricePerNight zaten var, atlandi.';
+END
+GO
+
+-- 2) Eski CHK_Status constraint'i kaldir.
 IF EXISTS (
     SELECT 1
     FROM sys.check_constraints
@@ -22,7 +58,7 @@ BEGIN
 END
 GO
 
--- 2) Yeni CHK_Status constraint'i ekle.
+-- 3) Yeni CHK_Status constraint'i ekle.
 IF NOT EXISTS (
     SELECT 1
     FROM sys.check_constraints
@@ -33,12 +69,11 @@ BEGIN
     ALTER TABLE dbo.Reservations
         ADD CONSTRAINT CHK_Status
         CHECK (Status IN ('Confirmed','Cancelled','Completed'));
-
     PRINT 'Yeni CHK_Status constraint eklendi: Confirmed, Cancelled, Completed.';
 END
 GO
 
--- 3) sp_MakeReservation prosedurunu guncelle.
+-- 4) sp_MakeReservation prosedurunu guncelle.
 CREATE OR ALTER PROCEDURE sp_MakeReservation
     @UserId INT,
     @HotelRoomId INT,
@@ -158,19 +193,5 @@ BEGIN
 END;
 GO
 
-
-SET NOCOUNT ON;
-GO
-IF COL_LENGTH('dbo.HotelRooms', 'ExtraGuestPricePerNight') IS NULL
-BEGIN
-ALTER TABLE dbo.HotelRooms
-ADD ExtraGuestPricePerNight DECIMAL(10,2) NULL
-CONSTRAINT DF_HotelRooms_ExtraGuestPricePerNight DEFAULT 0;
-
-PRINT 'HotelRooms.ExtraGuestPricePerNight kolonu eklendi.';
-END
-ELSE
-BEGIN
-PRINT 'HotelRooms.ExtraGuestPricePerNight zaten var, atlandı';
-END
+PRINT 'Migration 2026-05-13 tamamlandi.';
 GO
