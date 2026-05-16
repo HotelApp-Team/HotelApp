@@ -1,71 +1,182 @@
-﻿@model ReservationDetailViewModel
+@model ReservationDetailViewModel
+
 @{
     ViewData["Title"] = "Fatura";
+
+    Layout = "_AccountLayout";
+    ViewData["AccountTab"] = "reservations";
+    // Buyuk hero kart sayfanin sahibi — page-head set edilmez.
+
+    // Computed
+    var today      = DateTime.Today;
+    var nights     = Math.Max(1, (Model.CheckOutDate.Date - Model.CheckInDate.Date).Days);
+    var pricePerNight = nights > 0 ? Model.TotalPrice / nights : Model.TotalPrice;
+
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
+    var checkInDay  = trCulture.DateTimeFormat.GetDayName(Model.CheckInDate.DayOfWeek);
+    var checkOutDay = trCulture.DateTimeFormat.GetDayName(Model.CheckOutDate.DayOfWeek);
+
+    // Fatura no — rezervasyon id'sinden uretilen tutarli kod
+    var invoiceNo = $"HT-{Model.ReservationId}";
+
+    // Status — modern fis 'odendi' goruntusu cizer; iptal edilmis ise daha sade goruntu
+    var statusKey = (Model.Status ?? "").ToLowerInvariant();
+    bool isCancelled = statusKey == "cancelled";
 }
 
-<div class="page-header">
-    <h1>Ödeme Özeti</h1>
-    <p>Rezervasyon ve ödeme bilgilerini görüntüle.</p>
-</div>
+@* Breadcrumb *@
+<nav aria-label="breadcrumb" class="rd-breadcrumb">
+    <a asp-controller="Profile" asp-action="Index">Hesabım</a>
+    <i class="bi bi-chevron-right"></i>
+    <a asp-controller="Reservations" asp-action="My">Rezervasyonlarım</a>
+    <i class="bi bi-chevron-right"></i>
+    <a asp-controller="Reservations" asp-action="Detail" asp-route-id="@Model.ReservationId">#@Model.ReservationId</a>
+    <i class="bi bi-chevron-right"></i>
+    <span class="current">Fatura</span>
+</nav>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="app-card p-4">
-            <h4>Konaklama Bilgileri</h4>
+@* ───────── Modern fis karti ───────── *@
+<div class="inv-wrapper">
+    <article class="inv-receipt">
 
-            <div class="summary-row">
-                <span class="summary-label">Rezervasyon No</span>
-                <span class="summary-value">#@Model.ReservationId</span>
+        @* Üst yeşil onay alanı (iptal değilse) *@
+        <header class="inv-receipt-head @(isCancelled ? "inv-receipt-head-cancelled" : "")">
+            <div class="inv-receipt-head-bg-1"></div>
+            <div class="inv-receipt-head-bg-2"></div>
+
+            @if (!isCancelled)
+            {
+                <div class="inv-receipt-check"><i class="bi bi-check-lg"></i></div>
+                <h1 class="inv-receipt-title">Ödeme Onaylandı</h1>
+                <div class="inv-receipt-tag">Rezervasyonun başarıyla tamamlandı.</div>
+            }
+            else
+            {
+                <div class="inv-receipt-check inv-receipt-check-cancelled"><i class="bi bi-x-lg"></i></div>
+                <h1 class="inv-receipt-title">Rezervasyon İptal Edildi</h1>
+                <div class="inv-receipt-tag">Aşağıda iptal edilen rezervasyonun belgesi yer alır.</div>
+            }
+        </header>
+
+        @* Toplam *@
+        <section class="inv-total-block">
+            <div class="inv-total-label">Toplam tutar</div>
+            <div class="inv-total-value">@Model.TotalPrice.ToString("C")</div>
+            <div class="inv-total-sub">@nights gece · @Model.GuestCount misafir</div>
+        </section>
+
+        @* Konaklama detaylari *@
+        <section class="inv-block">
+            <div class="inv-block-label">Konaklama Detayları</div>
+
+            <div class="inv-hotel">
+                <div class="inv-hotel-icon"><i class="bi bi-building"></i></div>
+                <div class="inv-hotel-meta">
+                    <div class="inv-hotel-name">@Model.HotelName</div>
+                    <div class="inv-hotel-line">
+                        <i class="bi bi-house-door"></i>@Model.RoomTypeName
+                    </div>
+                </div>
             </div>
 
-            <div class="summary-row">
-                <span class="summary-label">Otel</span>
-                <span class="summary-value">@Model.HotelName</span>
+            <div class="inv-rows">
+                <div class="inv-row">
+                    <span class="inv-row-label">Giriş</span>
+                    <span class="inv-row-value">@Model.CheckInDate.ToString("dd.MM.yyyy") · @checkInDay</span>
+                </div>
+                <div class="inv-row">
+                    <span class="inv-row-label">Çıkış</span>
+                    <span class="inv-row-value">@Model.CheckOutDate.ToString("dd.MM.yyyy") · @checkOutDay</span>
+                </div>
+                <div class="inv-row">
+                    <span class="inv-row-label">Konaklama</span>
+                    <span class="inv-row-value">@nights gece · @Model.GuestCount misafir</span>
+                </div>
+                <div class="inv-row">
+                    <span class="inv-row-label">Durum</span>
+                    <span class="inv-row-value">
+                        @if (isCancelled)
+                        {
+                            <span class="status-badge status-cancelled"><span class="dot"></span>İptal Edildi</span>
+                        }
+                        else if (statusKey == "completed")
+                        {
+                            <span class="status-badge status-completed"><span class="dot"></span>Tamamlandı</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-confirmed"><span class="dot"></span>Onaylandı</span>
+                        }
+                    </span>
+                </div>
             </div>
+        </section>
 
-            <div class="summary-row">
-                <span class="summary-label">Oda Tipi</span>
-                <span class="summary-value">@Model.RoomTypeName</span>
+        @* Hizmet kalemleri *@
+        <section class="inv-block">
+            <div class="inv-block-label">Hizmet kalemleri</div>
+            <div class="inv-rows">
+                <div class="inv-row">
+                    <span class="inv-row-label">
+                        Konaklama — @nights gece × @pricePerNight.ToString("C")
+                    </span>
+                    <span class="inv-row-value">@Model.TotalPrice.ToString("C")</span>
+                </div>
+                <div class="inv-row">
+                    <span class="inv-row-label">Hizmet bedeli</span>
+                    <span class="inv-row-value inv-row-success">Ücretsiz</span>
+                </div>
             </div>
+        </section>
 
-            <div class="summary-row">
-                <span class="summary-label">Tarih</span>
-                <span class="summary-value">
-                    @Model.CheckInDate.ToShortDateString() - @Model.CheckOutDate.ToShortDateString()
-                </span>
+        @* Footer info *@
+        <footer class="inv-receipt-foot">
+            <div>
+                <div class="inv-foot-label">Fatura No</div>
+                <div class="inv-foot-value">@invoiceNo</div>
             </div>
+            <div class="inv-foot-right">
+                <div class="inv-foot-label">Düzenlenme</div>
+                <div class="inv-foot-value">@DateTime.Today.ToString("dd.MM.yyyy")</div>
+            </div>
+        </footer>
 
-            <div class="summary-row">
-                <span class="summary-label">Misafir</span>
-                <span class="summary-value">@Model.GuestCount</span>
-            </div>
+        @* Notched sides — gercekten gorunmesi icin .inv-receipt position:relative *@
+        <span class="inv-notch inv-notch-left" aria-hidden="true"></span>
+        <span class="inv-notch inv-notch-right" aria-hidden="true"></span>
+    </article>
+
+    @* Sayfa aksiyonlari — kart disinda, ortalanmis *@
+    <div class="inv-actions">
+        <a asp-controller="Reservations"
+           asp-action="Detail"
+           asp-route-id="@Model.ReservationId"
+           class="btn-account-outline">
+            <i class="bi bi-arrow-left"></i> Detaya Dön
+        </a>
+        <div class="inv-actions-right">
+            <button type="button"
+                    class="btn-account-outline"
+                    onclick="window.print();"
+                    title="Yazdır">
+                <i class="bi bi-printer"></i> Yazdır
+            </button>
         </div>
     </div>
-
-    <div class="col-lg-4">
-        <div class="app-card p-4">
-            <h4>Rezervasyon Özeti</h4>
-
-            <div class="summary-row">
-                <span class="summary-label">Durum</span>
-                <span class="summary-value">@Model.Status</span>
-            </div>
-
-            <div class="summary-row">
-                <span class="summary-label">Toplam</span>
-                <span class="price-total">@Model.TotalPrice.ToString("C")</span>
-            </div>
-
-            <div class="alert alert-primary mt-3 mb-0">
-                Rezervasyon bilgileriniz güvenli şekilde görüntüleniyor.
-            </div>
-
-            <a asp-controller="Reservations"
-               asp-action="Detail"
-               asp-route-id="@Model.ReservationId"
-               class="btn btn-outline-primary w-100 mt-3">
-                Detaya Dön
-            </a>
-        </div>
-    </div>
 </div>
+
+@* Print stylesheet — yazdirma siliklestirir, sadece kart kalir *@
+@section Scripts {
+    <style media="print">
+        @* Print modunda navbar, sidebar, greeting, footer hepsi gizlenir; sadece fis kalir. *@
+        header, footer, .account-shell .account-sidebar,
+        .account-greeting, .account-breadcrumb, .rd-breadcrumb,
+        .inv-actions, .account-page-head {
+            display: none !important;
+        }
+        .account-grid { grid-template-columns: 1fr !important; }
+        .account-shell { padding: 0 !important; }
+        .inv-receipt { box-shadow: none !important; border: 1px solid #ccc !important; }
+        .inv-receipt-head { background: #16A34A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    </style>
+}

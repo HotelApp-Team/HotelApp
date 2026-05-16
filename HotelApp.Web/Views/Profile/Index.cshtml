@@ -1,107 +1,109 @@
 @model HotelApp.Web.Models.ProfilePageViewModel
 @{
     ViewData["Title"] = "Profilim";
+
+    // _AccountLayout shell konfigurasyonu — sidebar + greeting strip otomatik gelir.
+    Layout = "_AccountLayout";
+    ViewData["AccountTab"]          = "profile";
+    ViewData["AccountPageTitle"]    = "Profilim";
+    ViewData["AccountPageSubtitle"] = "Kişisel bilgilerini güncelle ve şifreni yönet.";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h1 class="mb-4">Profilim</h1>
+@* TempData mesajlarinin orjinal davranisi korunur (Success/Error ayri renklerde). *@
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success" role="alert">@success</div>
+}
 
-        @if (TempData["SuccessMessage"] is string success)
-        {
-            <div class="alert alert-success" role="alert">@success</div>
-        }
+@if (TempData["ErrorMessage"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
 
-        @if (TempData["ErrorMessage"] is string error)
-        {
-            <div class="alert alert-danger" role="alert">@error</div>
-        }
+@* E46: Profil guncelleme formu; email sadece goruntulenir, ad-soyad-telefon API'ye gonderilir. *@
+@* Form ICERIGI (asp-for, label, validation) tek harfine dokunulmadi — sadece dis kart "app-card" ile sarildi. *@
+<div class="app-card account-form-card mb-4">
+    <div class="account-form-card-head">
+        <h5 class="mb-0"><i class="bi bi-person-vcard"></i>Profil Bilgileri</h5>
+    </div>
+    <div class="account-form-card-body">
+        <form asp-action="UpdateProfile" asp-controller="Profile" method="post">
+            @Html.AntiForgeryToken()
+            @if (ViewData["ProfileErrorMessage"] is string profileError)
+            {
+                <div class="text-danger mb-3" role="alert">@profileError</div>
+            }
 
-        @* E46: Profil güncelleme formu; email sadece görüntülenir, ad-soyad-telefon API'ye gönderilir. *@
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Profil Bilgileri</h5>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label asp-for="Profile.FirstName" class="form-label"></label>
+                    <input asp-for="Profile.FirstName" autocomplete="given-name" class="form-control" />
+                    <span asp-validation-for="Profile.FirstName" class="text-danger"></span>
+                </div>
+                <div class="col-6 mb-3">
+                    <label asp-for="Profile.LastName" class="form-label"></label>
+                    <input asp-for="Profile.LastName" autocomplete="family-name" class="form-control" />
+                    <span asp-validation-for="Profile.LastName" class="text-danger"></span>
+                </div>
             </div>
-            <div class="card-body">
-                <form asp-action="UpdateProfile" asp-controller="Profile" method="post">
-                    @Html.AntiForgeryToken()
-                    @if (ViewData["ProfileErrorMessage"] is string profileError)
-                    {
-                        <div class="text-danger mb-3" role="alert">@profileError</div>
-                    }
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label asp-for="Profile.FirstName" class="form-label"></label>
-                            <input asp-for="Profile.FirstName" autocomplete="given-name" class="form-control" />
-                            <span asp-validation-for="Profile.FirstName" class="text-danger"></span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label asp-for="Profile.LastName" class="form-label"></label>
-                            <input asp-for="Profile.LastName" autocomplete="family-name" class="form-control" />
-                            <span asp-validation-for="Profile.LastName" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Profile.Email" class="form-label"></label>
-                        @* Email güncellemesi desteklenmediği için bu alan submit edilmez. *@
-                        <input asp-for="Profile.Email" class="form-control" disabled />
-                        <small class="text-muted">Email adresinizi değiştiremezsiniz.</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Profile.Phone" class="form-label"></label>
-                        <input asp-for="Profile.Phone" autocomplete="tel" class="form-control" />
-                        <span asp-validation-for="Profile.Phone" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Bilgileri Güncelle</button>
-                </form>
+            <div class="mb-3">
+                <label asp-for="Profile.Email" class="form-label"></label>
+                @* Email guncellemesi desteklenmedigi icin bu alan submit edilmez. *@
+                <input asp-for="Profile.Email" class="form-control" disabled />
+                <small class="text-muted">Email adresinizi değiştiremezsiniz.</small>
             </div>
-        </div>
 
-        @* E47: Şifre değişimi mevcut şifre, yeni şifre ve tekrar alanlarıyla API'ye gönderilir. *@
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Şifre Değiştir</h5>
+            <div class="mb-3">
+                <label asp-for="Profile.Phone" class="form-label"></label>
+                <input asp-for="Profile.Phone" autocomplete="tel" class="form-control" />
+                <span asp-validation-for="Profile.Phone" class="text-danger"></span>
             </div>
-            <div class="card-body">
-                <form asp-action="ChangePassword" asp-controller="Profile" method="post">
-                    @Html.AntiForgeryToken()
-                    @if (ViewData["PasswordErrorMessage"] is string passwordError)
-                    {
-                        <div class="text-danger mb-3" role="alert">@passwordError</div>
-                    }
 
-                    @* Güvenlik: Şifre alanları password input olarak kalır ve autocomplete amacı net belirtilir. *@
-                    <div class="mb-3">
-                        <label asp-for="ChangePassword.CurrentPassword" class="form-label"></label>
-                        <input asp-for="ChangePassword.CurrentPassword" autocomplete="current-password" class="form-control" />
-                        <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ChangePassword.NewPassword" class="form-label"></label>
-                        <input asp-for="ChangePassword.NewPassword" autocomplete="new-password" class="form-control" />
-                        <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label"></label>
-                        <input asp-for="ChangePassword.ConfirmNewPassword" autocomplete="new-password" class="form-control" />
-                        <span asp-validation-for="ChangePassword.ConfirmNewPassword" class="text-danger"></span>
-                    </div>
+            <button type="submit" class="btn btn-primary">Bilgileri Güncelle</button>
+        </form>
+    </div>
+</div>
 
-                    <button type="submit" class="btn btn-primary">Şifreyi Değiştir</button>
-                </form>
+@* E47: Sifre degisimi mevcut sifre, yeni sifre ve tekrar alanlariyla API'ye gonderilir. *@
+<div class="app-card account-form-card mb-4">
+    <div class="account-form-card-head">
+        <h5 class="mb-0"><i class="bi bi-shield-lock"></i>Şifre Değiştir</h5>
+    </div>
+    <div class="account-form-card-body">
+        <form asp-action="ChangePassword" asp-controller="Profile" method="post">
+            @Html.AntiForgeryToken()
+            @if (ViewData["PasswordErrorMessage"] is string passwordError)
+            {
+                <div class="text-danger mb-3" role="alert">@passwordError</div>
+            }
+
+            @* Guvenlik: Sifre alanlari password input olarak kalir ve autocomplete amaci net belirtilir. *@
+            <div class="mb-3">
+                <label asp-for="ChangePassword.CurrentPassword" class="form-label"></label>
+                <input asp-for="ChangePassword.CurrentPassword" autocomplete="current-password" class="form-control" />
+                <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger"></span>
             </div>
-        </div>
+            <div class="mb-3">
+                <label asp-for="ChangePassword.NewPassword" class="form-label"></label>
+                <input asp-for="ChangePassword.NewPassword" autocomplete="new-password" class="form-control" />
+                <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label"></label>
+                <input asp-for="ChangePassword.ConfirmNewPassword" autocomplete="new-password" class="form-control" />
+                <span asp-validation-for="ChangePassword.ConfirmNewPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Şifreyi Değiştir</button>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Profile.Phone için kullanılan [Phone] kuralını client-side doğrulamayla uyumlu hale getirir.
+        // Profile.Phone icin kullanilan [Phone] kuralini client-side dogrulamayla uyumlu hale getirir.
         $.validator.methods.phone = function (value, element) {
             return this.optional(element) || /^[\d\s\+\-\(\)]{7,20}$/.test(value);
         };
