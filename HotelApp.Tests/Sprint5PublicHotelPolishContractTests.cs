@@ -82,7 +82,8 @@ public class Sprint5PublicHotelPolishContractTests
         AssertContainsAny(roomCard, "data-bs-toggle=\"modal\"", "data-bs-target", "bookingModal");
         AssertContainsAny(roomCard, "_BookingModal");
 
-        AssertContainsAny(bookingModal, "asp-controller=\"Reservations\"", "Reservations");
+        // Cancel akisina karar verildiyse form asp-controller="Booking"'a yonlendirilir; Reservations da kabul edilir.
+        AssertContainsAny(bookingModal, "asp-controller=\"Reservations\"", "asp-controller=\"Booking\"", "Reservations", "Booking");
         AssertContainsAny(bookingModal, "asp-action=\"Create\"", "Create");
         AssertContainsAny(bookingModal, "HotelId", "HotelRoomId");
         AssertContainsAny(bookingModal, "CheckInDate", "CheckOutDate", "GuestCount");

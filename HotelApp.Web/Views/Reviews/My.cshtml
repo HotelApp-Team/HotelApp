@@ -1,0 +1,118 @@
+@model List<ReviewViewModel>
+
+@{
+    ViewData["Title"] = "Yorumlarım";
+
+    Layout = "_AccountLayout";
+    ViewData["AccountTab"]          = "reviews";
+    ViewData["AccountPageTitle"]    = "Yorumlarım";
+
+    var totalReviews = Model.Count;
+    double? avgRating = totalReviews > 0 ? Math.Round(Model.Average(r => (double)r.Rating), 1) : (double?)null;
+
+    ViewData["AccountReviewTotal"] = totalReviews;
+    if (avgRating.HasValue) { ViewData["AccountReviewAvg"] = avgRating.Value; }
+
+    ViewData["AccountPageSubtitle"] = totalReviews == 0
+        ? "Konakladığın oteller hakkında paylaştığın deneyimler burada görünecek."
+        : (avgRating.HasValue
+            ? $"{totalReviews} yorum · Ortalama puanın {avgRating:0.0}"
+            : $"{totalReviews} yorum");
+
+    // Rating (1-10 olcek varsayilir; gerekirse Rating byte degerine gore esiklere
+    // gore renk ve etiket secilir).
+    string RatingColorClass(byte rating) =>
+        rating >= 9 ? "rating-pill rating-excellent"
+      : rating >= 7 ? "rating-pill rating-good"
+      : rating >= 5 ? "rating-pill rating-ok"
+      : "rating-pill rating-bad";
+    string RatingLabel(byte rating) =>
+        rating >= 9 ? "Mükemmel"
+      : rating >= 7 ? "Çok iyi"
+      : rating >= 5 ? "İyi"
+      : "Zayıf";
+
+    // 5 yildizli gosterim icin 1-10 -> 0-5 mapping. Tam yildiz sayisi yuvarlanir.
+    int StarsFor(byte rating) => Math.Max(0, Math.Min(5, (int)Math.Round(rating / 2.0)));
+}
+
+@if (!Model.Any())
+{
+    @* Empty state *@
+    <div class="account-empty">
+        <div class="account-empty-icon"><i class="bi bi-chat-square-quote"></i></div>
+        <h2>Henüz yorum yazmadın</h2>
+        <p>
+            Konakladığın otelleri değerlendirerek diğer gezginlere yardımcı olabilirsin.
+            Tamamlanan rezervasyonlarından yorum yazmaya başla.
+        </p>
+        <div class="account-empty-actions">
+            <a asp-controller="Reservations" asp-action="My" class="btn-account-primary">
+                <i class="bi bi-calendar2-check"></i> Rezervasyonlarıma git
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="rev-gallery-grid">
+        @foreach (var r in Model.OrderByDescending(x => x.CreatedAt))
+        {
+            var starsFilled = StarsFor(r.Rating);
+
+            <article class="rev-card">
+                <span class="rev-card-quote" aria-hidden="true">&ldquo;</span>
+
+                <div class="rev-card-head">
+                    <div class="rev-card-stars">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <i class="bi bi-star-fill @(i >= starsFilled ? "off" : "")"></i>
+                        }
+                    </div>
+
+                    <div class="rev-card-rating">
+                        <span class="@RatingColorClass(r.Rating)">@r.Rating</span>
+                        <span class="rev-card-rating-label">@RatingLabel(r.Rating)</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(r.Comment))
+                {
+                    <p class="rev-card-comment">@r.Comment</p>
+                }
+                else
+                {
+                    <p class="rev-card-comment rev-card-comment-empty">
+                        <i>Yorum metni eklenmemiş.</i>
+                    </p>
+                }
+
+                <footer class="rev-card-foot">
+                    <div class="rev-card-hotel">
+                        <div class="rev-card-hotel-name">@r.HotelName</div>
+                        <div class="rev-card-hotel-meta">
+                            <i class="bi bi-calendar3"></i>@r.CreatedAt.ToString("dd.MM.yyyy")
+                        </div>
+                    </div>
+
+                    @* Delete form — orijinal davranis korunur (AntiForgeryToken + hidden id + confirm). *@
+                    <form asp-controller="Reviews"
+                          asp-action="Delete"
+                          method="post"
+                          class="rev-card-delete-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@r.Id" />
+                        <button type="submit"
+                                class="rev-card-delete-btn"
+                                title="Yorumu sil"
+                                aria-label="Yorumu sil"
+                                onclick="return confirm('Bu yorumu silmek istediginize emin misiniz?');">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </form>
+                </footer>
+            </article>
+        }
+    </div>
+}

@@ -87,27 +87,10 @@ namespace HotelApp.Web.Controllers
 
             return View(model);
         }
-        public async Task<IActionResult> Detail(int id)
+        // Detail action: tarih ve misafir sayisi model binding ile sorgu parametrelerinden otomatik alinir.
+        // Sevde'nin Request.Query[] ile manuel parse etmek istedigi davranis burada parametre binding ile saglaniyor.
+        public async Task<IActionResult> Detail(int id, DateTime? checkIn, DateTime? checkOut, int? guestCount)
         {
-            DateTime? checkIn = null;
-            DateTime? checkOut = null;
-            int? guestCount = null;
-
-            if (DateTime.TryParse(Request.Query["checkIn"], out var parsedCheckIn))
-            {
-                checkIn = parsedCheckIn;
-            }
-
-            if (DateTime.TryParse(Request.Query["checkOut"], out var parsedCheckOut))
-            {
-                checkOut = parsedCheckOut;
-            }
-
-            if (int.TryParse(Request.Query["guestCount"], out var parsedGuestCount))
-            {
-                guestCount = parsedGuestCount;
-            }
-
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
@@ -174,6 +157,11 @@ namespace HotelApp.Web.Controllers
             };
 
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;
+
+            model.SearchCheckIn = checkIn;
+            model.SearchCheckOut = checkOut;
+            model.SearchGuestCount = guestCount;
+
 
             return View("Detail", model);
         }

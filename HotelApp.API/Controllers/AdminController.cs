@@ -1,4 +1,4 @@
-using HotelApp.Domain.DTOs;
+﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,11 +6,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace HotelApp.API.Controllers;
-
-// AdminController sınıfının amacı, admin paneli API endpointlerini yönetmektir.
-// Dashboard verisi, kullanıcı listesi, kullanıcı durumu ve rol güncelleme isteklerini karşılar.
-// SOLID: SRP kullanır; sadece admin HTTP isteklerinden sorumludur.
-// SOLID: DIP kullanır; iş mantığı için somut sınıf yerine IAdminService arayüzüne bağlıdır.
 
 [Route("api/admin")]
 [ApiController]
@@ -27,7 +22,6 @@ public class AdminController : ControllerBase
         _logger = logger;
     }
 
-    // E36 - GET api/admin/dashboard : Admin dashboard istatistiklerini getirir.
     [HttpGet("dashboard")]
     public async Task<ActionResult> Dashboard()
     {
@@ -35,24 +29,20 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
-    // E37 - GET api/admin/users : Admin paneli için kullanıcı listesini getirir.
     [HttpGet("users")]
     public async Task<ActionResult<AdminUsersResponseDto>> GetUsersForAdminAsync(string? search = null, bool? isActive = null, int page = 1, int pageSize = 10)
     {
-        // Filtre ve sayfalama bilgilerini AdminService katmanına gönderiyoruz.
         var result = await _adminService.GetUsersForAdminAsync(search, isActive, page, pageSize);
 
         // Service'ten gelen güvenli DTO cevabını özet sayaçlarla birlikte 200 OK ile döndürüyoruz.
         return Ok(result);
     }
 
-    // E38 - PUT api/admin/users/{id}/status : Kullanıcı hesabını aktif veya pasif yapar.
     [HttpPut("users/{id}/status")]
     public async Task<ActionResult<AdminUserDto>> UpdateUserStatus(int id, [FromBody] AdminUpdateUserStatusDto dto)
     {
-        // Token içinden işlemi yapan admin kullanıcının Id bilgisini alıyoruz.
         if (!TryGetCurrentUserId(out var currentAdminId))
-            return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
+            return Unauthorized("Kullanici bilgisi token icinde bulunamadi.");
 
         var result = await _adminService.UpdateUserStatusAsync(id, dto, currentAdminId);
 
@@ -63,51 +53,59 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
-    // JWT token içindeki kullanıcı Id bilgisini güvenli şekilde okumaya çalışır.
-    private bool TryGetCurrentUserId(out int userId)
-    {
-        userId = 0;
-
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
-        return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
-    }
-
-    // E39 - PUT api/admin/users/{id}/roles : Kullanıcının rollerini günceller.
     [HttpPut("users/{id}/roles")]
     public async Task<ActionResult<AdminUserDto>> UpdateUserRoles(int id, [FromBody] AdminUpdateUserRolesDto dto)
     {
         if (!TryGetCurrentUserId(out var currentAdminId))
-            return Unauthorized("Kullanıcı bilgisi token içinde bulunamadı.");
+            return Unauthorized("Kullanici bilgisi token icinde bulunamadi.");
 
         var result = await _adminService.UpdateUserRolesAsync(id, dto, currentAdminId);
 
         await LogInfoAsync(
-            $"Kullanıcı rolleri güncellendi: TargetUserId={id}, AdminId={currentAdminId}",
+            $"Kullanici rolleri guncellendi: TargetUserId={id}, AdminId={currentAdminId}",
             userId: currentAdminId);
 
         return Ok(result);
     }
 
-    // E44 - GET api/admin/logs : Sistem loglarını filtreli ve sayfalı şekilde getirir.
+    [HttpGet("reservations")]
+    public async Task<IActionResult> GetReservations(
+        string? status = null,
+        int? hotelId = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        int page = 1,
+        int pageSize = 10)
+    {
+        var result = await _adminService.GetReservationsAsync(status, hotelId, from, to, page, pageSize);
+        return Ok(result);
+    }
+
+    [HttpPut("reservations/{id}/status")]
+    public async Task<ActionResult<ReservationDto>> UpdateReservationStatus(int id, [FromBody] AdminUpdateReservationStatusDto dto)
+    {
+        var result = await _adminService.UpdateReservationStatusAsync(id, dto.Status);
+        return Ok(result);
+    }
+
+    [HttpPut("reservations/{id}/confirm")]
+    public async Task<ActionResult<ReservationDto>> ConfirmReservation(int id, [FromBody] AdminConfirmReservationDto dto)
+    {
+        var result = await _adminService.ConfirmReservationAsync(id, dto.Confirm);
+        return Ok(result);
+    }
+
     [HttpGet("logs")]
     public async Task<ActionResult<PagedResponseDto<LogDto>>> GetLogs([FromQuery] LogFilterDto filter)
     {
         var result = await _adminService.GetLogsAsync(filter);
 
-        // Admin paneline kim ne zaman baktigini audit izi icin tutuyoruz.
         if (TryGetCurrentUserId(out var currentAdminId))
-        {
-            await LogInfoAsync(
-                $"Admin log listesi görüntülendi.",
-                userId: currentAdminId);
-        }
+            await LogInfoAsync("Admin log listesi goruntulendi.", userId: currentAdminId);
 
         return Ok(result);
     }
 
-    // E45 - GET api/admin/logs/{id} : Tek log kaydını detaylı şekilde getirir.
     [HttpGet("logs/{id}")]
     public async Task<ActionResult<LogDto>> GetLogById(int id)
     {
@@ -116,13 +114,19 @@ public class AdminController : ControllerBase
             return NotFound();
 
         if (TryGetCurrentUserId(out var currentAdminId))
-        {
-            await LogInfoAsync(
-                $"Admin log detayı görüntülendi: LogId={id}",
-                userId: currentAdminId);
-        }
+            await LogInfoAsync($"Admin log detayi goruntulendi: LogId={id}", userId: currentAdminId);
 
         return Ok(log);
+    }
+
+    private bool TryGetCurrentUserId(out int userId)
+    {
+        userId = 0;
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        return !string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out userId);
     }
 
     // Ortak bilgi logu atmak icin kullanilir.

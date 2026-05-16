@@ -77,7 +77,7 @@ namespace HotelApp.API.Controllers
         public async Task<IActionResult> Create([FromBody] CreateRoomTypeDto dto)
         {
             await _service.AddRoomTypeAsync(dto);
-            return Ok("Oda tipi oluşturuldu.");
+            return Ok(new { message = "Oda tipi oluşturuldu." });
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace HotelApp.API.Controllers
             };
 
             await _service.UpdateRoomTypeAsync(dto);
-            return Ok("Oda tipi güncellendi");
+            return Ok(new { message = "Oda tipi güncellendi" });
 
         }
 
@@ -112,7 +112,7 @@ namespace HotelApp.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteRoomTypeAsync(id);
-            return Ok("Oda tipi silindi");
+            return Ok(new { message = "Oda tipi silindi" });
         }
     }
 }

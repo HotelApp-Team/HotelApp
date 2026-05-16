@@ -42,6 +42,9 @@ public interface IAdminRepository
     // Role isimlerine göre rolleri getirir.
     Task<List<Role>> GetRolesByNamesAsync(List<string> roleNames);
 
+    // Admin rezervasyon ekranı için filtreli ve sayfalı rezervasyon listesi döndürür.
+    Task<(List<Reservation> Data, int TotalCount)> GetPagedReservationsForAdminAsync(string? status, int? hotelId, DateTime? from, DateTime? to, int page, int pageSize);
+
     // Admin işlemlerinde değişen kullanıcıyı güncellenecek olarak işaretler.
     void UpdateUser(User user);
 }

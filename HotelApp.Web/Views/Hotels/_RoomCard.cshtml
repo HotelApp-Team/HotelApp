@@ -2,6 +2,20 @@
 
 @{
     var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
+    var checkIn = ViewData["CheckIn"]?.ToString();
+    var checkOut = ViewData["CheckOut"]?.ToString();
+
+    // Search'ten gelen guestCount bu oda tipinin MaxGuests'inden buyukse
+    // Booking linkinde max'a indir; aksi takdirde Booking sayfasindaki
+    // <input max="@Model.MaxGuests"> validasyonu yuzunden "Değer X veya
+    // daha küçük olmalıdır" hatasi cikiyordu. Min 1 ile koruyoruz.
+    int requestedGuests;
+    if (!int.TryParse(ViewData["GuestCount"]?.ToString(), out requestedGuests) || requestedGuests < 1)
+    {
+        requestedGuests = 1;
+    }
+    var clampedGuests = Math.Min(requestedGuests, Model.MaxGuests);
+    var guestCount = clampedGuests.ToString();
 }
 
 <div class="card mb-3">
@@ -38,23 +52,20 @@
             </div>
         </div>
 
-        <button type="button"
-                class="btn btn-primary mt-3"
-                data-bs-toggle="modal"
-                data-bs-target="#bookingModal-@roomId">
+        <a asp-controller="Booking"
+           asp-action="Create"
+           asp-route-hotelId="@Model.HotelId"
+           asp-route-hotelRoomId="@roomId"
+           asp-route-checkIn="@checkIn"
+           asp-route-checkOut="@checkOut"
+           asp-route-guestCount="@guestCount"
+           class="btn btn-primary mt-3">
             Rezervasyon Yap
-        </button>
+        </a>
     </div>
 </div>
 
-@await Html.PartialAsync(
-    "_BookingModal",
-    Model,
-    new ViewDataDictionary(ViewData)
-    {
-        ["CheckInIso"] = ViewData["CheckInIso"],
-        ["CheckOutIso"] = ViewData["CheckOutIso"],
-        ["GuestCount"] = ViewData["GuestCount"]
-    })
-
-
+@* _BookingModal partial cagrisi kaldirildi: "Rezervasyon Yap" butonu artik tam sayfa
+   /Booking/Create akisina yonlendiriyor, modal tetikleyici yok. Partial dosya repoda
+   kalmaya devam ediyor (ileride modal akisina donulmek istenirse kullanilabilir),
+   sadece her oda icin gereksiz olu DOM/JS render edilmesi engellendi. *@

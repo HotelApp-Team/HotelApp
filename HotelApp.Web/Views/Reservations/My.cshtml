@@ -1,0 +1,195 @@
+@model List<ReservationDetailViewModel>
+
+@{
+    ViewData["Title"] = "Rezervasyonlarım";
+
+    // _AccountLayout konfigurasyonu — shell sidebar + greeting strip render eder.
+    Layout = "_AccountLayout";
+    ViewData["AccountTab"]          = "reservations";
+    ViewData["AccountPageTitle"]    = "Rezervasyonlarım";
+    ViewData["AccountPageSubtitle"] = "Yaklaşan konaklamalarını yönet, fatura ve detay sayfalarına geç.";
+
+    // Greeting strip + sidebar meta'lari icin sayilar
+    var today = DateTime.Today;
+    var upcomingCount = Model.Count(r =>
+        !string.Equals(r.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+     && !string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)
+     && r.CheckInDate.Date >= today);
+    var completedCount = Model.Count(r => string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase));
+    var cancelledCount = Model.Count(r => string.Equals(r.Status, "Cancelled", StringComparison.OrdinalIgnoreCase));
+
+    ViewData["AccountResTotal"]    = Model.Count;
+    ViewData["AccountResUpcoming"] = upcomingCount;
+
+    if (upcomingCount > 0)
+    {
+        var next = Model
+            .Where(r => !string.Equals(r.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+                     && r.CheckInDate.Date >= today)
+            .OrderBy(r => r.CheckInDate)
+            .FirstOrDefault();
+        if (next != null)
+        {
+            var days = (next.CheckInDate.Date - today).Days;
+            ViewData["AccountGreetingNote"] = days == 0
+                ? $"Bugün giriş yapıyorsun: {next.HotelName}."
+                : $"Bir sonraki konaklamana {days} gün kaldı — {next.HotelName}.";
+        }
+    }
+
+    // Status -> badge sinifi + Turkce etiket
+    string StatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "confirmed" => "status-badge status-confirmed",
+        "pending"   => "status-badge status-pending",
+        "completed" => "status-badge status-completed",
+        "cancelled" => "status-badge status-cancelled",
+        _           => "status-badge status-pending"
+    };
+    string StatusLabel(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "confirmed" => "Onaylandı",
+        "pending"   => "Beklemede",
+        "completed" => "Tamamlandı",
+        "cancelled" => "İptal Edildi",
+        _           => s ?? "Bilinmiyor"
+    };
+}
+
+@* Filtre cipleri — frontend filtrelemesi degil, sadece gorsel ozet/anchor olarak isaret;
+   gercek filtreleme controller'a state eklenerek sonradan yapilabilir. *@
+<div class="res-filter-row">
+    <span class="res-filter-chip active">Tümü <em>@Model.Count</em></span>
+    <span class="res-filter-chip">Yaklaşan <em>@upcomingCount</em></span>
+    <span class="res-filter-chip">Geçmiş <em>@completedCount</em></span>
+    <span class="res-filter-chip">İptal <em>@cancelledCount</em></span>
+</div>
+
+@if (!Model.Any())
+{
+    @* Empty state — yonlendirici, sadece "yok" demiyor. *@
+    <div class="account-empty">
+        <div class="account-empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <h2>Henüz rezervasyon yok</h2>
+        <p>
+            Hayalindeki tatili bulup ilk rezervasyonunu oluştur. Türkiye'nin her köşesindeki
+            kaliteli otelleri tek bir yerden rezerve edebilirsin.
+        </p>
+        <div class="account-empty-actions">
+            <a asp-controller="Hotels" asp-action="Search" class="btn-account-primary">
+                <i class="bi bi-search"></i> Otel ara
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn-account-outline">
+                Popüler şehirler
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="res-card-list">
+        @foreach (var r in Model.OrderByDescending(x => x.CheckInDate))
+        {
+            var canCancel =
+                !string.Equals(r.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+             && !string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)
+             && r.CheckInDate.Date >= today;
+            var nights = Math.Max(1, (r.CheckOutDate.Date - r.CheckInDate.Date).Days);
+            var daysUntil = (r.CheckInDate.Date - today).Days;
+
+            <article class="res-card">
+                @* Sol — otel gorseli placeholder (gerçek görsel modelde yok; CityImageHelper ile sonra eklenebilir) *@
+                <div class="res-card-media">
+                    <div class="res-card-thumb"
+                         data-label="@r.HotelName">
+                        <i class="bi bi-building"></i>
+                    </div>
+                </div>
+
+                @* Orta — metadata *@
+                <div class="res-card-meta">
+                    <div class="res-card-status-row">
+                        <span class="@StatusClass(r.Status)">
+                            <span class="dot"></span>@StatusLabel(r.Status)
+                        </span>
+                        @if (canCancel && daysUntil > 0 && daysUntil <= 60)
+                        {
+                            <span class="res-card-countdown">
+                                <i class="bi bi-clock-history"></i>@daysUntil gün kaldı
+                            </span>
+                        }
+                    </div>
+
+                    <h3 class="res-card-title">@r.HotelName</h3>
+                    <div class="res-card-sub">
+                        <i class="bi bi-house-door"></i>@r.RoomTypeName
+                    </div>
+
+                    <div class="res-card-date-strip">
+                        <div class="date-cell">
+                            <div class="date-cell-label">GİRİŞ</div>
+                            <div class="date-cell-value">@r.CheckInDate.ToString("dd.MM.yyyy")</div>
+                        </div>
+                        <i class="bi bi-arrow-right date-arrow"></i>
+                        <div class="date-cell">
+                            <div class="date-cell-label">ÇIKIŞ</div>
+                            <div class="date-cell-value">@r.CheckOutDate.ToString("dd.MM.yyyy")</div>
+                        </div>
+                        <div class="date-cell date-cell-sep">
+                            <div class="date-cell-label">KONAKLAMA</div>
+                            <div class="date-cell-value">@nights gece · @r.GuestCount misafir</div>
+                        </div>
+                    </div>
+
+                    <div class="res-card-id">
+                        Rezervasyon No: <code>#@r.ReservationId</code>
+                    </div>
+                </div>
+
+                @* Sag — fiyat + aksiyonlar. Cancel form ICERIDE, dokunulmadi. *@
+                <div class="res-card-actions">
+                    <div class="res-card-total-label">TOPLAM</div>
+                    <div class="res-card-total">@r.TotalPrice.ToString("C")</div>
+
+                    <a asp-controller="Reservations"
+                       asp-action="Invoice"
+                       asp-route-id="@r.ReservationId"
+                       class="btn-account-primary">
+                        <i class="bi bi-receipt"></i> Fatura
+                    </a>
+
+                    <a asp-controller="Reservations"
+                       asp-action="Detail"
+                       asp-route-id="@r.ReservationId"
+                       class="btn-account-outline">
+                        <i class="bi bi-arrow-up-right"></i> Detay
+                    </a>
+
+                    @if (canCancel)
+                    {
+                        <form asp-controller="Reservations"
+                              asp-action="Cancel"
+                              method="post"
+                              class="res-card-cancel-form">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="id" value="@r.ReservationId" />
+
+                            <button type="submit"
+                                    class="btn-account-danger-ghost"
+                                    onclick="return confirm('Rezervasyonu iptal etmek istediginize emin misiniz?');">
+                                <i class="bi bi-x-circle"></i> Rezervasyonu İptal Et
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="res-card-locked">
+                            <i class="bi bi-lock"></i>İptal edilemez
+                        </span>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+}

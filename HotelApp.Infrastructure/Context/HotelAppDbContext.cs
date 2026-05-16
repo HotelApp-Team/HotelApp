@@ -117,6 +117,9 @@ public partial class HotelAppDbContext : DbContext
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ExtraGuestPricePerNight)
+                .HasColumnType("decimal(10, 2)")
+                .HasDefaultValue(0m);
 
             entity.HasOne(d => d.Hotel).WithMany(p => p.HotelRooms)
                 .HasForeignKey(d => d.HotelId)

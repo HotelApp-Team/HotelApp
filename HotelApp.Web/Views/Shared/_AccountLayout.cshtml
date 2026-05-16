@@ -1,0 +1,179 @@
+@using HotelApp.Web.Helpers
+@inject IConfiguration Configuration
+@{
+    // _AccountLayout — Profilim / Rezervasyonlarim / Yorumlarim icin ortak kabuk.
+    // _Layout (navbar + footer) ust katmandadir; bu layout sadece icine sidebar +
+    // greeting strip ekler. ViewData["AccountTab"] aktif sekmeyi belirler.
+    Layout = "_Layout";
+
+    var fullName  = Context.Session.GetString("UserFullName") ?? "Misafir";
+    var userEmail = Context.Session.GetString("UserEmail")    ?? "";
+
+    var accountTab    = ViewData["AccountTab"] as string ?? "";
+    var pageTitle     = ViewData["AccountPageTitle"]    as string;
+    var pageSubtitle  = ViewData["AccountPageSubtitle"] as string;
+    var greetingNote  = ViewData["AccountGreetingNote"] as string;
+
+    // Stats — controller tarafindan ViewData ile gecirilir; null ise gizlenir.
+    int? resTotal      = ViewData["AccountResTotal"]      as int?;
+    int? resUpcoming   = ViewData["AccountResUpcoming"]   as int?;
+    int? reviewTotal   = ViewData["AccountReviewTotal"]   as int?;
+    double? reviewAvg  = ViewData["AccountReviewAvg"]     as double?;
+
+    // Kullanicinin baş harfi avatar icin.
+    var initial = string.IsNullOrWhiteSpace(fullName) ? "?" : fullName.Trim().Substring(0, 1).ToUpper();
+
+    string TabClass(string tab) => accountTab == tab ? "account-nav-item active" : "account-nav-item";
+
+    // Sidebar'da nav-item alti satiri (kucuk meta) - dinamik
+    string ReservationsSub() =>
+        resTotal.HasValue
+            ? $"{resTotal} toplam" + (resUpcoming.HasValue ? $" · {resUpcoming} yaklaşan" : "")
+            : "Konaklama geçmişin";
+
+    string ReviewsSub() =>
+        reviewTotal.HasValue
+            ? $"{reviewTotal} yorum" + (reviewAvg.HasValue ? $" · {reviewAvg:0.0} ortalama" : "")
+            : "Otel değerlendirmelerin";
+}
+
+@* Account ozel stilleri — _Layout'taki site.css'e ek olarak sadece bu layout altinda yuklenir. *@
+<link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+
+<div class="account-shell">
+    <div class="container">
+
+        @* Breadcrumb *@
+        <nav aria-label="breadcrumb" class="account-breadcrumb">
+            <a asp-controller="Home" asp-action="Index">Anasayfa</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>Hesabım</span>
+            @if (!string.IsNullOrEmpty(pageTitle))
+            {
+                <i class="bi bi-chevron-right"></i>
+                <span class="current">@pageTitle</span>
+            }
+        </nav>
+
+        @* Greeting strip — midnight gradient karsilama *@
+        <div class="account-greeting">
+            <div class="account-greeting-bg-1"></div>
+            <div class="account-greeting-bg-2"></div>
+
+            <div class="account-greeting-text">
+                <div class="account-greeting-eyebrow">HOŞ GELDİN</div>
+                <h2 class="account-greeting-title">Merhaba, @fullName</h2>
+                @if (!string.IsNullOrEmpty(greetingNote))
+                {
+                    <div class="account-greeting-note">@greetingNote</div>
+                }
+            </div>
+
+            @if (resTotal.HasValue || reviewTotal.HasValue)
+            {
+                <div class="account-stats">
+                    @if (resUpcoming.HasValue)
+                    {
+                        <div class="account-stat">
+                            <b>@resUpcoming</b><span>Yaklaşan rezervasyon</span>
+                        </div>
+                    }
+                    @if (resTotal.HasValue)
+                    {
+                        <div class="account-stat">
+                            <b>@resTotal</b><span>Toplam konaklama</span>
+                        </div>
+                    }
+                    @if (reviewTotal.HasValue)
+                    {
+                        <div class="account-stat">
+                            <b>@reviewTotal</b><span>Yazdığın yorum</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @* Sidebar + content *@
+        <div class="account-grid">
+
+            <aside class="account-sidebar">
+                @* Kullanici karti *@
+                <div class="account-user">
+                    <div class="account-avatar">@initial</div>
+                    <div class="account-user-meta">
+                        <div class="account-user-name">@fullName</div>
+                        <div class="account-user-email">@userEmail</div>
+                    </div>
+                </div>
+
+                <div class="account-nav-label">HESAP</div>
+                <nav class="account-nav">
+                    <a asp-controller="Profile" asp-action="Index" class="@TabClass("profile")">
+                        @if (accountTab == "profile") { <span class="account-nav-bar"></span> }
+                        <i class="bi bi-person"></i>
+                        <span class="account-nav-text">
+                            <span class="account-nav-title">Profilim</span>
+                            <span class="account-nav-sub">Ad, soyad, telefon</span>
+                        </span>
+                        @if (accountTab == "profile") { <i class="bi bi-chevron-right account-nav-chev"></i> }
+                    </a>
+
+                    <a asp-controller="Reservations" asp-action="My" class="@TabClass("reservations")">
+                        @if (accountTab == "reservations") { <span class="account-nav-bar"></span> }
+                        <i class="bi bi-calendar2-check"></i>
+                        <span class="account-nav-text">
+                            <span class="account-nav-title">Rezervasyonlarım</span>
+                            <span class="account-nav-sub">@ReservationsSub()</span>
+                        </span>
+                        @if (accountTab == "reservations") { <i class="bi bi-chevron-right account-nav-chev"></i> }
+                    </a>
+
+                    <a asp-controller="Reviews" asp-action="My" class="@TabClass("reviews")">
+                        @if (accountTab == "reviews") { <span class="account-nav-bar"></span> }
+                        <i class="bi bi-chat-square-quote"></i>
+                        <span class="account-nav-text">
+                            <span class="account-nav-title">Yorumlarım</span>
+                            <span class="account-nav-sub">@ReviewsSub()</span>
+                        </span>
+                        @if (accountTab == "reviews") { <i class="bi bi-chevron-right account-nav-chev"></i> }
+                    </a>
+                </nav>
+
+                <div class="account-nav-divider"></div>
+
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="account-nav-item account-nav-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="account-nav-text">
+                            <span class="account-nav-title">Çıkış yap</span>
+                        </span>
+                    </button>
+                </form>
+            </aside>
+
+            <main class="account-main">
+                @if (!string.IsNullOrEmpty(pageTitle))
+                {
+                    <header class="account-page-head">
+                        <div class="account-page-eyebrow">HESABIM</div>
+                        <h1>@pageTitle</h1>
+                        @if (!string.IsNullOrEmpty(pageSubtitle))
+                        {
+                            <p>@pageSubtitle</p>
+                        }
+                    </header>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+</div>
+
+@* Scripts section'unu RenderSection ile aşağıya geçiriyoruz — alt view'lar
+   Profile/Index.cshtml gibi @section Scripts kullanabilsin diye. *@
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

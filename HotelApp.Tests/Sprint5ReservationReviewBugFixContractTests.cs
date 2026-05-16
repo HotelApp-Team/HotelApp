@@ -63,6 +63,9 @@ public class Sprint5ReservationReviewBugFixContractTests
     }
 
     // S5-06 icin otel detayindan rezervasyon olusturma UI akisinin E23 endpointine guvenli baglandigini kontrol eder.
+    // Not: Rezervasyon olusturma akisi BookingController veya ReservationsController uzerinden tasinabilir;
+    // contract test ikisinin birlesik metnine bakar (Cancel akisina karar verildiyse ReservationsController.Create
+    // silinmis olabilir, o durumda BookingController.Create kabul edilir).
     [Fact]
     public void S506_ReservationCreateUi_ShouldPostE23FromHotelDetailWithSafeFeedback()
     {
@@ -70,7 +73,9 @@ public class Sprint5ReservationReviewBugFixContractTests
         if (!Sprint5CardGuards.S506_ReservationCreateUiImplemented())
             return;
 
-        var controller = ReadWebFile("Controllers", "ReservationsController.cs");
+        var reservationsController = ReadWebFile("Controllers", "ReservationsController.cs");
+        var bookingController = ReadOptionalWebFile("Controllers", "BookingController.cs");
+        var controller = string.Join(Environment.NewLine, reservationsController, bookingController);
         var bookingModal = ReadOptionalWebFile("Views", "Hotels", "_BookingModal.cshtml");
         var roomCard = ReadOptionalWebFile("Views", "Hotels", "_RoomCard.cshtml");
         var source = string.Join(Environment.NewLine, controller, bookingModal, roomCard);
@@ -81,8 +86,8 @@ public class Sprint5ReservationReviewBugFixContractTests
         AssertContainsAny(controller, "PostAsync", "SendAsync");
         AssertContainsAny(controller, "reservations", "api/reservations");
         AssertContainsAny(controller, "TempData[\"Error\"]", "TempData[\"Success\"]", "ModelState");
-        AssertContainsAny(controller, "RedirectToAction(\"Detail\", \"Hotels\"", "RedirectToAction(nameof");
-        AssertContainsAny(source, "asp-controller=\"Reservations\"", "Reservations");
+        AssertContainsAny(controller, "RedirectToAction(\"Detail\", \"Hotels\"", "RedirectToAction(nameof", "RedirectToAction(\"My\"");
+        AssertContainsAny(source, "asp-controller=\"Reservations\"", "asp-controller=\"Booking\"", "Reservations", "Booking");
         AssertContainsAny(source, "asp-action=\"Create\"", "Create");
         AssertContainsAny(source, "HotelId", "HotelRoomId");
         AssertContainsAny(source, "CheckInDate", "CheckOutDate");

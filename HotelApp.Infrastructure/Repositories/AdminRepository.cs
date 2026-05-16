@@ -160,5 +160,41 @@ namespace HotelApp.Infrastructure.Repositories
         {
             _context.Users.Update(user);
         }
+
+        public async Task<(List<Reservation> Data, int TotalCount)> GetPagedReservationsForAdminAsync(string? status, int? hotelId, DateTime? from, DateTime? to, int page, int pageSize)
+        {
+            // Admin ekranında kullanıcı, otel ve oda tipi adlarını göstermek için ilişkili tabloları dahil ediyoruz.
+            var query = _context.Reservations
+                .Include(x => x.User)
+                .Include(x => x.HotelRoom).ThenInclude(x => x.Hotel)
+                .Include(x => x.HotelRoom).ThenInclude(x => x.RoomType)
+                .AsQueryable();
+
+            // Durum filtresi geldiyse sadece o durumdaki rezervasyonları getirir.
+            if (!string.IsNullOrWhiteSpace(status))
+                query= query.Where(x => x.Status == status);
+
+            // Otel filtresi geldiyse sadece ilgili otele ait rezervasyonları getirir.
+            if (hotelId.HasValue)
+                query = query.Where(x => x.HotelRoom.HotelId == hotelId.Value);
+
+            // Başlangıç tarihi filtresi.
+            if (from.HasValue)
+                query = query.Where(x => x.CheckInDate >= DateOnly.FromDateTime(from.Value));
+
+            // Bitiş tarihi filtresi.
+            if (to.HasValue)
+                query = query.Where(x => x.CheckOutDate <= DateOnly.FromDateTime(to.Value));
+
+            var totalCount = await query.CountAsync();
+           
+            var data = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (data, totalCount);
+        }
     }
 }

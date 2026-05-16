@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Sıkça sorulan sorular";
+}
+
+<div class="page-header">
+    <h1>Sıkça Sorulan Sorular</h1>
+    <p>HotelApp kullanımı hakkında kısa cevaplar.</p>
+</div>
+
+<div class="accordion" id="faqAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                Rezervasyonumu nasıl iptal ederim?
+            </button>
+        </h2>
+        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                Giriş yaptıktan sonra Rezervasyonlarım sayfasından uygun durumdaki rezervasyonunuzu iptal edebilirsiniz.
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                Faturamı nereden görebilirim?
+            </button>
+        </h2>
+        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                Rezervasyon detay sayfasındaki Fatura butonundan fatura bilgilerinizi görüntüleyebilirsiniz.
+            </div>
+        </div>
+    </div>
+</div>

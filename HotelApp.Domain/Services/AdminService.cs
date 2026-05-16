@@ -1,4 +1,4 @@
-using HotelApp.Domain.DTOs;
+﻿using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using System.Data;
@@ -178,10 +178,57 @@ public class AdminService : IAdminService
         };
     }
 
-    // E45 için tek log kaydını  ileterek logger katmanına  delege ediyoruz.
+    // E45 için tek log kaydını ileterek logger katmanına delege ediyoruz.
     public async Task<LogDto?> GetLogByIdAsync(int id)
     {
         return await _logger.GetLogByIdAsync(id);
+    }
+
+    // Admin paneli icin rezervasyonlari filtreli ve sayfali sekilde getirir.
+    public async Task<PagedResponseDto<ReservationDto>> GetReservationsAsync(string? status, int? hotelId, DateTime? from, DateTime? to, int page, int pageSize)
+    {
+        ValidatePaging(page, pageSize);
+
+        var (reservations, totalCount) =
+            await _unitOfWork.AdminRepository.GetPagedReservationsForAdminAsync(
+                status, hotelId, from, to, page, pageSize);
+
+        return new PagedResponseDto<ReservationDto>
+        {
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            Data = reservations.Select(ReservationService.MapToDto).ToList()
+        };
+    }
+
+    // Admin panelinden rezervasyon durumunu gunceller. Sadece Confirmed, Cancelled veya Completed kabul edilir.
+    public async Task<ReservationDto> UpdateReservationStatusAsync(int reservationId, string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Durum zorunludur.");
+
+        var allowedStatuses = new[] { "Confirmed", "Cancelled", "Completed" };
+        if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            throw new ArgumentException("Gecersiz rezervasyon durumu.");
+
+        var reservation = await _unitOfWork.ReservationRepository.GetWithDetailsAsync(reservationId);
+
+        if (reservation == null)
+            throw new KeyNotFoundException("Rezervasyon bulunamadi.");
+
+        reservation.Status = status.Trim();
+        _unitOfWork.ReservationRepository.Update(reservation);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ReservationService.MapToDto(reservation);
+    }
+
+    // Admin panelinden rezervasyonu onaylar (Confirmed) veya reddeder (Cancelled).
+    public Task<ReservationDto> ConfirmReservationAsync(int reservationId, bool confirm)
+    {
+        var newStatus = confirm ? "Confirmed" : "Cancelled";
+        return UpdateReservationStatusAsync(reservationId, newStatus);
     }
 
     // User entity'sini admin ekranına güvenli şekilde döneceğimiz AdminUserDto'ya çevirir.
@@ -212,4 +259,7 @@ public class AdminService : IAdminService
         if (pageSize > 100)
             throw new ArgumentException("PageSize en fazla 100 olabilir.");
     }
+
+    
 }
+

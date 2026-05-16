@@ -1,0 +1,1320 @@
+/* ===================================================================
+   HasTur — account.css
+   _AccountLayout altinda yuklenen ek stil dosyasi.
+   site.css'in :root token'larini kullanir (--primary, --primary-soft, ...).
+   admin.css ile ayni desen: layout'a ozel stiller burada, global etki yok.
+   =================================================================== */
+
+/* Account icin gerekli ama site.css'de olmayan token (status renkleri vb.) */
+:root {
+    --account-danger: #DC2626;
+    --account-danger-soft: #FEE2E2;
+    --account-danger-border: #FCA5A5;
+}
+
+/* ───────── Outer shell ───────── */
+.account-shell {
+    padding: 24px 0 56px;
+    background: var(--bg-main);
+    min-height: calc(100vh - 70px);
+}
+
+/* ───────── Breadcrumb ───────── */
+.account-breadcrumb {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.account-breadcrumb a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+.account-breadcrumb a:hover { color: var(--primary); }
+.account-breadcrumb i {
+    font-size: 0.65rem;
+    opacity: 0.6;
+}
+.account-breadcrumb .current {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* ───────── Greeting strip ───────── */
+.account-greeting {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary) 0%, #1E50A8 100%);
+    border-radius: 16px;
+    padding: 24px 28px;
+    color: white;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    box-shadow: 0 8px 24px rgba(0, 57, 128, 0.18);
+}
+.account-greeting-bg-1,
+.account-greeting-bg-2 {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+}
+.account-greeting-bg-1 { right: -40px; top: -40px; width: 200px; height: 200px; }
+.account-greeting-bg-2 { right: 60px; bottom: -80px; width: 140px; height: 140px; background: rgba(255,255,255,0.04); }
+
+.account-greeting-text { position: relative; z-index: 2; min-width: 0; }
+.account-greeting-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.75;
+    margin-bottom: 4px;
+}
+.account-greeting-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    margin: 0;
+}
+.account-greeting-note {
+    font-size: 0.88rem;
+    opacity: 0.88;
+    margin-top: 6px;
+    max-width: 520px;
+}
+
+.account-stats {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 28px;
+}
+.account-stat {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+.account-stat b {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+.account-stat span {
+    font-size: 0.72rem;
+    opacity: 0.85;
+    margin-top: 4px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ───────── Grid (sidebar + main) ───────── */
+.account-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* ───────── Sidebar ───────── */
+.account-sidebar {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--card-shadow);
+    position: sticky;
+    top: 24px;
+}
+
+.account-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+}
+.account-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: white;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.account-user-meta { min-width: 0; }
+.account-user-name {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.account-user-email {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-nav-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    padding: 4px 8px 8px;
+}
+
+.account-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.account-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    background: transparent;
+    color: #334155;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+}
+.account-nav-item:hover {
+    background: #F8FAFC;
+    color: var(--primary);
+}
+.account-nav-item > i {
+    font-size: 17px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.account-nav-item.active {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+}
+.account-nav-item.active > i { color: var(--primary); }
+
+.account-nav-bar {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--primary);
+}
+
+.account-nav-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+.account-nav-title {
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+.account-nav-sub {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    font-weight: 500;
+}
+.account-nav-item.active .account-nav-sub {
+    color: var(--primary);
+    opacity: 0.85;
+}
+.account-nav-chev {
+    font-size: 0.7rem !important;
+    color: var(--primary) !important;
+}
+
+.account-nav-divider {
+    margin: 12px 0;
+    border-top: 1px solid var(--border);
+}
+
+.account-nav-logout {
+    color: var(--account-danger);
+}
+.account-nav-logout:hover {
+    background: #FEF2F2;
+    color: var(--account-danger);
+}
+.account-nav-logout > i { color: var(--account-danger); }
+
+/* ───────── Main content ───────── */
+.account-main { min-width: 0; }
+
+.account-page-head {
+    padding: 0 0 18px;
+}
+.account-page-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.account-page-head h1 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 6px;
+    color: var(--text-main);
+}
+.account-page-head p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ───────── Status badges (rezervasyon durumlari) ───────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.status-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+.status-confirmed { background: #DCFCE7; color: #166534; }
+.status-pending   { background: #FEF3C7; color: #92400E; }
+.status-completed { background: var(--primary-soft); color: var(--primary); }
+.status-cancelled { background: var(--account-danger-soft); color: #991B1B; }
+
+/* ───────── Account butons ───────── */
+.btn-account-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 14px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: filter 0.15s;
+}
+.btn-account-primary:hover { background: var(--primary-hover); color: white; filter: brightness(0.96); }
+
+.btn-account-outline {
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 8px 13px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+}
+.btn-account-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-account-danger-ghost {
+    background: transparent;
+    color: var(--account-danger);
+    border: 1px solid var(--account-danger-border);
+    border-radius: 9px;
+    padding: 7px 13px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    transition: background 0.15s;
+}
+.btn-account-danger-ghost:hover { background: #FEF2F2; }
+
+/* ───────── Rezervasyon filtre cipleri ───────── */
+.res-filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+.res-filter-chip {
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: white;
+    border: 1px solid var(--border);
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: default;
+}
+.res-filter-chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.res-filter-chip em {
+    font-style: normal;
+    opacity: 0.7;
+    margin-left: 4px;
+}
+
+/* ───────── Rezervasyon kart liste (Yön A) ───────── */
+.res-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.res-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    display: grid;
+    grid-template-columns: 200px 1fr 240px;
+    gap: 0;
+    overflow: hidden;
+    transition: box-shadow 0.18s;
+}
+.res-card:hover { box-shadow: var(--card-shadow-hover); }
+
+/* media */
+.res-card-media { padding: 14px; }
+.res-card-thumb {
+    width: 100%;
+    height: 168px;
+    border-radius: 10px;
+    background:
+        linear-gradient(135deg, rgba(0, 57, 128, 0.55) 0%, rgba(59, 130, 246, 0.35) 100%),
+        repeating-linear-gradient(135deg, #C9D6E8 0 2px, #DCE6F4 2px 10px);
+    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    overflow: hidden;
+}
+.res-card-thumb::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 8px 10px;
+    background: linear-gradient(to top, rgba(0,15,40,0.7) 0%, rgba(0,15,40,0) 100%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-align: left;
+    line-height: 1.2;
+}
+
+/* meta */
+.res-card-meta {
+    padding: 20px 8px 20px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.res-card-status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.res-card-countdown {
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.res-card-title {
+    margin: 0;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.4px;
+}
+.res-card-sub {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.res-card-sub i { color: #94A3B8; font-size: 0.78rem; }
+
+.res-card-date-strip {
+    margin-top: 6px;
+    display: flex;
+    gap: 18px;
+    padding: 10px 14px;
+    background: var(--primary-soft);
+    border-radius: 10px;
+    font-size: 0.82rem;
+    align-items: center;
+}
+.date-cell { line-height: 1.25; }
+.date-cell-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+.date-cell-value {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-top: 2px;
+}
+.date-arrow {
+    color: var(--primary);
+    opacity: 0.5;
+}
+.date-cell-sep {
+    border-left: 1px solid var(--border);
+    padding-left: 14px;
+}
+.res-card-id {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+.res-card-id code {
+    color: var(--text-main);
+    background: transparent;
+    padding: 0;
+}
+
+/* actions */
+.res-card-actions {
+    padding: 20px 22px;
+    border-left: 1px dashed var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: linear-gradient(180deg, transparent 0%, #FAFCFE 100%);
+}
+.res-card-total-label {
+    font-size: 0.66rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.res-card-total {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--success);
+    margin-top: -4px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+.res-card-cancel-form {
+    margin-top: auto;
+    width: 100%;
+}
+.res-card-locked {
+    margin-top: auto;
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 8px 0;
+}
+.res-card-locked i { margin-right: 4px; }
+
+/* ───────── Yorum galeri kart (Yön A) ───────── */
+.rev-gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.rev-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    padding: 26px 24px 22px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.18s;
+}
+.rev-card:hover { box-shadow: var(--card-shadow-hover); }
+.rev-card-quote {
+    position: absolute;
+    top: -6px;
+    right: 16px;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 5.5rem;
+    line-height: 1;
+    color: var(--primary);
+    opacity: 0.10;
+    font-weight: 700;
+    user-select: none;
+    pointer-events: none;
+}
+
+.rev-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+}
+.rev-card-stars {
+    color: var(--warning);
+    font-size: 0.92rem;
+    letter-spacing: 1px;
+}
+.rev-card-stars .off { color: #CBD5E1; }
+
+.rev-card-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.rev-card-rating .rating-pill {
+    color: white;
+    border-radius: 8px;
+    padding: 3px 9px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+.rating-excellent { background: var(--success); }
+.rating-good      { background: var(--info); }
+.rating-ok        { background: var(--warning); }
+.rating-bad       { background: var(--account-danger); }
+.rev-card-rating-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.rev-card-comment {
+    margin: 0 0 18px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #334155;
+    font-style: italic;
+    flex: 1;
+    /* Cok uzun yorumlari kart cinden tasmadan biraz daha uzun gostermek istersek,
+       overflow yerine sadece line-height + font-size dengesine guveniyoruz. */
+}
+.rev-card-comment-empty { color: var(--text-secondary); }
+
+.rev-card-foot {
+    /* site.css icinde global `footer { background-color: #0F172A !important; }`
+       kurali var (sayfa footer'i icin). Review kartinda <footer> semantik elementi
+       kullandigimiz icin bu kural sizar; burada acikca override ediyoruz. */
+    background-color: transparent !important;
+    color: inherit !important;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.rev-card-hotel { min-width: 0; }
+.rev-card-hotel-name {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rev-card-hotel-meta {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+.rev-card-hotel-meta i { margin-right: 4px; }
+
+.rev-card-delete-form { margin: 0; }
+.rev-card-delete-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    transition: all 0.15s;
+}
+.rev-card-delete-btn:hover {
+    color: var(--account-danger);
+    border-color: var(--account-danger-border);
+    background: #FEF2F2;
+}
+
+/* ───────── Profile form card ───────── */
+.account-form-card { background: white; }
+.account-form-card .account-form-card-head {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+}
+.account-form-card .account-form-card-head h5 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.account-form-card .account-form-card-head i { color: var(--primary); }
+.account-form-card .account-form-card-body {
+    padding: 22px;
+}
+
+/* ───────── Empty state ───────── */
+.account-empty {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    padding: 60px 40px;
+    text-align: center;
+}
+.account-empty-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.account-empty h2 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 8px;
+}
+.account-empty p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0 auto 24px;
+    max-width: 460px;
+    line-height: 1.6;
+}
+.account-empty-actions {
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ===================================================================
+   Reservation Detail (Yön B — Stay timeline) ve
+   Reservation Invoice (Yön B — Modern fiş) sayfa stilleri.
+   Her ikisi de _AccountLayout altinda yasar.
+   =================================================================== */
+
+/* ───────── Detail: kucuk breadcrumb (page-head set edilmediginde) ───────── */
+.rd-breadcrumb {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.rd-breadcrumb a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+.rd-breadcrumb a:hover { color: var(--primary); }
+.rd-breadcrumb i {
+    font-size: 0.65rem;
+    opacity: 0.6;
+}
+.rd-breadcrumb .current {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* ───────── Detail: HERO (countdown + otel basligi) ───────── */
+.rd-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary) 0%, #1E50A8 100%);
+    color: white;
+    border-radius: 18px;
+    padding: 32px 36px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    box-shadow: 0 14px 32px rgba(0, 57, 128, 0.22);
+}
+.rd-hero-bg-1,
+.rd-hero-bg-2 {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.rd-hero-bg-1 { right: -40px; top: -40px; width: 220px; height: 220px; background: rgba(255,255,255,0.06); }
+.rd-hero-bg-2 { right: 100px; bottom: -90px; width: 160px; height: 160px; background: rgba(255,255,255,0.04); }
+
+.rd-hero-text { position: relative; z-index: 2; min-width: 0; max-width: 60%; }
+.rd-hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    opacity: 0.95;
+    margin-bottom: 8px;
+}
+.rd-hero-eyebrow .status-badge { background: rgba(255,255,255,0.18) !important; color: white !important; }
+.rd-hero-id { opacity: 0.78; font-weight: 500; }
+
+.rd-hero-title {
+    margin: 0;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+}
+.rd-hero-sub {
+    font-size: 0.88rem;
+    opacity: 0.92;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rd-hero-counter { position: relative; z-index: 2; text-align: right; }
+.rd-hero-counter-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.78;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.rd-hero-counter-value {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.rd-hero-counter-value b {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1.5px;
+}
+.rd-hero-counter-value span {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.85;
+}
+.rd-hero-counter-sub {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin-top: 4px;
+}
+
+/* ───────── Detail: TIMELINE card ───────── */
+.rd-timeline-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    padding: 28px 32px;
+    margin-bottom: 22px;
+}
+.rd-section-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 0 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.rd-section-title i { color: var(--primary); }
+
+.rd-timeline {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr 60px 1fr;
+    align-items: flex-start;
+    gap: 0;
+}
+.rd-step {
+    text-align: center;
+}
+.rd-step-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #F1F5F9;
+    border: 2px solid var(--border);
+    color: var(--text-secondary);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+.rd-step-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+.rd-step-value {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-top: 2px;
+    letter-spacing: -0.2px;
+}
+.rd-step-sub {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.rd-step-done .rd-step-icon {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+}
+.rd-step-current .rd-step-icon {
+    background: white;
+    color: var(--primary);
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.rd-connector {
+    height: 2px;
+    margin-top: 27px;
+    background: var(--border);
+}
+.rd-connector.done { background: var(--success); }
+.rd-connector.dashed {
+    background: repeating-linear-gradient(to right, var(--border) 0 6px, transparent 6px 12px);
+}
+
+/* ───────── Detail: iki kolon (detay + odeme) ───────── */
+.rd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+.rd-rows { padding-top: 6px; padding-bottom: 6px; }
+.rd-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 0.88rem;
+}
+.rd-row-last { border-bottom: none; }
+.rd-row-label { color: var(--text-secondary); }
+.rd-row-value { color: var(--text-main); font-weight: 600; text-align: right; }
+.rd-row-success { color: var(--success); }
+
+.rd-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 0 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+}
+.rd-total-label {
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.2px;
+}
+.rd-total-value {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--success);
+    letter-spacing: -0.5px;
+}
+
+.rd-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+.rd-actions-primary { flex: 1; }
+.rd-actions-secondary { width: 48px; padding: 8px 0 !important; }
+
+/* ───────── Invoice (Yön B — Modern fiş) ───────── */
+.inv-wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.inv-receipt {
+    position: relative;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(15, 23, 55, 0.08);
+    overflow: hidden;
+}
+
+/* HEAD: yesil onay alani */
+.inv-receipt-head {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--success) 0%, #15803D 100%);
+    color: white;
+    padding: 32px 32px 26px;
+    text-align: center;
+}
+.inv-receipt-head-bg-1,
+.inv-receipt-head-bg-2 {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.inv-receipt-head-bg-1 { left: -30px; top: -30px; width: 140px; height: 140px; background: rgba(255,255,255,0.08); }
+.inv-receipt-head-bg-2 { right: -40px; bottom: -60px; width: 160px; height: 160px; background: rgba(255,255,255,0.06); }
+
+.inv-receipt-head-cancelled {
+    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+}
+
+.inv-receipt-check {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    color: var(--success);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.85rem;
+    margin-bottom: 14px;
+}
+.inv-receipt-check-cancelled {
+    color: var(--account-danger);
+}
+
+.inv-receipt-title {
+    position: relative;
+    margin: 0 0 4px;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+.inv-receipt-tag {
+    position: relative;
+    font-size: 0.85rem;
+    opacity: 0.92;
+}
+
+/* TOTAL */
+.inv-total-block {
+    text-align: center;
+    padding: 26px 32px 18px;
+    border-bottom: 2px dashed var(--border);
+}
+.inv-total-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+.inv-total-value {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -1.4px;
+    line-height: 1.1;
+    margin-top: 6px;
+}
+.inv-total-sub {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* BLOCKS */
+.inv-block {
+    padding: 22px 32px 14px;
+}
+.inv-block + .inv-block { padding-top: 6px; }
+.inv-block-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.inv-hotel {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.inv-hotel-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.inv-hotel-meta { flex: 1; min-width: 0; }
+.inv-hotel-name {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.3px;
+}
+.inv-hotel-line {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+.inv-hotel-line i { margin-right: 4px; }
+
+.inv-rows {
+    display: flex;
+    flex-direction: column;
+}
+.inv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 0.82rem;
+}
+.inv-row-label { color: var(--text-secondary); }
+.inv-row-value {
+    color: var(--text-main);
+    font-weight: 600;
+    text-align: right;
+}
+.inv-row-success { color: var(--success); }
+
+/* FOOT */
+.inv-receipt-foot {
+    /* site.css'deki global footer kuralinin sizmasini engelle */
+    background: #F8FAFC !important;
+    color: inherit !important;
+    padding: 18px 32px;
+    border-top: 2px dashed var(--border);
+    font-size: 0.78rem;
+    color: var(--text-secondary) !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.inv-foot-right { text-align: right; }
+.inv-foot-label {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.78rem;
+}
+.inv-foot-value {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    margin-top: 2px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+/* Sol-sag yarim-daire kesim noktalari */
+.inv-notch {
+    position: absolute;
+    top: 55%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    pointer-events: none;
+}
+.inv-notch-left { left: -10px; }
+.inv-notch-right { right: -10px; }
+
+/* Sayfa aksiyonlari (kart disinda) */
+.inv-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.inv-actions-right { display: flex; gap: 8px; }
+
+/* ───────── Responsive ───────── */
+@media (max-width: 991.98px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+    .account-sidebar {
+        position: static;
+        top: auto;
+    }
+    .account-stats {
+        gap: 20px;
+    }
+    .account-stat b { font-size: 1.4rem; }
+}
+
+@media (max-width: 767.98px) {
+    .res-card {
+        grid-template-columns: 1fr;
+    }
+    .res-card-media { padding: 14px 14px 0; }
+    .res-card-thumb { height: 160px; }
+    .res-card-meta { padding: 16px; }
+    .res-card-actions {
+        border-left: none;
+        border-top: 1px dashed var(--border);
+        background: #FAFCFE;
+        padding: 18px 16px;
+    }
+    .res-card-date-strip {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .date-cell-sep { border-left: none; padding-left: 0; }
+
+    .rev-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .account-greeting {
+        padding: 20px 22px;
+    }
+    .account-greeting-title { font-size: 1.35rem; }
+    .account-stats { flex-wrap: wrap; gap: 16px; }
+
+    /* Detail hero + timeline + iki kolon */
+    .rd-hero { padding: 24px; }
+    .rd-hero-text { max-width: 100%; }
+    .rd-hero-counter { text-align: left; }
+    .rd-hero-counter-value { justify-content: flex-start; }
+    .rd-hero-counter-value b { font-size: 2.6rem; }
+
+    .rd-timeline {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .rd-connector {
+        height: 24px;
+        width: 2px;
+        margin: 0 auto;
+        background: var(--border);
+    }
+    .rd-connector.done { background: var(--success); }
+    .rd-connector.dashed {
+        background: repeating-linear-gradient(to bottom, var(--border) 0 6px, transparent 6px 12px);
+    }
+
+    .rd-grid { grid-template-columns: 1fr; }
+
+    /* Invoice receipt */
+    .inv-receipt-title { font-size: 1.4rem; }
+    .inv-total-value { font-size: 2.2rem; }
+    .inv-block { padding: 20px 22px 12px; }
+    .inv-receipt-foot { padding: 16px 22px; }
+}

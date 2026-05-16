@@ -1,0 +1,219 @@
+@model ReservationDetailViewModel
+
+@{
+    ViewData["Title"] = "Rezervasyon Detayı";
+
+    // _AccountLayout altinda yasar — sidebar 'Rezervasyonlarım' sekmesi aktif kalir.
+    Layout = "_AccountLayout";
+    ViewData["AccountTab"] = "reservations";
+    // page-head'i kasitli olarak set ETMIYORUZ; bu sayfanin kendi buyuk hero'su var.
+
+    // Computed alanlar — model'da yok, view'da hesaplanir.
+    var today      = DateTime.Today;
+    var nights     = Math.Max(1, (Model.CheckOutDate.Date - Model.CheckInDate.Date).Days);
+    var daysUntil  = (Model.CheckInDate.Date - today).Days;
+    var pricePerNight = nights > 0 ? Model.TotalPrice / nights : Model.TotalPrice;
+
+    // Turkce gun isimleri
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
+    var checkInDay  = trCulture.DateTimeFormat.GetDayName(Model.CheckInDate.DayOfWeek);
+    var checkOutDay = trCulture.DateTimeFormat.GetDayName(Model.CheckOutDate.DayOfWeek);
+
+    // Durum etiketi ve renk sinifi
+    var statusKey = (Model.Status ?? "").ToLowerInvariant();
+    string statusClass = statusKey switch
+    {
+        "confirmed" => "status-badge status-confirmed",
+        "pending"   => "status-badge status-pending",
+        "completed" => "status-badge status-completed",
+        "cancelled" => "status-badge status-cancelled",
+        _           => "status-badge status-pending"
+    };
+    string statusLabel = statusKey switch
+    {
+        "confirmed" => "Onaylandı",
+        "pending"   => "Beklemede",
+        "completed" => "Tamamlandı",
+        "cancelled" => "İptal Edildi",
+        _           => Model.Status ?? "Bilinmiyor"
+    };
+
+    bool isUpcoming  = statusKey != "cancelled" && statusKey != "completed" && Model.CheckInDate.Date >= today;
+    bool isCompleted = statusKey == "completed" || Model.CheckOutDate.Date < today;
+    bool isCancelled = statusKey == "cancelled";
+}
+
+@* ───────── Breadcrumb (page-head set edilmedigi icin manuel) ───────── *@
+<nav aria-label="breadcrumb" class="rd-breadcrumb">
+    <a asp-controller="Profile" asp-action="Index">Hesabım</a>
+    <i class="bi bi-chevron-right"></i>
+    <a asp-controller="Reservations" asp-action="My">Rezervasyonlarım</a>
+    <i class="bi bi-chevron-right"></i>
+    <span class="current">#@Model.ReservationId</span>
+</nav>
+
+@* ───────── HERO — countdown + otel basligi ───────── *@
+<div class="rd-hero">
+    <div class="rd-hero-bg-1"></div>
+    <div class="rd-hero-bg-2"></div>
+
+    <div class="rd-hero-text">
+        <div class="rd-hero-eyebrow">
+            <span class="@statusClass" style="background: rgba(255,255,255,0.18); color: white;">
+                <span class="dot"></span>@statusLabel
+            </span>
+            <span class="rd-hero-id">· #@Model.ReservationId</span>
+        </div>
+        <h1 class="rd-hero-title">@Model.HotelName</h1>
+        <div class="rd-hero-sub">
+            <i class="bi bi-house-door"></i>@Model.RoomTypeName
+        </div>
+    </div>
+
+    <div class="rd-hero-counter">
+        @if (isUpcoming && daysUntil >= 0)
+        {
+            <div class="rd-hero-counter-label">Konaklamana</div>
+            <div class="rd-hero-counter-value">
+                <b>@daysUntil</b><span>gün</span>
+            </div>
+            <div class="rd-hero-counter-sub">
+                kaldı · @Model.CheckInDate.ToString("dd.MM.yyyy") @checkInDay
+            </div>
+        }
+        else if (isCompleted)
+        {
+            var daysAgo = (today - Model.CheckOutDate.Date).Days;
+            <div class="rd-hero-counter-label">Konaklama</div>
+            <div class="rd-hero-counter-value">
+                <b>@Math.Max(0, daysAgo)</b><span>gün önce</span>
+            </div>
+            <div class="rd-hero-counter-sub">
+                tamamlandı · @Model.CheckOutDate.ToString("dd.MM.yyyy")
+            </div>
+        }
+        else if (isCancelled)
+        {
+            <div class="rd-hero-counter-label">Bu rezervasyon</div>
+            <div class="rd-hero-counter-value">
+                <b><i class="bi bi-x-circle"></i></b>
+            </div>
+            <div class="rd-hero-counter-sub">
+                iptal edildi
+            </div>
+        }
+    </div>
+</div>
+
+@* ───────── TIMELINE — Rezervasyon → Giriş → Çıkış ───────── *@
+<section class="rd-timeline-card">
+    <h3 class="rd-section-title">
+        <i class="bi bi-flag"></i>Konaklama akışı
+    </h3>
+
+    <div class="rd-timeline">
+        @{
+            // Step 1 her zaman onaylanmis. Step 2 (Giris) bugun >= checkin ise tamamlanmis;
+            // bugun arada ise 'current'. Step 3 (Cikis) ancak checkout >= bugun ise tamamlanmis.
+            bool checkInDone  = today >= Model.CheckInDate.Date;
+            bool checkOutDone = today >= Model.CheckOutDate.Date;
+            bool checkInCurrent  = !checkInDone && isUpcoming;
+            bool checkOutCurrent = checkInDone && !checkOutDone;
+        }
+
+        <div class="rd-step rd-step-done">
+            <div class="rd-step-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="rd-step-label">REZERVASYON</div>
+            <div class="rd-step-value">Onaylandı</div>
+            <div class="rd-step-sub">Detaylar hazır</div>
+        </div>
+
+        <div class="rd-connector @(checkInDone ? "done" : "")"></div>
+
+        <div class="rd-step @(checkInDone ? "rd-step-done" : "") @(checkInCurrent ? "rd-step-current" : "")">
+            <div class="rd-step-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+            <div class="rd-step-label">GİRİŞ</div>
+            <div class="rd-step-value">@Model.CheckInDate.ToString("dd.MM.yyyy")</div>
+            <div class="rd-step-sub">@checkInDay · 14:00 sonrası</div>
+        </div>
+
+        <div class="rd-connector @(checkOutDone ? "done" : "dashed")"></div>
+
+        <div class="rd-step @(checkOutDone ? "rd-step-done" : "") @(checkOutCurrent ? "rd-step-current" : "")">
+            <div class="rd-step-icon"><i class="bi bi-box-arrow-right"></i></div>
+            <div class="rd-step-label">ÇIKIŞ</div>
+            <div class="rd-step-value">@Model.CheckOutDate.ToString("dd.MM.yyyy")</div>
+            <div class="rd-step-sub">@checkOutDay · 12:00</div>
+        </div>
+    </div>
+</section>
+
+@* ───────── Iki kolon — Detay + Odeme Ozeti ───────── *@
+<div class="rd-grid">
+
+    <section class="app-card account-form-card">
+        <div class="account-form-card-head">
+            <h5 class="mb-0"><i class="bi bi-house-door"></i>Konaklama Detayları</h5>
+        </div>
+        <div class="account-form-card-body rd-rows">
+            <div class="rd-row">
+                <span class="rd-row-label">Otel</span>
+                <span class="rd-row-value">@Model.HotelName</span>
+            </div>
+            <div class="rd-row">
+                <span class="rd-row-label">Oda Tipi</span>
+                <span class="rd-row-value">@Model.RoomTypeName</span>
+            </div>
+            <div class="rd-row">
+                <span class="rd-row-label">Misafir</span>
+                <span class="rd-row-value">@Model.GuestCount kişi</span>
+            </div>
+            <div class="rd-row">
+                <span class="rd-row-label">Gece sayısı</span>
+                <span class="rd-row-value">@nights gece</span>
+            </div>
+            <div class="rd-row rd-row-last">
+                <span class="rd-row-label">Durum</span>
+                <span class="rd-row-value">
+                    <span class="@statusClass"><span class="dot"></span>@statusLabel</span>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card account-form-card">
+        <div class="account-form-card-head">
+            <h5 class="mb-0"><i class="bi bi-credit-card"></i>Ödeme Özeti</h5>
+        </div>
+        <div class="account-form-card-body rd-rows">
+            <div class="rd-row">
+                <span class="rd-row-label">@pricePerNight.ToString("C") × @nights gece</span>
+                <span class="rd-row-value">@Model.TotalPrice.ToString("C")</span>
+            </div>
+            <div class="rd-row">
+                <span class="rd-row-label">Hizmet bedeli</span>
+                <span class="rd-row-value rd-row-success">Ücretsiz</span>
+            </div>
+
+            <div class="rd-total-row">
+                <span class="rd-total-label">Toplam</span>
+                <span class="rd-total-value">@Model.TotalPrice.ToString("C")</span>
+            </div>
+
+            <div class="rd-actions">
+                <a asp-controller="Reservations"
+                   asp-action="Invoice"
+                   asp-route-id="@Model.ReservationId"
+                   class="btn-account-primary rd-actions-primary">
+                    <i class="bi bi-receipt"></i> Fatura Görüntüle
+                </a>
+                <a asp-controller="Reservations"
+                   asp-action="My"
+                   class="btn-account-outline rd-actions-secondary"
+                   title="Rezervasyonlarıma Dön">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
