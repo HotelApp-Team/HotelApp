@@ -35,7 +35,7 @@
         "pending"   => "Beklemede",
         "completed" => "Tamamlandı",
         "cancelled" => "İptal Edildi",
-        _           => Model.Status
+        _           => Model.Status ?? "Bilinmiyor"
     };
 
     bool isUpcoming  = statusKey != "cancelled" && statusKey != "completed" && Model.CheckInDate.Date >= today;

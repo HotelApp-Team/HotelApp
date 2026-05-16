@@ -44,6 +44,7 @@ namespace HotelApp.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
             await _apiService.PutAsync<object>($"admin/reservations/{id}/status", new { status });
@@ -51,6 +52,7 @@ namespace HotelApp.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id, bool confirm)
         {
             await _apiService.PutAsync<object>($"admin/reservations/{id}/confirm", new { confirm });

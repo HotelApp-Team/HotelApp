@@ -65,15 +65,7 @@
     </div>
 </div>
 
-@* BookingModal partial'ini render eder; arama sayfasindan gelen tarih/misafir bilgileri ViewData ile aktarilir. *@
-@await Html.PartialAsync(
-    "_BookingModal",
-    Model,
-    new ViewDataDictionary(ViewData)
-    {
-        ["CheckInIso"] = ViewData["CheckInIso"],
-        ["CheckOutIso"] = ViewData["CheckOutIso"],
-        ["GuestCount"] = ViewData["GuestCount"]
-    })
-
-
+@* _BookingModal partial cagrisi kaldirildi: "Rezervasyon Yap" butonu artik tam sayfa
+   /Booking/Create akisina yonlendiriyor, modal tetikleyici yok. Partial dosya repoda
+   kalmaya devam ediyor (ileride modal akisina donulmek istenirse kullanilabilir),
+   sadece her oda icin gereksiz olu DOM/JS render edilmesi engellendi. *@

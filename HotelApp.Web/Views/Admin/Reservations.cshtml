@@ -121,6 +121,7 @@
                                     <td class="text-end">
                                         <div class="action-group">
                                             <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@reservation.Id" />
                                                 <input type="hidden" name="confirm" value="true" />
                                                 <button type="submit" class="btn btn-sm btn-outline-success">
@@ -129,6 +130,7 @@
                                             </form>
 
                                             <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@reservation.Id" />
                                                 <input type="hidden" name="confirm" value="false" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
