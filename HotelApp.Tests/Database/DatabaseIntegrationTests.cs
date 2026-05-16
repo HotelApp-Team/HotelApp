@@ -63,7 +63,8 @@ public class DatabaseIntegrationTests
             parameters.AddWithValue("@City", "Istanbul");
         });
 
-        Assert.Equal(3, count);
+        // Seed'de Istanbul oteline 7 oda tipi atanmis (Single/Double/Suite/Family/Deluxe/Business/Kral).
+        Assert.Equal(7, count);
     }
 
     [Fact]
@@ -89,14 +90,16 @@ public class DatabaseIntegrationTests
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
-        // HotelRoomId 2 = Istanbul Double, TotalRooms = 2.
+        // HotelRoomId 7 = Istanbul Kral, TotalRooms = 2, MaxGuests = 4.
         // Ayni tarih araligina 2 rezervasyon ekleyince bu oda tipi artik musait gorunmemeli.
+        // (Onceden Double Id=2 kullaniliyordu ama yeni seed'de Double TotalRooms=10; tek
+        // basina TotalRooms=2 olan oda Kral oldugu icin tam dolu senaryosu icin o secildi.)
         await _database.ExecuteNonQueryAsync(
             """
             INSERT INTO Reservations (UserId, HotelRoomId, CheckInDate, CheckOutDate, GuestCount, TotalPrice, PaymentMethod, Status)
             VALUES
-            (2, 2, '2026-08-01', '2026-08-05', 2, 800, 'CreditCard', 'Confirmed'),
-            (2, 2, '2026-08-01', '2026-08-05', 2, 800, 'CreditCard', 'Confirmed');
+            (2, 7, '2026-08-01', '2026-08-05', 2, 20000, 'CreditCard', 'Confirmed'),
+            (2, 7, '2026-08-01', '2026-08-05', 2, 20000, 'CreditCard', 'Confirmed');
             """);
 
         var result = await SearchAvailableRoomsAsync(
@@ -105,7 +108,7 @@ public class DatabaseIntegrationTests
             checkOut: new DateTime(2026, 8, 5),
             guestCount: 2);
 
-        Assert.DoesNotContain(result, room => room.HotelRoomId == 2);
+        Assert.DoesNotContain(result, room => room.HotelRoomId == 7);
     }
 
     [Fact]
@@ -114,6 +117,8 @@ public class DatabaseIntegrationTests
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
+        // HotelRoomId 1 = Istanbul Single, PricePerNight = 800, ExtraGuestPricePerNight = 0.
+        // 3 gece x 800 + 3 x 0 x 0 (ek misafir yok) = 2400 TL.
         var reservation = await MakeReservationAsync(
             userId: 2,
             hotelRoomId: 1,
@@ -122,13 +127,13 @@ public class DatabaseIntegrationTests
             guestCount: 1);
 
         Assert.True(reservation.ReservationId > 0);
-        Assert.Equal("Rezervasyon basariyla olusturuldu.", reservation.Message);
+        Assert.Equal("Rezervasyon başarıyla oluşturuldu.", reservation.Message);
 
         var totalPrice = await _database.ExecuteScalarDecimalAsync(
             "SELECT TotalPrice FROM Reservations WHERE Id = @ReservationId",
             parameters => parameters.AddWithValue("@ReservationId", reservation.ReservationId));
 
-        Assert.Equal(300m, totalPrice);
+        Assert.Equal(2400m, totalPrice);
     }
 
     [Fact]
@@ -137,6 +142,8 @@ public class DatabaseIntegrationTests
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
+        // HotelRoomId 1 = Single, MaxGuests = 1. 2 misafir ile rezervasyon denenirse
+        // SP "kapasiteyi asiyor" mesaji ile reddetmeli.
         var reservation = await MakeReservationAsync(
             userId: 2,
             hotelRoomId: 1,
@@ -145,7 +152,7 @@ public class DatabaseIntegrationTests
             guestCount: 2);
 
         Assert.Equal(0, reservation.ReservationId);
-        Assert.Equal("Misafir sayisi oda kapasitesini asiyor.", reservation.Message);
+        Assert.Equal("Misafir sayısı oda kapasitesini aşıyor.", reservation.Message);
     }
 
     [Fact]
@@ -154,9 +161,12 @@ public class DatabaseIntegrationTests
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
+        // HotelRoomId 4 = Istanbul Family (RoomTypeId 4, MaxGuests = 4).
+        // (Onceden HotelRoomId 3 = Family iken seed'e yeni oda tipleri eklendi; artik Id 3
+        // Suite'e, 4 ise Family'e karsilik geliyor.)
         var reservation = await MakeReservationAsync(
             userId: 2,
-            hotelRoomId: 3,
+            hotelRoomId: 4,
             checkIn: new DateTime(2026, 11, 1),
             checkOut: new DateTime(2026, 11, 3),
             guestCount: 4);
