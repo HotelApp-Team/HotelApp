@@ -5,10 +5,10 @@ using System.Data;
 
 namespace HotelApp.Domain.Services;
 
-// AdminService sÄ±nÄ±fÄ±nÄ±n amacÄ±, admin paneli iÅŸ kurallarÄ±nÄ± yÃ¶netmektir.
-// Dashboard verisi hazÄ±rlar, kullanÄ±cÄ±larÄ± listeler, aktiflik durumunu ve rolleri gÃ¼nceller.
-// SOLID: SRP kullanÄ±r; sadece admin iÅŸ akÄ±ÅŸlarÄ±ndan sorumludur.
-// SOLID: DIP kullanÄ±r; veri iÅŸlemleri iÃ§in somut repository yerine IUnitOfWork arayÃ¼zÃ¼ne baÄŸlÄ±dÄ±r.
+// AdminService sınıfının amacı, admin paneli iş kurallarını yönetmektir.
+// Dashboard verisi hazırlar, kullanıcıları listeler, aktiflik durumunu ve rolleri günceller.
+// SOLID: SRP kullanır; sadece admin iş akışlarından sorumludur.
+// SOLID: DIP kullanır; veri işlemleri için somut repository yerine IUnitOfWork arayüzüne bağlıdır.
 
 public class AdminService : IAdminService
 {
@@ -27,14 +27,14 @@ public class AdminService : IAdminService
         _logger = logger;
     }
 
-    // E36 iÃ§in dashboard istatistiklerini toplar ve tek DTO halinde hazÄ±rlar.
+    // E36 için dashboard istatistiklerini toplar ve tek DTO halinde hazırlar.
     public async Task<AdminDashboardDto> GetDashboardDataAsync()
     {
-        // Son 10 rezervasyonu veritabanÄ±ndan alÄ±yoruz.
+        // Son 10 rezervasyonu veritabanından alıyoruz.
         var recentReservations = await _unitOfWork.AdminRepository
             .GetRecentReservationsAsync(10);
 
-        // Repository veriyi getirir, service ise API cevabÄ±nÄ± hazÄ±rlar.
+        // Repository veriyi getirir, service ise API cevabını hazırlar.
         return new AdminDashboardDto
         {
             TotalHotels = await _unitOfWork.AdminRepository.GetTotalHotelsAsync(),
@@ -44,7 +44,7 @@ public class AdminService : IAdminService
             TotalRevenue = await _unitOfWork.AdminRepository.GetTotalRevenueAsync(),
             AverageRating = await _unitOfWork.AdminRepository.GetAverageRatingAsync(),
 
-            // Reservation entity listesini API'de dÃ¶necek ReservationDto listesine Ã§eviriyoruz.
+            // Reservation entity listesini API'de dönecek ReservationDto listesine çeviriyoruz.
             RecentReservations = recentReservations
                 .Select(ReservationService.MapToDto)
                 .ToList()
@@ -54,10 +54,10 @@ public class AdminService : IAdminService
     // E37 için admin kullanıcı listesini hazırlar ve özet sayaçlarla birlikte güvenli DTO olarak döndürür.
     public async Task<AdminUsersResponseDto> GetUsersForAdminAsync(string? search, bool? isActive, int page, int pageSize)
     {
-        // Sayfalama deÄŸerleri hatalÄ±ysa DB sorgusuna gitmeden durduruyoruz.
+        // Sayfalama değerleri hatalıysa DB sorgusuna gitmeden durduruyoruz.
         ValidatePaging(page, pageSize);
 
-        // KullanÄ±cÄ±larÄ± filtrelenmiÅŸ ve sayfalanmÄ±ÅŸ ÅŸekilde AdminRepository'den alÄ±yoruz.
+        // Kullanıcıları filtrelenmiş ve sayfalanmış şekilde AdminRepository'den alıyoruz.
         var (users, totalCount) = await _unitOfWork.AdminRepository.GetPagedUsersForAdminAsync(search, isActive, page, pageSize);
 
         // Özet kartları sayfadaki 10 kayıt yerine toplam kullanıcı havuzuna göre hesaplanır.
@@ -76,42 +76,42 @@ public class AdminService : IAdminService
         };
     }
 
-    // E38 iÃ§in admin panelinden kullanÄ±cÄ±nÄ±n aktiflik durumunu gÃ¼nceller.
+    // E38 için admin panelinden kullanıcının aktiflik durumunu günceller.
     public async Task<AdminUserDto> UpdateUserStatusAsync(int userId, AdminUpdateUserStatusDto dto, int currentAdminId)
     {
-        // IsActive zorunlu alan; null gelirse planÄ±n 400 davranÄ±ÅŸÄ±na uygun olarak durduruyoruz.
+        // IsActive zorunlu alan; null gelirse planın 400 davranışına uygun olarak durduruyoruz.
         if (dto == null || dto.IsActive == null)
-            throw new ArgumentException("IsActive alanÄ± zorunludur.");
+            throw new ArgumentException("IsActive alanı zorunludur.");
 
-        // Status'u deÄŸiÅŸtirilecek kullanÄ±cÄ±yÄ± veritabanÄ±ndan getiriyoruz.
+        // Status'u değiştirilecek kullanıcıyı veritabanından getiriyoruz.
         var user = await _unitOfWork.AdminRepository.GetUserByIdAsync(userId);
 
-        // KullanÄ±cÄ± yoksa controller tarafÄ±nda 404'e Ã§evrilecek hata fÄ±rlatÄ±yoruz.
+        // Kullanıcı yoksa controller tarafında 404'e çevrilecek hata fırlatıyoruz.
         if (user == null)
-            throw new KeyNotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
+            throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
-        // Admin kendi hesabÄ±nÄ± pasife alamaz. Plan E38 bu durumda 400 dÃ¶ner.
+        // Admin kendi hesabını pasife alamaz. Plan E38 bu durumda 400 döner.
         if (userId == currentAdminId && dto.IsActive is false)
-            throw new ArgumentException("Admin kendi hesabÄ±nÄ± devre dÄ±ÅŸÄ± bÄ±rakamaz.");
+            throw new ArgumentException("Admin kendi hesabını devre dışı bırakamaz.");
 
-        // Sadece IsActive alanÄ±nÄ± gÃ¼ncelliyoruz.
+        // Sadece IsActive alanını güncelliyoruz.
         user.IsActive = dto.IsActive.Value;
 
         // User EF tarafindan takip edildigi icin sadece UnitOfWork ile kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();
 
-        // GÃ¼ncel kullanÄ±cÄ± bilgisini gÃ¼venli DTO olarak dÃ¶ndÃ¼rÃ¼yoruz.
+        // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
         return MapToAdminUserDto(user);
     }
 
-    // E39 iÃ§in admin panelinden kullanÄ±cÄ±nÄ±n rollerini gÃ¼nceller.
+    // E39 için admin panelinden kullanıcının rollerini günceller.
     public async Task<AdminUserDto> UpdateUserRolesAsync(int userId, AdminUpdateUserRolesDto dto, int currentAdminId)
     {
-        // Rol listesi boÅŸ gelirse controller tarafÄ±nda 400'e Ã§evrilecek hata fÄ±rlatÄ±yoruz.
+        // Rol listesi boş gelirse controller tarafında 400'e çevrilecek hata fırlatıyoruz.
         if (dto == null || dto.Roles == null)
-            throw new ArgumentException("En az bir rol seÃ§ilmelidir.");
+            throw new ArgumentException("En az bir rol seçilmelidir.");
 
-        // Gelen rol isimlerini temizliyoruz ve tekrar edenleri tekilleÅŸtiriyoruz.
+        // Gelen rol isimlerini temizliyoruz ve tekrar edenleri tekilleştiriyoruz.
         var requestedRoles = dto.Roles
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.Trim())
@@ -119,32 +119,32 @@ public class AdminService : IAdminService
             .ToList();
 
         if (!requestedRoles.Any())
-            throw new ArgumentException("En az bir rol seÃ§ilmelidir.");
+            throw new ArgumentException("En az bir rol seçilmelidir.");
 
-        // RolÃ¼ deÄŸiÅŸtirilecek kullanÄ±cÄ±yÄ± veritabanÄ±ndan getiriyoruz.
+        // Rolü değiştirilecek kullanıcıyı veritabanından getiriyoruz.
         var user = await _unitOfWork.AdminRepository.GetUserByIdAsync(userId);
 
-        // KullanÄ±cÄ± yoksa controller tarafÄ±nda 404'e Ã§evrilecek hata fÄ±rlatÄ±yoruz.
+        // Kullanıcı yoksa controller tarafında 404'e çevrilecek hata fırlatıyoruz.
         if (user == null)
-            throw new KeyNotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
+            throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
         // Role isimlerini DB'den getiriyoruz.
         var roles = await _unitOfWork.AdminRepository.GetRolesByNamesAsync(requestedRoles);
 
-        // GÃ¶nderilen rol isimlerinden DB'de bulunmayan varsa 400 hatasÄ± fÄ±rlatÄ±yoruz.
+        // Gönderilen rol isimlerinden DB'de bulunmayan varsa 400 hatası fırlatıyoruz.
         if (roles.Count != requestedRoles.Count)
-            throw new ArgumentException("GeÃ§ersiz rol isimleri var.");
+            throw new ArgumentException("Geçersiz rol isimleri var.");
 
         if (userId == currentAdminId &&
             !requestedRoles.Contains("Admin", StringComparer.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Admin kendi Admin rolÃ¼nÃ¼ kaldÄ±ramaz.");
+            throw new ArgumentException("Admin kendi Admin rolünü kaldıramaz.");
         }
 
-        // Plan kuralÄ±: GÃ¶nderilen rol listesi kullanÄ±cÄ±nÄ±n yeni rol listesi olur.
+        // Plan kuralı: Gönderilen rol listesi kullanıcının yeni rol listesi olur.
         user.Roles.Clear();
 
-        // DB'den gelen rolleri kullanÄ±cÄ±ya ekliyoruz.
+        // DB'den gelen rolleri kullanıcıya ekliyoruz.
         foreach (var role in roles)
         {
             user.Roles.Add(role);
@@ -153,7 +153,7 @@ public class AdminService : IAdminService
         // User EF tarafindan takip edildigi icin sadece UnitOfWork ile kaydediyoruz.
         await _unitOfWork.SaveChangesAsync();
 
-        // GÃ¼ncel kullanÄ±cÄ± bilgisini gÃ¼venli DTO olarak dÃ¶ndÃ¼rÃ¼yoruz.
+        // Güncel kullanıcı bilgisini güvenli DTO olarak döndürüyoruz.
         return MapToAdminUserDto(user);
     }
 
@@ -247,14 +247,14 @@ public class AdminService : IAdminService
         };
     }
 
-    // Page ve pageSize deÄŸerlerinin gÃ¼venli aralÄ±kta olup olmadÄ±ÄŸÄ±nÄ± kontrol eder.
+    // Page ve pageSize değerlerinin güvenli aralıkta olup olmadığını kontrol eder.
     private static void ValidatePaging(int page, int pageSize)
     {
         if (page < 1)
-            throw new ArgumentException("Page 1 veya daha bÃ¼yÃ¼k olmalÄ±dÄ±r.");
+            throw new ArgumentException("Page 1 veya daha büyük olmalıdır.");
 
         if (pageSize < 1)
-            throw new ArgumentException("PageSize 1 veya daha bÃ¼yÃ¼k olmalÄ±dÄ±r.");
+            throw new ArgumentException("PageSize 1 veya daha büyük olmalıdır.");
 
         if (pageSize > 100)
             throw new ArgumentException("PageSize en fazla 100 olabilir.");
