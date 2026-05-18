@@ -52,6 +52,16 @@ namespace HotelApp.Domain.Services
             if (hotel == null)
                 throw new KeyNotFoundException("Otel bulunamadı.");
 
+            // Eligibility: Yorum yazabilmek icin kullanicinin bu otelde tamamlanmis
+            // (veya checkout tarihi gecmis Confirmed) konaklamasi olmalidir.
+            // Bu kontrol, rezervasyon yapmamis kullanicinin yorum eklemesini engeller.
+            var hasStayed = await _unitOfWork.ReservationRepository
+                .HasCompletedStayAsync(userId, dto.HotelId);
+
+            if (!hasStayed)
+                throw new InvalidOperationException(
+                    "Bu otele yorum yazabilmek için tamamlanmış bir konaklamanız olmalıdır.");
+
             var existingReview = await _unitOfWork.ReviewRepository.GetByUserAndHotelAsync(userId, dto.HotelId);
 
             if (existingReview != null)
@@ -77,18 +87,39 @@ namespace HotelApp.Domain.Services
             return MapToDto(reviewWithDetails);
         }
 
-        public async Task DeleteReviewAsync(int id, int userId)
+        public async Task DeleteReviewAsync(int id, int userId, bool isAdmin)
         {
             var review = await _unitOfWork.ReviewRepository.GetByIdAsync(id);
 
             if (review == null)
                 throw new KeyNotFoundException("Yorum bulunamadı.");
 
-            if (review.UserId != userId)
+            // Yorumun sahibi degilse ve admin de degilse silme yetkisi yok.
+            // ReservationService.CancelReservationAsync ile ayni patern.
+            if (review.UserId != userId && !isAdmin)
                 throw new UnauthorizedAccessException("Bu yorumu silme yetkiniz yok.");
 
             _unitOfWork.ReviewRepository.Delete(review);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        // Admin yorum yonetim sayfasi icin tum yorumlari sayfalayarak doner.
+        // Yetki kontrolu API tarafinda [Authorize(Roles="Admin")] ile saglanir.
+        public async Task<PagedResponseDto<ReviewDto>> GetAllReviewsAsync(int page, int pageSize)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var (reviews, totalCount) = await _unitOfWork.ReviewRepository
+                .GetPagedWithDetailsAsync(page, pageSize);
+
+            return new PagedResponseDto<ReviewDto>
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = reviews.Select(MapToDto).ToList()
+            };
         }
 
         public static ReviewDto MapToDto(Review review)

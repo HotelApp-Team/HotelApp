@@ -23,5 +23,12 @@ namespace HotelApp.Domain.Interfaces
         // Check-out tarihi gecmis Confirmed rezervasyonlari tek SQL UPDATE'i ile Completed yapar.
         // Donus: etkilenen kayit sayisi. Periyodik calistirma icin Background Service tarafindan cagrilir.
         Task<int> MarkPastConfirmedAsCompletedAsync();
+
+        // Kullanicinin verilen otelde tamamlanmis konaklamasi var mi?
+        // Yorum yazma yetkisi icin ReviewService tarafindan cagrilir.
+        // Esnek tanim: Status="Completed" VEYA (Status="Confirmed" AND CheckOutDate gecmis).
+        // Boylece background service henuz Completed'a cevirmemis olsa bile
+        // konaklamasi biten kullanici yorum yazabilir.
+        Task<bool> HasCompletedStayAsync(int userId, int hotelId);
     }
 }
