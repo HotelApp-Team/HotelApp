@@ -60,5 +60,22 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        // Admin yorum yonetim sayfasi icin sayfali liste. Once toplam sayi alinir,
+        // sonra sayfa kadar kayit Include ile birlikte cekilir.
+        public async Task<(IEnumerable<Review> Items, int TotalCount)> GetPagedWithDetailsAsync(int page, int pageSize)
+        {
+            var totalCount = await _dbSet.CountAsync();
+
+            var items = await _dbSet
+                .Include(x => x.User)
+                .Include(x => x.Hotel)
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

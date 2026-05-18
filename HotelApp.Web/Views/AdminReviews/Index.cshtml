@@ -1,0 +1,134 @@
+@model PagedResponseViewModel<AdminReviewViewModel>
+
+@{
+    ViewData["Title"] = "Yorum Yönetimi";
+    Layout = "_AdminLayout";
+
+    var totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
+        : 1;
+    if (totalPages < 1) totalPages = 1;
+}
+
+@functions {
+    // Puana gore yildiz dizisi olusturur (1-5 arasi). View'da metin olarak yazdirilir.
+    string RenderStars(byte rating)
+    {
+        var clamped = rating < 1 ? 1 : (rating > 5 ? 5 : rating);
+        return new string('★', clamped) + new string('☆', 5 - clamped);
+    }
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-chat-left-text text-primary me-2"></i>
+            Yorum Yönetimi
+        </h2>
+    </div>
+
+    @* Liste kart *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul text-primary me-2"></i>
+                Yorum Listesi
+            </h5>
+            <span class="text-muted small">Toplam: <strong>@Model.TotalCount</strong></span>
+        </div>
+        <div class="card-body p-0">
+
+            @if (Model.Data == null || !Model.Data.Any())
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Gösterilecek yorum bulunamadı.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Otel</th>
+                                <th>Puan</th>
+                                <th>Yorum</th>
+                                <th>Tarih</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var review in Model.Data)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@review.UserName</td>
+                                    <td>@review.HotelName</td>
+                                    <td>
+                                        <span class="text-warning">@RenderStars(review.Rating)</span>
+                                        <small class="text-muted ms-1">(@review.Rating)</small>
+                                    </td>
+                                    <td class="small" style="max-width: 360px;">
+                                        @if (string.IsNullOrWhiteSpace(review.Comment))
+                                        {
+                                            <span class="text-muted fst-italic">— yorum yok —</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@review.Comment</span>
+                                        }
+                                    </td>
+                                    <td class="small text-nowrap">@review.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td class="text-end">
+                                        <form asp-controller="AdminReviews" asp-action="Delete" method="post" class="d-inline"
+                                              onsubmit="return confirm('Bu yorumu silmek istediğinize emin misiniz?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@review.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* Sayfalama — ReservationMgmt ile ayni stilde *@
+                @if (totalPages > 1)
+                {
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                        <span class="small text-muted">
+                            Sayfa @Model.Page / @totalPages
+                        </span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="AdminReviews"
+                                       asp-action="Index"
+                                       asp-route-page="@(Model.Page - 1)">
+                                        <i class="bi bi-chevron-left"></i> Önceki
+                                    </a>
+                                </li>
+                                <li class="page-item @(Model.Page >= totalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-controller="AdminReviews"
+                                       asp-action="Index"
+                                       asp-route-page="@(Model.Page + 1)">
+                                        Sonraki <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+
+</div>

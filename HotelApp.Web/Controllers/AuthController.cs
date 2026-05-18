@@ -296,7 +296,7 @@ public class AuthController : Controller
             return View(new VerifyEmailViewModel
             {
                 IsSuccess = false,
-                Message = "Dogrulama linki eksik veya geçersiz."
+                Message = "Doğrulama linki eksik veya geçersiz."
             });
         }
 
@@ -366,7 +366,7 @@ public class AuthController : Controller
         }
 
         // Basarili: Kullanici yesil mesaj gosterip Login'e yonlendir.
-        TempData["SuccessMessage"] = "Dogrulama maili başarıyla gönderildi! Lütfen gelen kutunuzu kontrol edin.";
+        TempData["SuccessMessage"] = "Doğrulama maili başarıyla gönderildi! Lütfen gelen kutunuzu kontrol edin.";
         return RedirectToAction("Login");
     }
 
