@@ -14,6 +14,11 @@ namespace HotelApp.Domain.Services
         Task<IEnumerable<ReviewDto>> GetUserReviewsAsync(int userId);
         Task<IEnumerable<ReviewDto>> GetFeaturedReviewsAsync(int count);
         Task<ReviewDto> CreateReviewAsync(int userId, CreateReviewDto dto);
-        Task DeleteReviewAsync(int id, int userId);
+
+        // Yorum silme: kullanici sadece kendi yorumunu siler, admin baskasininkini de silebilir.
+        Task DeleteReviewAsync(int id, int userId, bool isAdmin);
+
+        // Admin yorum yonetim ekrani icin sayfali tum yorum listesi.
+        Task<PagedResponseDto<ReviewDto>> GetAllReviewsAsync(int page, int pageSize);
     }
 }

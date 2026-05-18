@@ -39,6 +39,16 @@ namespace HotelApp.API.Controllers
             return Ok(review);
         }
 
+        // Admin yorum yonetim sayfasi icin sayfali tum yorum listesi.
+        // Route prefix'i tilde ile bypass edip /api/admin/reviews adresine bagliyoruz.
+        [Authorize(Roles = "Admin")]
+        [HttpGet("~/api/admin/reviews")]
+        public async Task<IActionResult> GetAllForAdmin([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _reviewService.GetAllReviewsAsync(page, pageSize);
+            return Ok(result);
+        }
+
         [Authorize]
         [HttpGet("my")]
         public async Task<IActionResult> GetMyReviews()
@@ -74,10 +84,12 @@ namespace HotelApp.API.Controllers
             if (!TryGetCurrentUserId(out var userId))
                 return Unauthorized();
 
-            await _reviewService.DeleteReviewAsync(id, userId);
+            var isAdmin = User.IsInRole("Admin");
+
+            await _reviewService.DeleteReviewAsync(id, userId, isAdmin);
 
             await LogInfoAsync(
-                $"Değerlendirme silindi: ReviewId={id}",
+                $"Değerlendirme silindi: ReviewId={id}, isAdmin={isAdmin}",
                 userId: userId);
 
             return NoContent();
