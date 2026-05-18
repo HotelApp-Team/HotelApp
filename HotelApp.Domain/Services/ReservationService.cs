@@ -32,6 +32,9 @@ namespace HotelApp.Domain.Services
             return details.Select(x => new ReservationDetailDto
             {
                 ReservationId = x.ReservationId,
+                // VwReservationDetail view'inde HotelId zaten projeksiyon olarak geliyor;
+                // dogrudan tasiyoruz, ek sorgu yok.
+                HotelId = x.HotelId,
                 HotelName = x.HotelName,
                 RoomTypeName = x.RoomTypeName,
                 CheckInDate = x.CheckInDate,
@@ -146,6 +149,9 @@ namespace HotelApp.Domain.Services
                 PaymentMethod = reservation.PaymentMethod,
                 Status = reservation.Status,
                 UserName = $"{reservation.User?.FirstName} {reservation.User?.LastName}".Trim(),
+                // HotelRoom -> Hotel zinciri uzerinden HotelId aliyoruz.
+                // GetWithDetailsAsync zaten bu navigation property'leri yukluyor.
+                HotelId = reservation.HotelRoom?.Hotel?.Id ?? 0,
                 HotelName = reservation.HotelRoom?.Hotel?.Name ?? string.Empty,
                 RoomTypeName = reservation.HotelRoom?.RoomType?.Name ?? string.Empty,
                 CreatedAt = reservation.CreatedAt
