@@ -13,5 +13,6 @@
         public int TotalRooms { get; set; }
         public int ReservedCount { get; set; }
         public int AvailableRooms { get; set; }
+        public bool IsActive { get; set; }
     }
 }

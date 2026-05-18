@@ -14,7 +14,7 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
-       
+
 
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
@@ -51,8 +51,9 @@ namespace HotelApp.Web.Controllers
         {
             var response = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{hotelId}/rooms");
 
-            var room = response.Data?.FirstOrDefault(x =>
-            x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
+            var room = response.Data?
+     .Where(x => x.IsActive)
+     .FirstOrDefault(x => x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
 
             if (room == null)
             {

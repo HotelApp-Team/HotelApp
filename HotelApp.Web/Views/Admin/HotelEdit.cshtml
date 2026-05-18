@@ -100,6 +100,14 @@
     </div>
 </form>
 
+@if (Model.Id == 0)
+{
+    <div class="alert alert-info mt-4">
+        Önce otel temel bilgilerini kaydedin.
+        Kaydettikten sonra olanak, görsel ve oda ekleme alanları açılacaktır.
+    </div>
+}
+
 @if (Model.Id > 0)
 {
     <hr class="my-5" />
@@ -229,6 +237,137 @@
     </table>
 
     <hr class="my-5" />
+
+    <h4>Oda Ekle</h4>
+
+    <form asp-controller="HotelMgmt"
+          asp-action="AddRoom"
+          asp-route-hotelId="@Model.Id"
+          method="post"
+          class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <label class="form-label">Oda Tipi</label>
+            <select name="RoomTypeId" class="form-select" required>
+                <option value="">Seçiniz</option>
+                @foreach (var roomType in Model.RoomTypes)
+                {
+                    <option value="@roomType.Id">@roomType.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Gecelik Fiyat</label>
+            <input name="PricePerNight" type="number" step="0.01" min="0.01" class="form-control" required />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Ek Misafir Fiyatı</label>
+            <input name="ExtraGuestPricePerNight" type="number" step="0.01" min="0" class="form-control" required />
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Toplam Oda</label>
+            <input name="TotalRooms" type="number" min="1" class="form-control" required />
+        </div>
+
+        <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">Ekle</button>
+        </div>
+    </form>
+
+    @if (Model.Rooms.Any())
+    {
+        <div class="mb-4">
+            @foreach (var room in Model.Rooms)
+            {
+                <form asp-controller="HotelMgmt"
+                      asp-action="UpdateRoom"
+                      asp-route-hotelId="@Model.Id"
+                      asp-route-roomId="@room.Id"
+                      method="post"
+                      class="row g-2 align-items-end border rounded p-3 mb-2">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Oda Tipi</label>
+                        <select name="RoomTypeId" class="form-select form-select-sm" required>
+                            @foreach (var roomType in Model.RoomTypes)
+                            {
+                                if (room.RoomTypeId == roomType.Id)
+                                {
+                                    <option value="@roomType.Id" selected>@roomType.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@roomType.Id">@roomType.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Gecelik Fiyat</label>
+                        <input name="PricePerNight"
+                               value="@room.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                               type="number"
+                               step="0.01"
+                               min="0.01"
+                               class="form-control form-control-sm"
+                               required />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Ek Misafir</label>
+                        <input name="ExtraGuestPricePerNight"
+                               value="@room.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control form-control-sm"
+                               required />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Toplam Oda</label>
+                        <input name="TotalRooms"
+                               value="@room.TotalRooms"
+                               type="number"
+                               min="1"
+                               class="form-control form-control-sm"
+                               required />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Durum</label>
+                        <select name="IsActive" class="form-select form-select-sm">
+                            @if (room.IsActive)
+                            {
+                                <option value="true" selected>Aktif</option>
+                                <option value="false">Pasif</option>
+                            }
+                            else
+                            {
+                                <option value="true">Aktif</option>
+                                <option value="false" selected>Pasif</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-sm btn-outline-warning w-100">
+                            Kaydet
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-muted mb-4">Bu otele henüz oda eklenmemiş.</div>
+    }
+
 
     <h4>Olanak Atama</h4>
 
