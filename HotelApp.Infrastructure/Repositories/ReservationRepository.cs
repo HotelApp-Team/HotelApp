@@ -120,5 +120,20 @@ namespace HotelApp.Infrastructure.Repositories
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(r => r.Status, "Completed"));
         }
+
+        // Yorum yazma yetkisi kontrolu icin VwReservationDetail uzerinden sorgu.
+        // View'de Reservation + HotelRoom + Hotel join'i hazir, ek includere gerek yok.
+        // Esnek kural: Background service "Completed"a cevirmediyse bile,
+        // checkout tarihi gecmis "Confirmed" rezervasyonlar da yorum yazma hakki saglar.
+        public async Task<bool> HasCompletedStayAsync(int userId, int hotelId)
+        {
+            var today = DateTime.Today;
+
+            return await _context.VwReservationDetails
+                .AnyAsync(v => v.UserId == userId
+                            && v.HotelId == hotelId
+                            && (v.Status == "Completed"
+                                || (v.Status == "Confirmed" && v.CheckOutDate < today)));
+        }
     }
 }

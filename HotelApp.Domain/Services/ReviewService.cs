@@ -52,6 +52,16 @@ namespace HotelApp.Domain.Services
             if (hotel == null)
                 throw new KeyNotFoundException("Otel bulunamadı.");
 
+            // Eligibility: Yorum yazabilmek icin kullanicinin bu otelde tamamlanmis
+            // (veya checkout tarihi gecmis Confirmed) konaklamasi olmalidir.
+            // Bu kontrol, rezervasyon yapmamis kullanicinin yorum eklemesini engeller.
+            var hasStayed = await _unitOfWork.ReservationRepository
+                .HasCompletedStayAsync(userId, dto.HotelId);
+
+            if (!hasStayed)
+                throw new InvalidOperationException(
+                    "Bu otele yorum yazabilmek için tamamlanmış bir konaklamanız olmalıdır.");
+
             var existingReview = await _unitOfWork.ReviewRepository.GetByUserAndHotelAsync(userId, dto.HotelId);
 
             if (existingReview != null)

@@ -217,3 +217,69 @@
         </div>
     </section>
 </div>
+
+@* ───────── YORUM YAZ — Sadece tamamlanmis (Completed) rezervasyonlar icin gosterilir ─────────
+   isCompleted bayragi yukarida hesaplandi: status=Completed VEYA CheckOutDate gecmis.
+   HotelId, S5-07'de eklenen alan; API DTO ile beraber view'a geldi.
+   Form, Reviews/Create POST'una hotelId query param'i ile gider; basari sonrasi
+   ReviewsController otelin detay sayfasina yonlendirir, oradaki yorum listesinde
+   yeni yorum gorunur. *@
+@if (isCompleted && !isCancelled && Model.HotelId > 0)
+{
+    <section class="app-card account-form-card mt-4">
+        <div class="account-form-card-head">
+            <h5 class="mb-0">
+                <i class="bi bi-chat-square-quote"></i> Otele Yorum Yaz
+            </h5>
+        </div>
+        <div class="account-form-card-body">
+            <p class="text-muted small mb-3">
+                Konaklamanı tamamladın. <strong>@Model.HotelName</strong> hakkındaki
+                deneyimini paylaşarak diğer gezginlere yardımcı olabilirsin.
+            </p>
+
+            <form asp-controller="Reviews"
+                  asp-action="Create"
+                  asp-route-hotelId="@Model.HotelId"
+                  method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="reviewRating" class="form-label fw-semibold">
+                        Puanın (1-5)
+                    </label>
+                    @* API tarafi ReviewService.Create icinde Rating 1-5 araliginda kontrol
+                       ediyor. UI bu aralikta tutuluyor; tutarsizlik error olarak donerdi. *@
+                    <select id="reviewRating"
+                            name="Rating"
+                            class="form-select"
+                            required>
+                        <option value="">Bir puan seç</option>
+                        <option value="5">5 — Mükemmel</option>
+                        <option value="4">4 — İyi</option>
+                        <option value="3">3 — Orta</option>
+                        <option value="2">2 — Zayıf</option>
+                        <option value="1">1 — Berbat</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reviewComment" class="form-label fw-semibold">
+                        Yorumun
+                    </label>
+                    <textarea id="reviewComment"
+                              name="Comment"
+                              class="form-control"
+                              rows="4"
+                              maxlength="1000"
+                              placeholder="Konaklaman nasıldı? Temizlik, personel, konum, fiyat gibi konularda detay verebilirsin."></textarea>
+                    <div class="form-text">En fazla 1000 karakter.</div>
+                </div>
+
+                <button type="submit" class="btn-account-primary">
+                    <i class="bi bi-send"></i> Yorumu Gönder
+                </button>
+            </form>
+        </div>
+    </section>
+}

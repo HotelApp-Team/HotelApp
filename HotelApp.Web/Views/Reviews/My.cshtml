@@ -19,21 +19,19 @@
             ? $"{totalReviews} yorum · Ortalama puanın {avgRating:0.0}"
             : $"{totalReviews} yorum");
 
-    // Rating (1-10 olcek varsayilir; gerekirse Rating byte degerine gore esiklere
-    // gore renk ve etiket secilir).
+    // Rating olcegi 1-5 (API tarafi ReviewService bu araligi kabul ediyor).
+    // Renk ve etiket dogrudan Rating degerine gore secilir; her degere ozel kademe var.
     string RatingColorClass(byte rating) =>
-        rating >= 9 ? "rating-pill rating-excellent"
-      : rating >= 7 ? "rating-pill rating-good"
-      : rating >= 5 ? "rating-pill rating-ok"
+        rating == 5 ? "rating-pill rating-excellent"
+      : rating == 4 ? "rating-pill rating-good"
+      : rating == 3 ? "rating-pill rating-ok"
       : "rating-pill rating-bad";
     string RatingLabel(byte rating) =>
-        rating >= 9 ? "Mükemmel"
-      : rating >= 7 ? "Çok iyi"
-      : rating >= 5 ? "İyi"
-      : "Zayıf";
-
-    // 5 yildizli gosterim icin 1-10 -> 0-5 mapping. Tam yildiz sayisi yuvarlanir.
-    int StarsFor(byte rating) => Math.Max(0, Math.Min(5, (int)Math.Round(rating / 2.0)));
+        rating == 5 ? "Mükemmel"
+      : rating == 4 ? "İyi"
+      : rating == 3 ? "Orta"
+      : rating == 2 ? "Zayıf"
+      : "Berbat";
 }
 
 @if (!Model.Any())
@@ -58,7 +56,8 @@ else
     <div class="rev-gallery-grid">
         @foreach (var r in Model.OrderByDescending(x => x.CreatedAt))
         {
-            var starsFilled = StarsFor(r.Rating);
+            // Rating zaten 1-5 byte; ek olcek donusumu gerekmez.
+            var starsFilled = (int)r.Rating;
 
             <article class="rev-card">
                 <span class="rev-card-quote" aria-hidden="true">&ldquo;</span>

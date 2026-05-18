@@ -18,6 +18,9 @@ namespace HotelApp.Domain.DTOs
         public string PaymentMethod { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
+        // HotelId, rezervasyonun hangi otele ait oldugunu yorum yaz sayfasinda
+        // dogrudan bilebilmek icin tasinir; HotelRoom uzerinden tekrar sorgu gerekmez.
+        public int HotelId { get; set; }
         public string HotelName { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
@@ -35,6 +38,8 @@ namespace HotelApp.Domain.DTOs
     public class ReservationDetailDto
     {
         public int ReservationId { get; set; }
+        // HotelId, "Yorum Yaz" formundan dogru otele POST atabilmek icin tasinir.
+        public int HotelId { get; set; }
         public string HotelName { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; }
