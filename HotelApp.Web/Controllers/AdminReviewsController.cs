@@ -23,7 +23,25 @@ namespace HotelApp.Web.Controllers
 
             var response = await _apiService.GetAsync<PagedResponseViewModel<AdminReviewViewModel>>(endpoint);
 
-            var model = response.Data ?? new PagedResponseViewModel<AdminReviewViewModel>();
+            // API hatasi olursa bos listeyi basmadan once admin'e nedeni gosterir.
+            if (!response.Success)
+            {
+                TempData["Error"] = string.IsNullOrWhiteSpace(response.Message)
+                    ? "Yorumlar getirilirken bir hata olustu."
+                    : response.Message;
+
+                return View(new PagedResponseViewModel<AdminReviewViewModel>
+                {
+                    Page = page,
+                    PageSize = 10
+                });
+            }
+
+            var model = response.Data ?? new PagedResponseViewModel<AdminReviewViewModel>
+            {
+                Page = page,
+                PageSize = 10
+            };
 
             return View(model);
         }

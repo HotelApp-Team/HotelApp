@@ -41,6 +41,10 @@
     bool isUpcoming  = statusKey != "cancelled" && statusKey != "completed" && Model.CheckInDate.Date >= today;
     bool isCompleted = statusKey == "completed" || Model.CheckOutDate.Date < today;
     bool isCancelled = statusKey == "cancelled";
+
+    // Yorum formu API ile ayni kurali kullanir: Completed veya checkout tarihi gecmis Confirmed.
+    bool canWriteReview = statusKey == "completed"
+        || (statusKey == "confirmed" && Model.CheckOutDate.Date < today);
 }
 
 @* ───────── Breadcrumb (page-head set edilmedigi icin manuel) ───────── *@
@@ -218,13 +222,13 @@
     </section>
 </div>
 
-@* ───────── YORUM YAZ — Sadece tamamlanmis (Completed) rezervasyonlar icin gosterilir ─────────
-   isCompleted bayragi yukarida hesaplandi: status=Completed VEYA CheckOutDate gecmis.
+@* ───────── YORUM YAZ — API ile ayni yetki kuralina gore gosterilir ─────────
+   Kullanici sadece Completed veya checkout tarihi gecmis Confirmed rezervasyon icin yorum yazabilir.
    HotelId, S5-07'de eklenen alan; API DTO ile beraber view'a geldi.
    Form, Reviews/Create POST'una hotelId query param'i ile gider; basari sonrasi
    ReviewsController otelin detay sayfasina yonlendirir, oradaki yorum listesinde
    yeni yorum gorunur. *@
-@if (isCompleted && !isCancelled && Model.HotelId > 0)
+@if (canWriteReview && !isCancelled && Model.HotelId > 0)
 {
     <section class="app-card account-form-card mt-4">
         <div class="account-form-card-head">
