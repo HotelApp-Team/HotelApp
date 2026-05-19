@@ -22,6 +22,7 @@ public class UnitOfWork : IUnitOfWork
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
     private IAmenityRepository? _amenityRepository;
+    private IRoomAmenityRepository? _roomAmenityRepository;
     private IUserRepository? _userRepository;
     private IAdminRepository? _adminRepository;
 
@@ -49,6 +50,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IAmenityRepository AmenityRepository =>
         _amenityRepository ??= new AmenityRepository(_context);
+
+    public IRoomAmenityRepository RoomAmenityRepository =>
+        _roomAmenityRepository ??= new RoomAmenityRepository(_context);
 
     public IUserRepository UserRepository =>
         _userRepository ??= new UserRepository(_context);

@@ -148,6 +148,26 @@ public class ServiceIntegrationTests
     }
 
     [Fact]
+    public async Task HotelRoomService_GetAvailableRooms_RoomAmenitiesIleDondurur()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelRoomService(unitOfWork);
+
+        var result = await service.GetAvailableRoomsAsync(
+            hotelId: 1,
+            city: "Istanbul",
+            checkIn: new DateTime(2026, 12, 1),
+            checkOut: new DateTime(2026, 12, 5),
+            guestCount: 2);
+
+        Assert.Contains(result, room => room.RoomAmenities.Any());
+    }
+
+    [Fact]
     public async Task HotelRoomService_AddRooms_DuplicateHotelRoomVarsa_InvalidOperationExceptionFirlatir()
     {
         if (!SqlServerDatabaseFixture.Enabled)
@@ -195,6 +215,51 @@ public class ServiceIntegrationTests
         Assert.Equal(1, result.AddedCount);
         Assert.Equal(1, result.NotFoundCount);
         Assert.Contains(999, result.NotFoundIds);
+    }
+
+    [Fact]
+    public async Task RoomAmenityService_Add_DuplicateNameVarsa_InvalidOperationExceptionFirlatir()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new RoomAmenityService(unitOfWork);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.AddAsync(new RoomAmenityCreateDto
+            {
+                Name = "Wi-Fi",
+                Icon = "wifi"
+            }));
+    }
+
+    [Fact]
+    public async Task RoomAmenityService_SetHotelRoomAmenities_BaskaOtelOdasiIcin_InvalidOperationExceptionFirlatir()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new RoomAmenityService(unitOfWork);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.SetHotelRoomAmenitiesAsync(2, 1, new List<int> { 1 }));
+    }
+
+    [Fact]
+    public async Task RoomAmenityService_Delete_KullanimdakiOdaOlanagiSilinemez()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new RoomAmenityService(unitOfWork);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(1));
     }
 
     [Fact]

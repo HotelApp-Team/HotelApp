@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace HotelApp.Domain.Entities;
@@ -22,6 +22,8 @@ public partial class HotelRoom
     public virtual Hotel Hotel { get; set; } = null!;
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+    public virtual ICollection<RoomAmenity> RoomAmenities { get; set; } = new List<RoomAmenity>();
 
     public virtual RoomType RoomType { get; set; } = null!;
 }

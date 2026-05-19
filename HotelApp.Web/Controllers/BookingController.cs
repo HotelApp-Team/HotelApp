@@ -1,4 +1,4 @@
-﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -51,8 +51,9 @@ namespace HotelApp.Web.Controllers
         {
             var response = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{hotelId}/rooms");
 
-            var room = response.Data?.FirstOrDefault(x =>
-            x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
+            var room = response.Data?
+                .Where(x => x.IsActive)
+                .FirstOrDefault(x => x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
 
             if (room == null)
             {

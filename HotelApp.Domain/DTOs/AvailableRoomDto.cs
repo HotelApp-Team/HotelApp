@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,5 +24,8 @@ namespace HotelApp.Domain.DTOs
         public int TotalRooms { get; set; }
         public int ReservedCount { get; set; }
         public int AvailableRooms { get; set; }
+
+        [NotMapped]
+        public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
     }
 }

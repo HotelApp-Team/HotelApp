@@ -1,4 +1,4 @@
-﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
@@ -293,6 +293,24 @@ public class HotelMgmtController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    [HttpPost("{hotelId}/Rooms/{roomId}/Amenities")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AssignRoomAmenities(int hotelId, int roomId, List<int> roomAmenityIds)
+    {
+        roomAmenityIds ??= new List<int>();
+
+        var response = await _apiService.PostAsync<object>(
+            $"hotels/{hotelId}/rooms/{roomId}/amenities",
+            new { RoomAmenityIds = roomAmenityIds.Distinct().ToList() });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Oda olanakları güncellendi."
+                : response.Message ?? "Oda olanakları güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
     private async Task<AdminHotelFormViewModel?> BuildHotelFormModelAsync(int id)
     {
         var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"hotels/{id}");
@@ -327,26 +345,33 @@ public class HotelMgmtController : Controller
     {
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
-        if (!amenityResponse.Success)
-        {
-            model.AllAmenities = new();
-            return;
-        }
+        model.AllAmenities = amenityResponse.Success
+            ? (amenityResponse.Data ?? new())
+                .Select(x => new AdminAmenityItemViewModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Icon = x.Icon,
+                    IsAssigned = model.SelectedAmenityIds.Contains(x.Id)
+                })
+                .ToList()
+            : new();
 
-        model.AllAmenities = (amenityResponse.Data ?? new())
-            .Select(x => new AdminAmenityItemViewModel
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Icon = x.Icon,
-                IsAssigned = model.SelectedAmenityIds.Contains(x.Id)
-            })
-            .ToList();
+        var roomAmenityResponse = await _apiService.GetAsync<List<RoomAmenityViewModel>>("room-amenities");
+        model.AllRoomAmenities = roomAmenityResponse.Success
+            ? roomAmenityResponse.Data ?? new()
+            : new();
 
         if (hotelId > 0 && model.Images.Count == 0)
         {
             var imageResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{hotelId}/images");
             model.Images = imageResponse.Success ? imageResponse.Data ?? new() : new();
+        }
+
+        if (hotelId > 0)
+        {
+            var roomResponse = await _apiService.GetAsync<List<AdminHotelRoomViewModel>>($"hotels/{hotelId}/rooms");
+            model.Rooms = roomResponse.Success ? roomResponse.Data ?? new() : new();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model HotelApp.Web.Models.AdminHotelFormViewModel
+@model HotelApp.Web.Models.AdminHotelFormViewModel
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -227,6 +227,84 @@
             }
         </tbody>
     </table>
+
+    <hr class="my-5" />
+
+    <h4>Oda Olanakları</h4>
+
+    @if (Model.Rooms.Any())
+    {
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Oda Tipi</th>
+                        <th>Fiyat</th>
+                        <th>Olanaklar</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in Model.Rooms.OrderBy(x => x.RoomTypeName))
+                    {
+                        <tr>
+                            <td>
+                                <strong>@room.RoomTypeName</strong>
+                                <div class="text-muted small">Toplam oda: @room.TotalRooms</div>
+                            </td>
+                            <td>@room.PricePerNight.ToString("N0") TL</td>
+                            <td>
+                                <form id="room-amenities-@room.Id"
+                                      asp-controller="HotelMgmt"
+                                      asp-action="AssignRoomAmenities"
+                                      asp-route-hotelId="@Model.Id"
+                                      asp-route-roomId="@room.Id"
+                                      method="post">
+
+                                    @if (Model.AllRoomAmenities.Any())
+                                    {
+                                        <div class="row g-2">
+                                            @foreach (var roomAmenity in Model.AllRoomAmenities.OrderBy(x => x.Name))
+                                            {
+                                                var isAssigned = room.RoomAmenities.Any(x => x.Id == roomAmenity.Id);
+
+                                                <div class="col-md-4">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input"
+                                                               type="checkbox"
+                                                               name="roomAmenityIds"
+                                                               value="@roomAmenity.Id"
+                                                               checked="@isAssigned" />
+                                                        <label class="form-check-label">@roomAmenity.Name</label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Tanımlı oda olanağı bulunamadı.</span>
+                                    }
+                                </form>
+                            </td>
+                            <td class="text-end">
+                                <button type="submit"
+                                        form="room-amenities-@room.Id"
+                                        class="btn btn-sm btn-outline-success"
+                                        disabled="@(!Model.AllRoomAmenities.Any())">
+                                    Güncelle
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-muted mb-4">Bu otele ait oda kaydı bulunamadı.</div>
+    }
 
     <hr class="my-5" />
 

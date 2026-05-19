@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
@@ -51,6 +51,8 @@ public class AdminHotelFormViewModel
     public List<HotelImageViewModel> Images { get; set; } = new();
     public List<AdminAmenityItemViewModel> AllAmenities { get; set; } = new();
     public List<int> SelectedAmenityIds { get; set; } = new();
+    public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
+    public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
 }
 
 public class HotelImageAdminFormViewModel

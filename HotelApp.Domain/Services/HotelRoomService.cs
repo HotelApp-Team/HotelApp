@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 
@@ -60,8 +60,10 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
-                RoomTypeName = x.RoomType?.Name ?? string.Empty
+                RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
 
@@ -87,7 +89,8 @@ namespace HotelApp.Domain.Services
                 IsActive = room.IsActive,
                 HotelName = room.Hotel?.Name ?? string.Empty,
                 RoomTypeName = room.RoomType?.Name ?? string.Empty,
-                ReservationCount = room.Reservations.Count
+                ReservationCount = room.Reservations.Count,
+                RoomAmenities = MapRoomAmenities(room.RoomAmenities)
             };
         }
 
@@ -103,9 +106,11 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
-                MaxGuests = x.RoomType?.MaxGuests ?? 0
+                MaxGuests = x.RoomType?.MaxGuests ?? 0,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
 
@@ -120,8 +125,10 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
-                RoomTypeName = x.RoomType?.Name ?? string.Empty
+                RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
 
@@ -159,6 +166,16 @@ namespace HotelApp.Domain.Services
 
             _unitOfWork.HotelRoomRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        private static List<RoomAmenityDto> MapRoomAmenities(IEnumerable<RoomAmenity> amenities)
+        {
+            return amenities.Select(a => new RoomAmenityDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Icon = a.Icon
+            }).ToList();
         }
     }
 }

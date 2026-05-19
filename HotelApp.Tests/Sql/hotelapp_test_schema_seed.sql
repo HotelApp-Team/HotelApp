@@ -1,4 +1,4 @@
-﻿USE [master];
+USE [master];
 GO
 
 IF DB_ID(N'$(DatabaseName)') IS NOT NULL
@@ -55,6 +55,23 @@ CREATE TABLE HotelRooms (
     CONSTRAINT UQ_HotelRooms UNIQUE (HotelId, RoomTypeId),
     CONSTRAINT FK_HotelRooms_Hotels FOREIGN KEY(HotelId) REFERENCES Hotels(Id),
     CONSTRAINT FK_HotelRooms_RoomTypes FOREIGN KEY(RoomTypeId) REFERENCES RoomTypes(Id)
+);
+GO
+
+CREATE TABLE RoomAmenities (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Icon NVARCHAR(50),
+    CONSTRAINT UQ_RoomAmenities_Name UNIQUE (Name)
+);
+GO
+
+CREATE TABLE HotelRoomAmenities (
+    HotelRoomId INT NOT NULL,
+    RoomAmenityId INT NOT NULL,
+    CONSTRAINT PK_HotelRoomAmenities PRIMARY KEY (HotelRoomId, RoomAmenityId),
+    CONSTRAINT FK_HotelRoomAmenities_HotelRooms FOREIGN KEY (HotelRoomId) REFERENCES HotelRooms(Id),
+    CONSTRAINT FK_HotelRoomAmenities_RoomAmenities FOREIGN KEY (RoomAmenityId) REFERENCES RoomAmenities(Id)
 );
 GO
 
@@ -171,6 +188,7 @@ GO
 CREATE INDEX IX_Hotels_City ON Hotels(City);
 CREATE INDEX IX_HotelRooms_HotelId ON HotelRooms(HotelId);
 CREATE INDEX IX_HotelRooms_RoomTypeId ON HotelRooms(RoomTypeId);
+CREATE INDEX IX_HotelRoomAmenities_RoomAmenityId ON HotelRoomAmenities(RoomAmenityId);
 CREATE INDEX IX_Reservations_Dates ON Reservations(CheckInDate, CheckOutDate);
 CREATE INDEX IX_Reservations_UserId ON Reservations(UserId);
 CREATE INDEX IX_Reservations_HotelRoomId ON Reservations(HotelRoomId);
@@ -461,6 +479,38 @@ VALUES
     (@hotelId, 5, 1800, 300, 6),
     (@hotelId, 6, 1500, 300, 7),
     (@hotelId, 7, 5000, 750, 2);
+GO
+
+INSERT INTO RoomAmenities (Name, Icon)
+VALUES
+('Wi-Fi', 'wifi'),
+('Klima', 'snow'),
+('Kahvaltı', 'cup-hot'),
+('Smart TV', 'tv');
+GO
+
+DECLARE @doubleRoomId INT;
+DECLARE @suiteRoomId INT;
+
+SELECT @doubleRoomId = hr.Id
+FROM HotelRooms hr
+INNER JOIN Hotels h ON h.Id = hr.HotelId
+INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
+WHERE h.Name = 'CI Istanbul Hotel' AND rt.Name = 'Double';
+
+SELECT @suiteRoomId = hr.Id
+FROM HotelRooms hr
+INNER JOIN Hotels h ON h.Id = hr.HotelId
+INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
+WHERE h.Name = 'CI Istanbul Hotel' AND rt.Name = 'Suite';
+
+INSERT INTO HotelRoomAmenities (HotelRoomId, RoomAmenityId)
+VALUES
+(@doubleRoomId, 1),
+(@doubleRoomId, 2),
+(@suiteRoomId, 1),
+(@suiteRoomId, 2),
+(@suiteRoomId, 4);
 GO
 
 INSERT INTO HotelImages (HotelId, ImageUrl, IsMain, DisplayOrder)

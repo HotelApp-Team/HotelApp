@@ -34,6 +34,8 @@ public partial class HotelAppDbContext : DbContext
 
     public virtual DbSet<RoomType> RoomTypes { get; set; }
 
+    public virtual DbSet<RoomAmenity> RoomAmenities { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<VwHotelSummary> VwHotelSummaries { get; set; }
@@ -130,6 +132,24 @@ public partial class HotelAppDbContext : DbContext
                 .HasForeignKey(d => d.RoomTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HotelRooms_RoomTypes");
+
+            entity.HasMany(d => d.RoomAmenities).WithMany(p => p.HotelRooms)
+                .UsingEntity<Dictionary<string, object>>(
+                    "HotelRoomAmenity",
+                    r => r.HasOne<RoomAmenity>().WithMany()
+                        .HasForeignKey("RoomAmenityId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_HotelRoomAmenities_RoomAmenities"),
+                    l => l.HasOne<HotelRoom>().WithMany()
+                        .HasForeignKey("HotelRoomId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_HotelRoomAmenities_HotelRooms"),
+                    j =>
+                    {
+                        j.HasKey("HotelRoomId", "RoomAmenityId")
+                            .HasName("PK_HotelRoomAmenities");
+                        j.ToTable("HotelRoomAmenities");
+                    });
         });
 
         modelBuilder.Entity<Log>(entity =>
@@ -227,6 +247,16 @@ public partial class HotelAppDbContext : DbContext
 
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.MaxGuests).HasDefaultValue(2);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<RoomAmenity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_RoomAmenities");
+
+            entity.HasIndex(e => e.Name, "UQ_RoomAmenities_Name").IsUnique();
+
+            entity.Property(e => e.Icon).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
