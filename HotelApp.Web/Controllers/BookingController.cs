@@ -1,4 +1,4 @@
-﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;

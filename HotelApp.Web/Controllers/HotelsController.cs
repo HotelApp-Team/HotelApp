@@ -1,4 +1,4 @@
-﻿using HotelApp.Web.Models;
+using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -127,8 +127,8 @@ namespace HotelApp.Web.Controllers
 
             model.Rooms = roomsResponse.Success
                 ? (roomsResponse.Data ?? new List<AvailableRoomViewModel>())
-                .Where(x => x.IsActive)
-                .ToList()
+                    .Where(x => x.IsActive)
+                    .ToList()
                 : new List<AvailableRoomViewModel>();
 
             model.Reviews = reviewsResponse.Success

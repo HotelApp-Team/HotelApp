@@ -1,4 +1,4 @@
-﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
@@ -294,6 +294,24 @@ public class HotelMgmtController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    [HttpPost("{hotelId}/Rooms/{roomId}/Amenities")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AssignRoomAmenities(int hotelId, int roomId, List<int> roomAmenityIds)
+    {
+        roomAmenityIds ??= new List<int>();
+
+        var response = await _apiService.PostAsync<object>(
+            $"hotels/{hotelId}/rooms/{roomId}/amenities",
+            new { RoomAmenityIds = roomAmenityIds.Distinct().ToList() });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Oda olanakları güncellendi."
+                : response.Message ?? "Oda olanakları güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
     [HttpPost("{hotelId}/Rooms")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddRoom(int hotelId, AdminHotelRoomFormViewModel model)
@@ -402,13 +420,8 @@ public class HotelMgmtController : Controller
     {
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
-        if (!amenityResponse.Success)
-        {
-            model.AllAmenities = new();
-        }
-        else
-        {
-            model.AllAmenities = (amenityResponse.Data ?? new())
+        model.AllAmenities = amenityResponse.Success
+            ? (amenityResponse.Data ?? new())
                 .Select(x => new AdminAmenityItemViewModel
                 {
                     Id = x.Id,
@@ -416,8 +429,13 @@ public class HotelMgmtController : Controller
                     Icon = x.Icon,
                     IsAssigned = model.SelectedAmenityIds.Contains(x.Id)
                 })
-                .ToList();
-        }
+                .ToList()
+            : new();
+
+        var roomAmenityResponse = await _apiService.GetAsync<List<RoomAmenityViewModel>>("room-amenities");
+        model.AllRoomAmenities = roomAmenityResponse.Success
+            ? roomAmenityResponse.Data ?? new()
+            : new();
 
         var roomTypeResponse = await _apiService.GetAsync<List<RoomTypeAdminViewModel>>("roomtypes");
         model.RoomTypes = roomTypeResponse.Success
@@ -438,6 +456,7 @@ public class HotelMgmtController : Controller
             }
         }
     }
+
     private bool TryParsePrices(
         int hotelId,
         out decimal pricePerNight,

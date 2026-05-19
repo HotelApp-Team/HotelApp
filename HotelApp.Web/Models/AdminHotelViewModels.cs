@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
@@ -53,6 +53,7 @@ public class AdminHotelFormViewModel
     public List<int> SelectedAmenityIds { get; set; } = new();
     public List<RoomTypeAdminViewModel> RoomTypes { get; set; } = new();
     public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
+    public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
 }
 
 public class HotelImageAdminFormViewModel
@@ -85,20 +86,10 @@ public class AdminAmenityFormViewModel
 
     public string? Icon { get; set; }
 }
+
 public class CreatedHotelResponseViewModel
 {
     public int Id { get; set; }
-}
-public class AdminHotelRoomViewModel
-{
-    public int Id { get; set; }
-    public int HotelId { get; set; }
-    public int RoomTypeId { get; set; }
-    public string RoomTypeName { get; set; } = string.Empty;
-    public decimal PricePerNight { get; set; }
-    public decimal ExtraGuestPricePerNight { get; set; }
-    public int TotalRooms { get; set; }
-    public bool IsActive { get; set; }
 }
 
 public class AdminHotelRoomFormViewModel

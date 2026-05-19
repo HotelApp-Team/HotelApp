@@ -1,4 +1,4 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 using HotelApp.Infrastructure.Context;
@@ -26,6 +26,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
+                .Include(x => x.RoomAmenities)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         }
@@ -36,6 +37,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
+                .Include(x => x.RoomAmenities)
                 .ToListAsync();
         }
 
@@ -44,6 +46,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.RoomType)
                 .Include(x => x.Hotel)
+                .Include(x => x.RoomAmenities)
                 .Where(x => x.RoomType.MaxGuests >= maxGuests)
                 .ToListAsync();
         }
@@ -53,6 +56,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.RoomType)
                 .Include(x => x.Hotel)
+                .Include(x => x.RoomAmenities)
                 .Where(x => x.RoomType.Name.Contains(name))
                 .ToListAsync();
         }
@@ -64,6 +68,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
+                .Include(x => x.RoomAmenities)
                 .ToListAsync();
         }
 
@@ -74,6 +79,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
+                .Include(x => x.RoomAmenities)
                 .ToListAsync();
         }
 
@@ -84,6 +90,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
                 .Include(x => x.Reservations)
+                .Include(x => x.RoomAmenities)
                 .ToListAsync();
         }
 
@@ -98,6 +105,35 @@ namespace HotelApp.Infrastructure.Repositories
                 new SqlParameter("@CheckOutDate", checkOut.Date),
                 new SqlParameter("@GuestCount", guestCount))
                 .ToListAsync();
+
+            var roomIds = result.Select(x => x.HotelRoomId).Distinct().ToList();
+
+            if (roomIds.Any())
+            {
+                var rooms = await _context.HotelRooms
+                    .Where(x => roomIds.Contains(x.Id))
+                    .Include(x => x.RoomAmenities)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var amenitiesByRoom = rooms.ToDictionary(
+                    x => x.Id,
+                    x => x.RoomAmenities
+                        .Select(a => new RoomAmenityDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name,
+                            Icon = a.Icon
+                        })
+                        .ToList());
+
+                foreach (var room in result)
+                {
+                    room.RoomAmenities = amenitiesByRoom.TryGetValue(room.HotelRoomId, out var amenities)
+                        ? amenities
+                        : new List<RoomAmenityDto>();
+                }
+            }
 
             return result;
         }
