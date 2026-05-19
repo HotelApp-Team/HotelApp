@@ -60,7 +60,7 @@ public class HotelMgmtController : Controller
     public async Task<IActionResult> Create()
     {
         var model = new AdminHotelFormViewModel();
-        await LoadAmenitiesAsync(model);
+        await LoadFormDependenciesAsync(model);
 
         return View("~/Views/Admin/HotelEdit.cshtml", model);
     }
@@ -71,7 +71,7 @@ public class HotelMgmtController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await LoadAmenitiesAsync(model);
+            await LoadFormDependenciesAsync(model);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -94,7 +94,7 @@ public class HotelMgmtController : Controller
         if (!response.Success || response.Data == null)
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel eklenemedi.";
-            await LoadAmenitiesAsync(model);
+            await LoadFormDependenciesAsync(model);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -122,7 +122,7 @@ public class HotelMgmtController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await LoadAmenitiesAsync(model, id);
+            await LoadFormDependenciesAsync(model, id);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -147,7 +147,7 @@ public class HotelMgmtController : Controller
         if (!response.Success)
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel güncellenemedi.";
-            await LoadAmenitiesAsync(model, id);
+            await LoadFormDependenciesAsync(model, id);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -304,19 +304,9 @@ public class HotelMgmtController : Controller
             return RedirectToAction(nameof(Edit), new { id = hotelId });
         }
 
-        var priceRaw = Request.Form["PricePerNight"].ToString();
-        var extraRaw = Request.Form["ExtraGuestPricePerNight"].ToString();
-
-        if (!decimal.TryParse(priceRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out var pricePerNight))
+        if (!TryParsePrices(hotelId, out var pricePerNight, out var extraGuestPricePerNight, out var errorResult))
         {
-            TempData["ErrorMessage"] = "Gecelik fiyat formatı hatalı.";
-            return RedirectToAction(nameof(Edit), new { id = hotelId });
-        }
-
-        if (!decimal.TryParse(extraRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out var extraGuestPricePerNight))
-        {
-            TempData["ErrorMessage"] = "Ek misafir fiyatı formatı hatalı.";
-            return RedirectToAction(nameof(Edit), new { id = hotelId });
+            return errorResult!;
         }
 
         var response = await _apiService.PostAsync<object>($"hotels/{hotelId}/rooms", new
@@ -339,23 +329,24 @@ public class HotelMgmtController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateRoom(int hotelId, int roomId, AdminHotelRoomViewModel model)
     {
-        var priceRaw = Request.Form["PricePerNight"].ToString();
-        var extraRaw = Request.Form["ExtraGuestPricePerNight"].ToString();
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Oda bilgileri eksik veya hatalı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        if (!TryParsePrices(hotelId, out var pricePerNight, out var extraGuestPricePerNight, out var errorResult))
+        {
+            return errorResult!;
+        }
+
         var isActiveRaw = Request.Form["IsActive"].ToString();
 
-        if (!decimal.TryParse(priceRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out var pricePerNight))
+        if (!bool.TryParse(isActiveRaw, out var isActive))
         {
-            TempData["ErrorMessage"] = "Gecelik fiyat formatı hatalı.";
+            TempData["ErrorMessage"] = "Oda durumu hatalı gönderildi.";
             return RedirectToAction(nameof(Edit), new { id = hotelId });
         }
-
-        if (!decimal.TryParse(extraRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out var extraGuestPricePerNight))
-        {
-            TempData["ErrorMessage"] = "Ek misafir fiyatı formatı hatalı.";
-            return RedirectToAction(nameof(Edit), new { id = hotelId });
-        }
-
-        var isActive = bool.TryParse(isActiveRaw, out var parsedIsActive) && parsedIsActive;
 
         var response = await _apiService.PutAsync(
             $"hotels/{hotelId}/rooms/{roomId}",
@@ -403,11 +394,11 @@ public class HotelMgmtController : Controller
             SelectedAmenityIds = hotel.Amenities.Select(x => x.Id).ToList()
         };
 
-        await LoadAmenitiesAsync(model, id);
+        await LoadFormDependenciesAsync(model, id);
         return model;
     }
 
-    private async Task LoadAmenitiesAsync(AdminHotelFormViewModel model, int hotelId = 0)
+    private async Task LoadFormDependenciesAsync(AdminHotelFormViewModel model, int hotelId = 0)
     {
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
@@ -446,5 +437,33 @@ public class HotelMgmtController : Controller
                 model.Images = imageResponse.Success ? imageResponse.Data ?? new() : new();
             }
         }
+    }
+    private bool TryParsePrices(
+        int hotelId,
+        out decimal pricePerNight,
+        out decimal extraGuestPricePerNight,
+        out IActionResult? errorResult)
+    {
+        errorResult = null;
+
+        var priceRaw = Request.Form["PricePerNight"].ToString();
+        var extraRaw = Request.Form["ExtraGuestPricePerNight"].ToString();
+
+        if (!decimal.TryParse(priceRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out pricePerNight))
+        {
+            extraGuestPricePerNight = 0;
+            TempData["ErrorMessage"] = "Gecelik fiyat formatı hatalı.";
+            errorResult = RedirectToAction(nameof(Edit), new { id = hotelId });
+            return false;
+        }
+
+        if (!decimal.TryParse(extraRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out extraGuestPricePerNight))
+        {
+            TempData["ErrorMessage"] = "Ek misafir fiyatı formatı hatalı.";
+            errorResult = RedirectToAction(nameof(Edit), new { id = hotelId });
+            return false;
+        }
+
+        return true;
     }
 }
