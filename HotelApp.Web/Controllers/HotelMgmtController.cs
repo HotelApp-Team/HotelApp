@@ -358,16 +358,16 @@ public class HotelMgmtController : Controller
         var isActive = bool.TryParse(isActiveRaw, out var parsedIsActive) && parsedIsActive;
 
         var response = await _apiService.PutAsync(
-    $"hotels/{hotelId}/rooms/{roomId}",
-    new
-    {
-        Id = roomId,
-        model.RoomTypeId,
-        PricePerNight = pricePerNight,
-        ExtraGuestPricePerNight = extraGuestPricePerNight,
-        model.TotalRooms,
-        IsActive = isActive
-    });
+            $"hotels/{hotelId}/rooms/{roomId}",
+            new
+            {
+                Id = roomId,
+                model.RoomTypeId,
+                PricePerNight = pricePerNight,
+                ExtraGuestPricePerNight = extraGuestPricePerNight,
+                model.TotalRooms,
+                IsActive = isActive
+            });
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
             response.Success
