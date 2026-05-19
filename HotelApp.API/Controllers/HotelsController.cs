@@ -107,12 +107,12 @@ public class HotelsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] HotelCreateDto dto)
     {
-        await _hotelService.CreateAsync(dto);
+        var hotelId = await _hotelService.CreateAsync(dto);
 
         await LogInfoAsync(
             $"Yeni otel oluşturuldu: Hotel Adı:{dto.Name}, Şehir:{dto.City}");
 
-        return StatusCode(201);
+        return CreatedAtAction(nameof(GetById), new { id = hotelId }, new { id = hotelId });
     }
 
     // E09 - PUT /api/hotels

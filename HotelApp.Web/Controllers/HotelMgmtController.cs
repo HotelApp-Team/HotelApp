@@ -3,6 +3,7 @@ using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace HotelApp.Web.Controllers;
 
@@ -59,7 +60,7 @@ public class HotelMgmtController : Controller
     public async Task<IActionResult> Create()
     {
         var model = new AdminHotelFormViewModel();
-        await LoadAmenitiesAsync(model);
+        await LoadFormDependenciesAsync(model);
 
         return View("~/Views/Admin/HotelEdit.cshtml", model);
     }
@@ -70,7 +71,7 @@ public class HotelMgmtController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await LoadAmenitiesAsync(model);
+            await LoadFormDependenciesAsync(model);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -88,17 +89,17 @@ public class HotelMgmtController : Controller
             model.StarRating
         };
 
-        var response = await _apiService.PostAsync<object>("hotels", dto);
+        var response = await _apiService.PostAsync<CreatedHotelResponseViewModel>("hotels", dto);
 
-        if (!response.Success)
+        if (!response.Success || response.Data == null)
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel eklenemedi.";
-            await LoadAmenitiesAsync(model);
+            await LoadFormDependenciesAsync(model);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
-        TempData["SuccessMessage"] = "Otel başarıyla eklendi.";
-        return RedirectToAction(nameof(Index));
+        TempData["SuccessMessage"] = "Otel oluşturuldu. Şimdi olanak, görsel ve oda ekleyebilirsiniz.";
+        return RedirectToAction(nameof(Edit), new { id = response.Data.Id });
     }
 
     [HttpGet("Edit/{id}")]
@@ -121,7 +122,7 @@ public class HotelMgmtController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await LoadAmenitiesAsync(model, id);
+            await LoadFormDependenciesAsync(model, id);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -146,7 +147,7 @@ public class HotelMgmtController : Controller
         if (!response.Success)
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel güncellenemedi.";
-            await LoadAmenitiesAsync(model, id);
+            await LoadFormDependenciesAsync(model, id);
             return View("~/Views/Admin/HotelEdit.cshtml", model);
         }
 
@@ -293,6 +294,80 @@ public class HotelMgmtController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    [HttpPost("{hotelId}/Rooms")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddRoom(int hotelId, AdminHotelRoomFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Oda bilgileri eksik veya hatalı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        if (!TryParsePrices(hotelId, out var pricePerNight, out var extraGuestPricePerNight, out var errorResult))
+        {
+            return errorResult!;
+        }
+
+        var response = await _apiService.PostAsync<object>($"hotels/{hotelId}/rooms", new
+        {
+            model.RoomTypeId,
+            PricePerNight = pricePerNight,
+            ExtraGuestPricePerNight = extraGuestPricePerNight,
+            model.TotalRooms
+        });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Oda başarıyla eklendi."
+                : response.Message ?? "Oda eklenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Rooms/{roomId}/Update")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateRoom(int hotelId, int roomId, AdminHotelRoomViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Oda bilgileri eksik veya hatalı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        if (!TryParsePrices(hotelId, out var pricePerNight, out var extraGuestPricePerNight, out var errorResult))
+        {
+            return errorResult!;
+        }
+
+        var isActiveRaw = Request.Form["IsActive"].ToString();
+
+        if (!bool.TryParse(isActiveRaw, out var isActive))
+        {
+            TempData["ErrorMessage"] = "Oda durumu hatalı gönderildi.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        var response = await _apiService.PutAsync(
+            $"hotels/{hotelId}/rooms/{roomId}",
+            new
+            {
+                Id = roomId,
+                model.RoomTypeId,
+                PricePerNight = pricePerNight,
+                ExtraGuestPricePerNight = extraGuestPricePerNight,
+                model.TotalRooms,
+                IsActive = isActive
+            });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Oda bilgileri güncellendi."
+                : response.Message ?? "Oda güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
     private async Task<AdminHotelFormViewModel?> BuildHotelFormModelAsync(int id)
     {
         var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"hotels/{id}");
@@ -319,34 +394,76 @@ public class HotelMgmtController : Controller
             SelectedAmenityIds = hotel.Amenities.Select(x => x.Id).ToList()
         };
 
-        await LoadAmenitiesAsync(model, id);
+        await LoadFormDependenciesAsync(model, id);
         return model;
     }
 
-    private async Task LoadAmenitiesAsync(AdminHotelFormViewModel model, int hotelId = 0)
+    private async Task LoadFormDependenciesAsync(AdminHotelFormViewModel model, int hotelId = 0)
     {
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
         if (!amenityResponse.Success)
         {
             model.AllAmenities = new();
-            return;
         }
-
-        model.AllAmenities = (amenityResponse.Data ?? new())
-            .Select(x => new AdminAmenityItemViewModel
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Icon = x.Icon,
-                IsAssigned = model.SelectedAmenityIds.Contains(x.Id)
-            })
-            .ToList();
-
-        if (hotelId > 0 && model.Images.Count == 0)
+        else
         {
-            var imageResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{hotelId}/images");
-            model.Images = imageResponse.Success ? imageResponse.Data ?? new() : new();
+            model.AllAmenities = (amenityResponse.Data ?? new())
+                .Select(x => new AdminAmenityItemViewModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Icon = x.Icon,
+                    IsAssigned = model.SelectedAmenityIds.Contains(x.Id)
+                })
+                .ToList();
         }
+
+        var roomTypeResponse = await _apiService.GetAsync<List<RoomTypeAdminViewModel>>("roomtypes");
+        model.RoomTypes = roomTypeResponse.Success
+            ? roomTypeResponse.Data ?? new List<RoomTypeAdminViewModel>()
+            : new List<RoomTypeAdminViewModel>();
+
+        if (hotelId > 0)
+        {
+            var roomResponse = await _apiService.GetAsync<List<AdminHotelRoomViewModel>>($"hotels/{hotelId}/rooms");
+            model.Rooms = roomResponse.Success
+                ? roomResponse.Data ?? new List<AdminHotelRoomViewModel>()
+                : new List<AdminHotelRoomViewModel>();
+
+            if (model.Images.Count == 0)
+            {
+                var imageResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{hotelId}/images");
+                model.Images = imageResponse.Success ? imageResponse.Data ?? new() : new();
+            }
+        }
+    }
+    private bool TryParsePrices(
+        int hotelId,
+        out decimal pricePerNight,
+        out decimal extraGuestPricePerNight,
+        out IActionResult? errorResult)
+    {
+        errorResult = null;
+
+        var priceRaw = Request.Form["PricePerNight"].ToString();
+        var extraRaw = Request.Form["ExtraGuestPricePerNight"].ToString();
+
+        if (!decimal.TryParse(priceRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out pricePerNight))
+        {
+            extraGuestPricePerNight = 0;
+            TempData["ErrorMessage"] = "Gecelik fiyat formatı hatalı.";
+            errorResult = RedirectToAction(nameof(Edit), new { id = hotelId });
+            return false;
+        }
+
+        if (!decimal.TryParse(extraRaw.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out extraGuestPricePerNight))
+        {
+            TempData["ErrorMessage"] = "Ek misafir fiyatı formatı hatalı.";
+            errorResult = RedirectToAction(nameof(Edit), new { id = hotelId });
+            return false;
+        }
+
+        return true;
     }
 }

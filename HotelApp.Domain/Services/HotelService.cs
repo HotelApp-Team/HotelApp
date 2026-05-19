@@ -64,7 +64,7 @@ namespace HotelApp.Domain.Services
             return hotels.Select(MapToListDto);
         }
 
-        public async Task CreateAsync(HotelCreateDto dto)
+        public async Task<int> CreateAsync(HotelCreateDto dto)
         {
             var hotel = new Hotel
             {
@@ -84,6 +84,8 @@ namespace HotelApp.Domain.Services
 
             await _unitOfWork.HotelRepository.AddAsync(hotel);
             await _unitOfWork.SaveChangesAsync();
+
+            return hotel.Id;
         }
 
         public async Task UpdateAsync(HotelUpdateDto dto)

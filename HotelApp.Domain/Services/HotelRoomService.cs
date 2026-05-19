@@ -60,6 +60,7 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty
             });
@@ -103,6 +104,7 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
                 MaxGuests = x.RoomType?.MaxGuests ?? 0
@@ -120,6 +122,7 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty
             });
@@ -149,6 +152,9 @@ namespace HotelApp.Domain.Services
 
             if (entity.Reservations.Any() && entity.TotalRooms != dto.TotalRooms)
                 throw new InvalidOperationException("Rezervasyon varken oda sayısı değiştirilemez.");
+
+            if (entity.Reservations.Any() && !dto.IsActive)
+                throw new InvalidOperationException("Aktif rezervasyonu olan oda pasife çekilemez.");
 
             entity.HotelId = dto.HotelId;
             entity.RoomTypeId = dto.RoomTypeId;
