@@ -1397,11 +1397,14 @@ footer ul li a:hover { color: white; }
     letter-spacing: -0.3px;
 }
 
-.hd-anchor-cta {
+/* Selector specificity: `.hd-anchor-nav a` (satir 1354) class+type olarak
+   bizim eski `.hd-anchor-cta`'dan daha spesifik oldugu icin color: #334155'i
+   override ediyordu. !important yerine ayni specificity seviyesinde
+   (`.hd-anchor-nav a.hd-anchor-cta` = class+type+class) bir selector
+   kullanarak temiz cozum. PR #107 Copilot review #5. */
+.hd-anchor-nav a.hd-anchor-cta {
     background: var(--primary);
-    /* Global "a" rule'u color'i override ediyordu; default state'te de
-       beyaz kalsin diye !important. Hover :hover'da zaten beyaz. */
-    color: white !important;
+    color: white;
     padding: 9px 16px;
     border-radius: 10px;
     font-weight: 700;
@@ -1410,9 +1413,9 @@ footer ul li a:hover { color: white; }
     transition: filter 0.15s;
 }
 
-.hd-anchor-cta:hover {
+.hd-anchor-nav a.hd-anchor-cta:hover {
     filter: brightness(0.92);
-    color: white !important;
+    color: white;
 }
 
 /* -------- BREADCRUMB -------- */

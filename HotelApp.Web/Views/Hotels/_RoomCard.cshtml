@@ -18,18 +18,9 @@
     var guestCount = clampedGuests.ToString();
 
     var trCulture = new System.Globalization.CultureInfo("tr-TR");
-
-    // "Son N oda" rozeti — backend'den ek alan yok, bu yuzden mevcut sayilara
-    // dayanan basit bir kural: 3'ten az musait oda kaldiysa kirmizi rozet.
-    var isLowAvailability = Model.AvailableRooms > 0 && Model.AvailableRooms <= 3;
 }
 
 <div class="hd-room-wrap">
-    @if (isLowAvailability)
-    {
-        <span class="hd-room-badge">Son @Model.AvailableRooms oda</span>
-    }
-
     <article class="hd-room">
 
         <div class="hd-room-media">
@@ -47,16 +38,6 @@
 
             <div class="hd-room-sub">
                 <i class="bi bi-people"></i> Maksimum @Model.MaxGuests kişi
-                @if (Model.AvailableRooms > 0)
-                {
-                    <span class="hd-room-dot"></span>
-                    <span><i class="bi bi-check-circle-fill text-success"></i> @Model.AvailableRooms müsait oda</span>
-                }
-                else
-                {
-                    <span class="hd-room-dot"></span>
-                    <span>Toplam @Model.TotalRooms oda</span>
-                }
             </div>
 
             <div class="hd-room-chips">
