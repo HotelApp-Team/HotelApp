@@ -51,6 +51,7 @@ public class AdminHotelFormViewModel
     public List<HotelImageViewModel> Images { get; set; } = new();
     public List<AdminAmenityItemViewModel> AllAmenities { get; set; } = new();
     public List<int> SelectedAmenityIds { get; set; } = new();
+    public List<RoomTypeAdminViewModel> RoomTypes { get; set; } = new();
     public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
     public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
 }
@@ -84,4 +85,24 @@ public class AdminAmenityFormViewModel
     public string Name { get; set; } = string.Empty;
 
     public string? Icon { get; set; }
+}
+
+public class CreatedHotelResponseViewModel
+{
+    public int Id { get; set; }
+}
+
+public class AdminHotelRoomFormViewModel
+{
+    [Required(ErrorMessage = "Oda tipi seçiniz.")]
+    public int RoomTypeId { get; set; }
+
+    [Range(0.01, double.MaxValue)]
+    public decimal PricePerNight { get; set; }
+
+    [Range(0, double.MaxValue)]
+    public decimal ExtraGuestPricePerNight { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int TotalRooms { get; set; }
 }

@@ -14,7 +14,7 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
-       
+
 
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
