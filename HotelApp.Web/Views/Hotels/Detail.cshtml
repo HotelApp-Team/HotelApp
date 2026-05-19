@@ -1,4 +1,4 @@
-﻿@model HotelApp.Web.Models.HotelDetailPageVm
+@model HotelApp.Web.Models.HotelDetailPageVm
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
 @{
     ViewData["Title"] = Model.Name;
@@ -6,110 +6,269 @@
     ViewData["CheckInIso"] = Model.BookingForm.CheckInDate.ToString("yyyy-MM-dd");
     ViewData["CheckOutIso"] = Model.BookingForm.CheckOutDate.ToString("yyyy-MM-dd");
     ViewData["GuestCount"] = Model.BookingForm.GuestCount <= 0 ? 1 : Model.BookingForm.GuestCount;
+
+    // ===== A taslagi icin hazirlik verisi =====
+    // Mevcut model alanlari kullanildi; backend'e ek alan eklenmedi.
+
+    var orderedImages = (Model.Images ?? Enumerable.Empty<HotelApp.Web.Models.HotelImageViewModel>())
+        .OrderByDescending(x => x.IsMain)
+        .ThenBy(x => x.DisplayOrder)
+        .ToList();
+
+    var mainImageUrl = orderedImages.FirstOrDefault()?.ImageUrl ?? "/images/no-image.jpg";
+
+    var reviewCount = Model.Reviews?.Count() ?? 0;
+
+    // Hero "fiyatlar X TL'den" — odalar arasi en dusuk gecelik
+    decimal? minPrice = null;
+    if (Model.Rooms != null && Model.Rooms.Any())
+    {
+        minPrice = Model.Rooms.Min(r => r.PricePerNight);
+    }
+
+    // Toplam tahmini fiyat (sticky kart + anchor nav). 1+ gece, en az 1 misafir.
+    // BookingForm tarihleri DateOnly tipinde; DayNumber farki gun sayisini verir.
+    var nights = Math.Max(1, Model.BookingForm.CheckOutDate.DayNumber - Model.BookingForm.CheckInDate.DayNumber);
+    decimal? totalEstimate = minPrice.HasValue ? minPrice.Value * nights : (decimal?)null;
+
+    // Rating sinifi/etiketi.
+    // AvgRating 1-5 olcekte (Reviews.Rating CHECK 1..5; Hotels.AvgRating =
+    // AVG(Reviews.Rating)). Reviews/My sayfasiyla ayni 5 kademeli etiketler:
+    // Mukemmel/Iyi/Orta/Zayif/Berbat. Esik decimal'lar 'm' suffix ile.
+    string ratingClass = "rating-ok";
+    string ratingLabel = "İyi";
+    if (Model.AvgRating.HasValue)
+    {
+        var a = Model.AvgRating.Value;
+        ratingClass = a >= 4.5m ? "rating-excellent"
+            : a >= 3.5m ? "rating-good"
+            : a >= 2.5m ? "rating-ok"
+            : "rating-bad";
+        ratingLabel = a >= 4.5m ? "Mükemmel"
+            : a >= 3.5m ? "İyi"
+            : a >= 2.5m ? "Orta"
+            : a >= 1.5m ? "Zayıf"
+            : "Berbat";
+    }
+
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
 }
 
 @if (TempData["Error"] != null)
 {
     <div class="container mt-3">
-        <div class="alert alert-danger">
-            @TempData["Error"]
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    </div>
+}
+
+@* Yorum gonderildikten sonra ReviewsController buraya redirect eder ve TempData["Success"]
+   ile basari mesaji birakir. Mesaj bir kerelik gosterilir. *@
+@if (TempData["Success"] != null)
+{
+    <div class="container mt-3">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
         </div>
     </div>
 }
 
-
 <!-- ================= HERO ================= -->
-<div class="hotel-hero"
-     style="background-image: url('@(Model.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? "/images/no-image.jpg")')">
-    <div class="overlay"></div>
+<div class="hd-hero" style="background-image: url('@mainImageUrl')">
+    <div class="hd-hero-overlay"></div>
 
-    <div class="container hero-content">
-        <h1 class="hotel-title">@Model.Name</h1>
+    <div class="container hd-hero-content">
+        <h1 class="hd-hero-title">@Model.Name</h1>
 
-        <p class="hotel-location">
+        <div class="hd-hero-loc">
+            <i class="bi bi-geo-alt-fill"></i>
             @Model.City, @Model.Country
-        </p>
+        </div>
 
-        <div class="hotel-rating">
-            @await Html.PartialAsync("_StarRating", Model.StarRating)
+        <div class="hd-hero-meta">
+            <span class="hd-stars">
+                @await Html.PartialAsync("_StarRating", Model.StarRating)
+            </span>
+
             @if (Model.AvgRating.HasValue)
             {
-                <span class="avg-rating">
-                    (@Model.AvgRating.Value.ToString("0.0"))
+                <span class="hd-meta-sep"></span>
+                <span class="hd-meta-item">
+                    <span class="rating-pill @ratingClass">@Model.AvgRating.Value.ToString("0.0")</span>
+                    @ratingLabel
+                </span>
+            }
+
+            @if (reviewCount > 0)
+            {
+                <span class="hd-meta-sep"></span>
+                <span class="hd-meta-item">
+                    <i class="bi bi-chat-quote-fill"></i> @reviewCount yorum
+                </span>
+            }
+
+            @if (minPrice.HasValue)
+            {
+                <span class="hd-meta-sep"></span>
+                <span class="hd-meta-item">
+                    <i class="bi bi-tags-fill"></i>
+                    @minPrice.Value.ToString("N0", trCulture) TL'den başlayan fiyatlar
                 </span>
             }
         </div>
     </div>
 </div>
 
+<!-- ================= STICKY ANCHOR NAV ================= -->
+<div class="hd-anchor-nav">
+    <div class="container hd-anchor-inner">
+        <a href="#overview" class="active">Genel Bakış</a>
+        <a href="#rooms-section">Odalar</a>
+        <a href="#amenities">Olanaklar</a>
+        <a href="#reviews">Yorumlar@(reviewCount > 0 ? $" ({reviewCount})" : "")</a>
+        <a href="#policies">Politikalar</a>
+
+        <div class="hd-anchor-spacer"></div>
+
+        <div class="hd-anchor-price">
+            @if (totalEstimate.HasValue)
+            {
+                <span class="hd-anchor-nights">@nights gece için</span>
+                <b>@totalEstimate.Value.ToString("N0", trCulture) TL</b>
+            }
+            else if (minPrice.HasValue)
+            {
+                <span class="hd-anchor-nights">geceden</span>
+                <b>@minPrice.Value.ToString("N0", trCulture) TL</b>
+            }
+
+            <a class="hd-anchor-cta" href="#rooms-section">Rezervasyon</a>
+        </div>
+    </div>
+</div>
+
+<!-- ================= BREADCRUMB ================= -->
+<div class="container">
+    <nav class="hd-breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+        <i class="bi bi-chevron-right"></i>
+        <a asp-controller="Hotels" asp-action="Search" asp-route-city="@Model.City">@Model.City</a>
+        <i class="bi bi-chevron-right"></i>
+        <span class="hd-breadcrumb-current">@Model.Name</span>
+    </nav>
+</div>
+
+<!-- ================= GALLERY (mozaik 1 big + 4 small) ================= -->
+@if (orderedImages.Any())
+{
+    var galleryImages = orderedImages.Take(5).ToList();
+    var totalImageCount = orderedImages.Count;
+
+    <div class="container">
+        <div class="hd-gallery">
+            @for (int i = 0; i < galleryImages.Count; i++)
+            {
+                var img = galleryImages[i];
+                var slotClass = i == 0 ? "hd-g-big" : $"hd-g-{i}";
+                var isLastSlot = (i == 4) || (i == galleryImages.Count - 1 && i > 0);
+                var showMoreOverlay = isLastSlot && totalImageCount > galleryImages.Count;
+
+                <button type="button"
+                        class="hd-g-item @slotClass"
+                        data-bs-toggle="modal"
+                        data-bs-target="#galleryModal"
+                        data-bs-slide-to="@orderedImages.IndexOf(img)">
+                    <img src="@img.ImageUrl" alt="@Model.Name" />
+                    @if (showMoreOverlay)
+                    {
+                        <span class="hd-g-more">
+                            <i class="bi bi-images"></i> Tümünü gör (@totalImageCount)
+                        </span>
+                    }
+                </button>
+            }
+        </div>
+    </div>
+}
+
 <!-- ================= MAIN CONTENT ================= -->
-<div class="container mt-4">
+<div class="container hd-layout">
 
-    <div class="row">
+    <!-- LEFT CONTENT -->
+    <div class="hd-main">
 
-        <!-- LEFT CONTENT -->
-        <div class="col-lg-8">
+        <!-- ================= GENEL BAKIŞ ================= -->
+        <section id="overview" class="card-box hd-section">
+            <span class="section-eyebrow">Genel Bakış</span>
+            <h3 class="section-title hd-section-title">Otel Hakkında</h3>
 
-            <!-- ================= ABOUT ================= -->
-            <section class="card-box">
-                <h3>Otel Hakkında</h3>
-                <p>
-                    @(Model.Description ?? "Otel açıklaması henüz eklenmemiş.")
-                </p>
+            <p class="hd-lede">
+                @(Model.Description ?? "Otel açıklaması henüz eklenmemiş.")
+            </p>
 
-                <div class="info-grid">
-                    <div><strong>Adres:</strong> @Model.Address</div>
-                    <div><strong>Telefon:</strong> @Model.Phone</div>
-                    <div><strong>E-mail:</strong> @Model.Email</div>
+            <div class="hd-info-grid">
+                <div class="hd-info-item">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <div>
+                        <div class="hd-info-lbl">Adres</div>
+                        <div class="hd-info-val">@Model.Address</div>
+                    </div>
                 </div>
-            </section>
 
-            <!-- ================= GALLERY ================= -->
-            <section class="card-box mt-4">
-                <h3>Galeri</h3>
+                <div class="hd-info-item">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div>
+                        <div class="hd-info-lbl">Telefon</div>
+                        <div class="hd-info-val">@Model.Phone</div>
+                    </div>
+                </div>
 
-                <div class="gallery-grid">
-                    @if (Model.Images != null && Model.Images.Any())
-                    {
-                        foreach (var img in Model.Images.OrderBy(x => x.DisplayOrder))
+                <div class="hd-info-item">
+                    <i class="bi bi-envelope-fill"></i>
+                    <div>
+                        <div class="hd-info-lbl">E-posta</div>
+                        <div class="hd-info-val">@Model.Email</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ODALAR ================= -->
+        <section id="rooms-section" class="hd-section">
+            <div class="hd-section-head">
+                <div>
+                    <span class="section-eyebrow">Müsait Odalar</span>
+                    <h3 class="section-title hd-section-title">
+                        @(Model.Rooms?.Count() ?? 0) oda tipi
+                        @if (Model.SearchCheckIn.HasValue && Model.SearchCheckOut.HasValue)
                         {
-                            <div class="gallery-item @(img.IsMain ? "main" : "")">
-                                <button type="button"
-                                        class="gallery-trigger border-0 bg-transparent p-0 w-100"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#galleryModal"
-                                        data-bs-slide-to="@Model.Images.OrderBy(x => x.DisplayOrder).ToList().IndexOf(img)">
-                                    <img src="@img.ImageUrl" alt="@Model.Name" class="w-100" />
-                                </button>
-                            </div>
+                            <text> · @Model.SearchCheckIn.Value.ToString("d MMM", trCulture) - @Model.SearchCheckOut.Value.ToString("d MMM", trCulture)</text>
                         }
-                    }
-                    else
-                    {
-                        <p>Görsel bulunamadı.</p>
-                    }
+                        @if (Model.SearchGuestCount.HasValue && Model.SearchGuestCount.Value > 0)
+                        {
+                            <text> · @Model.SearchGuestCount.Value misafir</text>
+                        }
+                    </h3>
                 </div>
-            </section>
+            </div>
 
-            <!-- ================= ROOMS ================= -->
-            <section id="rooms-section" class="card-box mt-4">
-                <h3>Odalar</h3>
-
-                @if (Model.Rooms != null && Model.Rooms.Any())
+            @if (Model.Rooms != null && Model.Rooms.Any())
+            {
+                if (!Model.IsAuthenticated)
                 {
-                    if (!Model.IsAuthenticated)
-                    {
-                        <div class="alert alert-info">
-                            Rezervasyon başlatmak için giriş yapmalısınız.
-                            <a asp-controller="Auth"
-                               asp-action="Login"
-                               asp-route-returnUrl="@Context.Request.Path">
-                                Giriş Yap
-                            </a>
-                        </div>
-                    }
+                    <div class="alert alert-info hd-alert">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Rezervasyon başlatmak için giriş yapmalısınız.
+                        <a asp-controller="Auth"
+                           asp-action="Login"
+                           asp-route-returnUrl="@Context.Request.Path">
+                            Giriş Yap
+                        </a>
+                    </div>
+                }
 
-                    foreach (var room in Model.Rooms)
+                <div class="hd-rooms">
+                    @foreach (var room in Model.Rooms)
                     {
                         @await Html.PartialAsync("_RoomCard", room, new ViewDataDictionary(ViewData)
                         {
@@ -118,120 +277,227 @@
                             ["GuestCount"] = Model.SearchGuestCount
                         })
                     }
-                }
-                else
-                {
-                    <p class="text-muted mb-0">Bu otel için henüz oda bilgisi bulunmuyor.</p>
-                }
-            </section>
-
-            @* HEAD'den korunan galeri modal HTML'i — gallery item'a tiklayinca buyutulmus carousel acilir. *@
-            @if (Model.Images != null && Model.Images.Any())
+                </div>
+            }
+            else
             {
-                var orderedImages = Model.Images.OrderBy(x => x.DisplayOrder).ToList();
+                <div class="card-box">
+                    <p class="text-muted mb-0">Bu otel için henüz oda bilgisi bulunmuyor.</p>
+                </div>
+            }
+        </section>
 
-                <div class="modal fade" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl modal-dialog-centered">
-                        <div class="modal-content bg-dark border-0">
-                            <div class="modal-header border-0">
-                                <h5 class="modal-title text-white" id="galleryModalLabel">@Model.Name Galerisi</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
-                            </div>
+        @* HEAD'den korunan galeri modal HTML'i — gallery item'a tiklayinca buyutulmus carousel acilir. *@
+        @if (orderedImages.Any())
+        {
+            <div class="modal fade" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content bg-dark border-0">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title text-white" id="galleryModalLabel">@Model.Name Galerisi</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                        </div>
 
-                            <div class="modal-body p-0">
-                                <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
-                                    <div class="carousel-inner">
+                        <div class="modal-body p-0">
+                            <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
+                                <div class="carousel-inner">
 
-                                        @for (int i = 0; i < orderedImages.Count; i++)
-                                        {
-                                            var image = orderedImages[i];
-
-                                            <div class="carousel-item @(i == 0 ? "active" : "")">
-                                                <img src="@image.ImageUrl"
-                                                     class="d-block w-100"
-                                                     alt="@Model.Name"
-                                                     style="max-height: 80vh; object-fit: contain; background-color: white;" />
-                                            </div>
-                                        }
-
-                                    </div>
-
-                                    @if (orderedImages.Count > 1)
+                                    @for (int i = 0; i < orderedImages.Count; i++)
                                     {
-                                        <button class="carousel-control-prev"
-                                                type="button"
-                                                data-bs-target="#galleryCarousel"
-                                                data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Önceki</span>
-                                        </button>
+                                        var image = orderedImages[i];
 
-                                        <button class="carousel-control-next"
-                                                type="button"
-                                                data-bs-target="#galleryCarousel"
-                                                data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Sonraki</span>
-                                        </button>
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <img src="@image.ImageUrl"
+                                                 class="d-block w-100"
+                                                 alt="@Model.Name"
+                                                 style="max-height: 80vh; object-fit: contain; background-color: white;" />
+                                        </div>
                                     }
+
                                 </div>
+
+                                @if (orderedImages.Count > 1)
+                                {
+                                    <button class="carousel-control-prev"
+                                            type="button"
+                                            data-bs-target="#galleryCarousel"
+                                            data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Önceki</span>
+                                    </button>
+
+                                    <button class="carousel-control-next"
+                                            type="button"
+                                            data-bs-target="#galleryCarousel"
+                                            data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Sonraki</span>
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        }
+
+        <!-- ================= YORUMLAR ================= -->
+        <section id="reviews" class="hd-section">
+            <span class="section-eyebrow">Konuk Yorumları</span>
+            <h3 class="section-title hd-section-title">Misafirlerimiz ne diyor?</h3>
+
+            @if (Model.AvgRating.HasValue && reviewCount > 0)
+            {
+                <div class="hd-review-summary">
+                    <div class="hd-review-score">
+                        <div class="hd-review-num">@Model.AvgRating.Value.ToString("0.0")</div>
+                        <div class="hd-review-lbl">@ratingLabel</div>
+                        <div class="hd-review-cnt">@reviewCount doğrulanmış yorum</div>
+                    </div>
+
+                    <div class="hd-review-blurb">
+                        <p>
+                            Misafirlerimizin <strong>@ratingLabel</strong> olarak değerlendirdiği bir konaklama.
+                            @* Esikler ratingLabel mapping ile ayni 1-5 olcekte tutuluyor *@
+                            @if (Model.AvgRating.Value >= 4.5m)
+                            {
+                                <text>Konuklarımızın büyük çoğunluğu beklentilerinin üzerinde bir deneyim yaşadığını belirtiyor.</text>
+                            }
+                            else if (Model.AvgRating.Value >= 3.5m)
+                            {
+                                <text>Konuklarımız konaklamadan genel olarak memnun ayrılıyor.</text>
+                            }
+                            else
+                            {
+                                <text>Konaklamayla ilgili yorumları aşağıda inceleyebilirsiniz.</text>
+                            }
+                        </p>
+                    </div>
+                </div>
             }
 
-            <!-- ================= REVIEWS ================= -->
-            <section class="card-box mt-4">
-                <h3>Yorumlar</h3>
-
-                @if (Model.Reviews != null && Model.Reviews.Any())
-                {
+            @if (Model.Reviews != null && Model.Reviews.Any())
+            {
+                <div class="hd-reviews">
                     @foreach (var review in Model.Reviews.OrderByDescending(x => x.CreatedAt))
                     {
                         @await Html.PartialAsync("_ReviewCard", review)
                     }
-                }
-                else
-                {
+                </div>
+            }
+            else
+            {
+                <div class="card-box">
                     <p class="text-muted mb-0">Bu otel için henüz yorum paylaşılmamış.</p>
+                </div>
+            }
+        </section>
+
+        <!-- ================= POLİTİKALAR (statik) ================= -->
+        <section id="policies" class="card-box hd-section">
+            <span class="section-eyebrow">Otel Politikaları</span>
+            <h3 class="section-title hd-section-title">Bilmeniz gerekenler</h3>
+
+            <div class="hd-policies">
+                <div class="hd-policy">
+                    <div class="hd-policy-h"><i class="bi bi-box-arrow-in-right"></i> Giriş</div>
+                    <div class="hd-policy-v">14:00 — 23:00</div>
+                </div>
+
+                <div class="hd-policy">
+                    <div class="hd-policy-h"><i class="bi bi-box-arrow-right"></i> Çıkış</div>
+                    <div class="hd-policy-v">07:00 — 12:00</div>
+                </div>
+
+                <div class="hd-policy">
+                    <div class="hd-policy-h"><i class="bi bi-shield-check"></i> İptal</div>
+                    <div class="hd-policy-v">Girişten 48 saat önce ücretsiz</div>
+                </div>
+
+                <div class="hd-policy">
+                    <div class="hd-policy-h"><i class="bi bi-ban"></i> Evcil Hayvan</div>
+                    <div class="hd-policy-v">Kabul edilmiyor</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ================= RIGHT SIDEBAR ================= -->
+    <aside class="hd-side">
+        <div class="hd-side-sticky">
+
+            <!-- REZERVASYON KARTI -->
+            <div class="hd-booking-card">
+                <div class="hd-booking-title">Rezervasyon</div>
+
+                @if (minPrice.HasValue)
+                {
+                    <div class="hd-booking-from">
+                        Fiyatlar
+                        <b>@minPrice.Value.ToString("N0", trCulture) TL <span class="hd-booking-pernight">/ gecelik</span></b>
+                    </div>
                 }
-            </section>
 
-        </div>
+                <div class="hd-booking-field">
+                    <div class="hd-booking-lbl">Giriş</div>
+                    <div class="hd-booking-val">
+                        <i class="bi bi-calendar-event"></i>
+                        @Model.BookingForm.CheckInDate.ToString("dd MMMM yyyy", trCulture)
+                    </div>
+                </div>
 
-        <!-- RIGHT SIDEBAR -->
-        <div class="col-lg-4">
+                <div class="hd-booking-field">
+                    <div class="hd-booking-lbl">Çıkış</div>
+                    <div class="hd-booking-val">
+                        <i class="bi bi-calendar-check"></i>
+                        @Model.BookingForm.CheckOutDate.ToString("dd MMMM yyyy", trCulture)
+                        <span class="hd-booking-nights">(@nights gece)</span>
+                    </div>
+                </div>
 
-            <div class="booking-box">
-                <h4>Rezervasyon</h4>
+                <div class="hd-booking-field">
+                    <div class="hd-booking-lbl">Misafir</div>
+                    <div class="hd-booking-val">
+                        <i class="bi bi-people-fill"></i>
+                        @(Model.BookingForm.GuestCount <= 0 ? 1 : Model.BookingForm.GuestCount) misafir
+                    </div>
+                </div>
+
+                @if (totalEstimate.HasValue)
+                {
+                    <div class="hd-booking-total">
+                        <span>Tahmini toplam</span>
+                        <span class="hd-booking-total-amt">@totalEstimate.Value.ToString("N0", trCulture) TL</span>
+                    </div>
+                }
 
                 @if (Model.IsAuthenticated)
                 {
-                    <p class="text-success">Giriş yapıldı. Uygun odalardan rezervasyon başlatabilirsiniz.</p>
-                    <a class="btn btn-primary w-100 mt-3" href="#rooms-section">
-                        Uygun Odaları Gör
+                    <a class="hd-booking-cta" href="#rooms-section">
+                        <i class="bi bi-calendar2-check"></i> Uygun Odaları Gör
                     </a>
+                    <small class="hd-booking-note">Şimdi ödeme yok · Ücretsiz iptal</small>
                 }
                 else
                 {
-                    <p class="text-danger">Rezervasyon için giriş yapmalısınız.</p>
-                    <a class="btn btn-outline-primary w-100 mt-3"
+                    <a class="hd-booking-cta hd-booking-cta-outline"
                        asp-controller="Auth"
                        asp-action="Login"
                        asp-route-returnUrl="@Context.Request.Path">
-                        Giriş Yap ve Devam Et
+                        <i class="bi bi-person"></i> Giriş Yap ve Devam Et
                     </a>
+                    <small class="hd-booking-note">Rezervasyon için giriş gerekli</small>
                 }
             </div>
 
             <!-- AMENITIES -->
-            <div class="card-box mt-4">
-                <h4>Olanaklar</h4>
+            <div id="amenities" class="card-box hd-amenities-box">
+                <h4 class="hd-amenities-title">Olanaklar</h4>
 
                 @if (Model.Amenities != null && Model.Amenities.Any())
                 {
-                    <ul class="amenity-list">
+                    <ul class="hd-amenities-list">
                         @foreach (var a in Model.Amenities)
                         {
                             var iconClass = "bi bi-check-circle-fill";
@@ -257,25 +523,49 @@
             </div>
 
         </div>
-    </div>
+    </aside>
 </div>
+
 @section Scripts {
     <script>
         (function () {
+            // Galeri modal — gallery item tikladiginda dogru slayta git
             const galleryModal = document.getElementById('galleryModal');
             const galleryCarousel = document.getElementById('galleryCarousel');
 
-            if (!galleryModal || !galleryCarousel) return;
+            if (galleryModal && galleryCarousel) {
+                galleryModal.addEventListener('show.bs.modal', function (event) {
+                    const trigger = event.relatedTarget;
+                    if (!trigger) return;
 
-            galleryModal.addEventListener('show.bs.modal', function (event) {
-                const trigger = event.relatedTarget;
-                if (!trigger) return;
+                    const slideIndex = parseInt(trigger.getAttribute('data-bs-slide-to') || '0', 10);
+                    const carousel = bootstrap.Carousel.getOrCreateInstance(galleryCarousel);
+                    carousel.to(slideIndex);
+                });
+            }
 
-                const slideIndex = parseInt(trigger.getAttribute('data-bs-slide-to') || '0', 10);
-                const carousel = bootstrap.Carousel.getOrCreateInstance(galleryCarousel);
+            // Anchor nav — scroll'a gore aktif sekmeyi guncelle (click-to-scroll
+            // zaten href anchor'larla calisir; bu sadece scroll sirasinda hangi
+            // sekmenin aktif gosterildigini ayarlar).
+            const anchorNav = document.querySelector('.hd-anchor-nav');
+            if (anchorNav) {
+                const links = anchorNav.querySelectorAll('a[href^="#"]');
+                const sections = [...links].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
 
-                carousel.to(slideIndex);
-            });
+                function syncActive() {
+                    const offset = 140;
+                    let activeIdx = 0;
+                    for (let i = 0; i < sections.length; i++) {
+                        if (sections[i].getBoundingClientRect().top - offset <= 0) {
+                            activeIdx = i;
+                        }
+                    }
+                    links.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+                }
+
+                window.addEventListener('scroll', syncActive, { passive: true });
+                syncActive();
+            }
         })();
     </script>
 }

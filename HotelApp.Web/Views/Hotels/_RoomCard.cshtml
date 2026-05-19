@@ -1,4 +1,4 @@
-﻿@model AvailableRoomViewModel
+@model AvailableRoomViewModel
 
 @{
     var roomId = Model.HotelRoomId != 0 ? Model.HotelRoomId : Model.Id;
@@ -16,53 +16,62 @@
     }
     var clampedGuests = Math.Min(requestedGuests, Model.MaxGuests);
     var guestCount = clampedGuests.ToString();
+
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
 }
 
-<div class="card mb-3">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h5 class="card-title mb-1">@Model.RoomTypeName</h5>
+<div class="hd-room-wrap">
+    <article class="hd-room">
 
-                <p class="text-muted mb-2">
-                    Maksimum @Model.MaxGuests kişi
-                </p>
-
-                @if (Model.AvailableRooms > 0)
-                {
-                    <p class="mb-1">
-                        Müsait oda:
-                        <strong>@Model.AvailableRooms</strong>
-                    </p>
-                }
-                else
-                {
-                    <p class="mb-1">
-                        Toplam oda:
-                        <strong>@Model.TotalRooms</strong>
-                    </p>
-                }
-            </div>
-
-            <div class="text-end">
-                <div class="fw-bold fs-5">
-                    @Model.PricePerNight.ToString("C")
-                </div>
-                <small class="text-muted">gecelik</small>
+        <div class="hd-room-media">
+            @* Oda gorseli alani — model'de oda gorseli alani yok, bu yuzden bir
+               placeholder gosteriliyor. Backend'e ileride RoomTypeImageUrl eklenirse
+               buradaki <div> bir <img> ile degistirilebilir. *@
+            <div class="hd-room-img-ph">
+                <i class="bi bi-door-open"></i>
+                <span>Oda görseli</span>
             </div>
         </div>
 
-        <a asp-controller="Booking"
-           asp-action="Create"
-           asp-route-hotelId="@Model.HotelId"
-           asp-route-hotelRoomId="@roomId"
-           asp-route-checkIn="@checkIn"
-           asp-route-checkOut="@checkOut"
-           asp-route-guestCount="@guestCount"
-           class="btn btn-primary mt-3">
-            Rezervasyon Yap
-        </a>
-    </div>
+        <div class="hd-room-body">
+            <h4 class="hd-room-name">@Model.RoomTypeName</h4>
+
+            <div class="hd-room-sub">
+                <i class="bi bi-people"></i> Maksimum @Model.MaxGuests kişi
+            </div>
+
+            <div class="hd-room-chips">
+                <span class="hd-room-chip"><i class="bi bi-wifi"></i> Wi-Fi</span>
+                <span class="hd-room-chip"><i class="bi bi-snow"></i> Klima</span>
+                <span class="hd-room-chip"><i class="bi bi-cup-hot"></i> Kahvaltı</span>
+                <span class="hd-room-chip"><i class="bi bi-tv"></i> Smart TV</span>
+            </div>
+
+            <div class="hd-room-perk">
+                <i class="bi bi-check-circle-fill"></i>
+                Ücretsiz iptal · Şimdi ödeme yok
+            </div>
+        </div>
+
+        <div class="hd-room-price">
+            <div class="hd-room-priceline">Gecelik fiyat</div>
+            <div class="hd-room-price-amt">@Model.PricePerNight.ToString("N0", trCulture) TL</div>
+            <div class="hd-room-pernight">vergiler dahil</div>
+
+            <a asp-controller="Booking"
+               asp-action="Create"
+               asp-route-hotelId="@Model.HotelId"
+               asp-route-hotelRoomId="@roomId"
+               asp-route-checkIn="@checkIn"
+               asp-route-checkOut="@checkOut"
+               asp-route-guestCount="@guestCount"
+               class="hd-room-cta">
+                Rezervasyon Yap
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+    </article>
 </div>
 
 @* _BookingModal partial cagrisi kaldirildi: "Rezervasyon Yap" butonu artik tam sayfa

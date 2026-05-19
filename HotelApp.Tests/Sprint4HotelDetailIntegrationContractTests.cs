@@ -95,7 +95,10 @@ public class Sprint4HotelDetailIntegrationContractTests
         AssertContainsAny(roomCard, "RoomTypeName", "Name");
         AssertContainsAny(roomCard, "MaxGuests", "Kapasite", "kişi", "kisi");
         AssertContainsAny(roomCard, "PricePerNight", "Fiyat", "gecelik");
-        AssertContainsAny(roomCard, "AvailableRooms", "TotalRooms", "Müsait", "Musait");
+        // S5-07: Oda karti yeniden tasarlandi. "AvailableRooms/TotalRooms" gosterimi
+        // kaldirildi (PR #107 Copilot review #4 — tarih-filtreli musaitlik degil,
+        // toplam stok gosteriyordu, yaniltici). Bu kontrat artik gecerli degil.
+        // Eski assert: AssertContainsAny(roomCard, "AvailableRooms", "TotalRooms", "Müsait", "Musait");
         AssertContainsAny(roomCard, "_BookingModal", "data-bs-toggle=\"modal\"", "Rezervasyon");
 
         AssertContainsAny(reviewCard, "ReviewViewModel", "ReviewVM");
