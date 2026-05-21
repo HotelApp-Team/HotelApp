@@ -1,0 +1,975 @@
+@model HotelApp.Web.Models.AdminAmenityMgmtPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Olanak Yönetimi";
+
+    // Modal icon picker icin curated Bootstrap Icons listesi.
+    // Label Turkce arama icin onemli (admin "havuz", "klima" gibi ararken bulabilsin).
+    var iconLibrary = new[]
+    {
+        // === Otel & Tesis & Manzara ===
+        new { Class = "bi-water", Label = "Su / Deniz / Havuz" },
+        new { Class = "bi-droplet", Label = "Damla / Havuz" },
+        new { Class = "bi-droplet-half", Label = "Yari damla / Banyo" },
+        new { Class = "bi-droplet-fill", Label = "Damla dolu" },
+        new { Class = "bi-buildings", Label = "Binalar / Sehir" },
+        new { Class = "bi-buildings-fill", Label = "Binalar dolu" },
+        new { Class = "bi-building", Label = "Bina" },
+        new { Class = "bi-building-fill", Label = "Bina dolu" },
+        new { Class = "bi-house", Label = "Ev" },
+        new { Class = "bi-house-fill", Label = "Ev dolu" },
+        new { Class = "bi-house-door", Label = "Ev kapi" },
+        new { Class = "bi-house-heart", Label = "Ev kalp" },
+        new { Class = "bi-shop", Label = "Magaza / Market" },
+        new { Class = "bi-shop-window", Label = "Magaza vitrin" },
+        new { Class = "bi-tree", Label = "Agac / Dag manzara" },
+        new { Class = "bi-tree-fill", Label = "Agac dolu" },
+        new { Class = "bi-flower1", Label = "Cicek 1 / Bahce" },
+        new { Class = "bi-flower2", Label = "Cicek 2 / Bahce" },
+        new { Class = "bi-flower3", Label = "Cicek 3" },
+
+        // === Hava & Iklim ===
+        new { Class = "bi-sun", Label = "Gunes" },
+        new { Class = "bi-sun-fill", Label = "Gunes dolu" },
+        new { Class = "bi-cloud", Label = "Bulut" },
+        new { Class = "bi-cloud-sun", Label = "Bulutlu gunes" },
+        new { Class = "bi-cloud-moon", Label = "Bulutlu ay" },
+        new { Class = "bi-cloud-rain", Label = "Yagmur" },
+        new { Class = "bi-cloud-snow", Label = "Kar yagisli" },
+        new { Class = "bi-cloud-haze", Label = "Sis / Pus" },
+        new { Class = "bi-moon", Label = "Ay" },
+        new { Class = "bi-moon-stars", Label = "Ay ve yildiz" },
+        new { Class = "bi-fire", Label = "Ates / Sominede" },
+        new { Class = "bi-snow", Label = "Kar / Klima" },
+        new { Class = "bi-snow2", Label = "Kar 2" },
+        new { Class = "bi-snow3", Label = "Kar 3" },
+        new { Class = "bi-umbrella", Label = "Semsiye / Plaj" },
+        new { Class = "bi-umbrella-fill", Label = "Semsiye dolu" },
+        new { Class = "bi-thermometer", Label = "Termometre" },
+        new { Class = "bi-thermometer-snow", Label = "Termometre soguk / Klima" },
+        new { Class = "bi-thermometer-sun", Label = "Termometre sicak" },
+        new { Class = "bi-thermometer-half", Label = "Sicaklik" },
+        new { Class = "bi-thermometer-high", Label = "Sicaklik yuksek" },
+        new { Class = "bi-thermometer-low", Label = "Sicaklik dusuk" },
+        new { Class = "bi-fan", Label = "Vantilator" },
+        new { Class = "bi-wind", Label = "Ruzgar" },
+
+        // === Oda & Kapi & Guvenlik ===
+        new { Class = "bi-door-open", Label = "Acik kapi" },
+        new { Class = "bi-door-open-fill", Label = "Acik kapi dolu" },
+        new { Class = "bi-door-closed", Label = "Kapali kapi" },
+        new { Class = "bi-door-closed-fill", Label = "Kapali kapi dolu" },
+        new { Class = "bi-key", Label = "Anahtar / Kasa" },
+        new { Class = "bi-key-fill", Label = "Anahtar dolu" },
+        new { Class = "bi-lock", Label = "Kilit / Guvenli" },
+        new { Class = "bi-lock-fill", Label = "Kilit dolu" },
+        new { Class = "bi-unlock", Label = "Acik kilit" },
+        new { Class = "bi-shield", Label = "Kalkan" },
+        new { Class = "bi-shield-check", Label = "Kalkan / Guvenlik" },
+        new { Class = "bi-shield-fill-check", Label = "Kalkan dolu onay" },
+        new { Class = "bi-shield-lock", Label = "Kalkan kilit" },
+        new { Class = "bi-shield-fill-lock", Label = "Kalkan dolu kilit" },
+        new { Class = "bi-bell", Label = "Zil / Resepsiyon" },
+        new { Class = "bi-bell-fill", Label = "Zil dolu" },
+        new { Class = "bi-alarm", Label = "Alarm" },
+        new { Class = "bi-alarm-fill", Label = "Alarm dolu" },
+
+        // === Elektronik & Konfor ===
+        new { Class = "bi-tv", Label = "TV / Televizyon" },
+        new { Class = "bi-tv-fill", Label = "TV dolu" },
+        new { Class = "bi-display", Label = "Ekran / Smart TV" },
+        new { Class = "bi-display-fill", Label = "Ekran dolu" },
+        new { Class = "bi-phone", Label = "Telefon mobil" },
+        new { Class = "bi-phone-fill", Label = "Telefon mobil dolu" },
+        new { Class = "bi-headphones", Label = "Kulaklik" },
+        new { Class = "bi-headset", Label = "Kulaklik mikrofonlu" },
+        new { Class = "bi-mic", Label = "Mikrofon" },
+        new { Class = "bi-mic-fill", Label = "Mikrofon dolu" },
+        new { Class = "bi-music-note", Label = "Tek nota" },
+        new { Class = "bi-music-note-beamed", Label = "Muzik nota" },
+        new { Class = "bi-music-player", Label = "Muzik calar" },
+        new { Class = "bi-soundwave", Label = "Ses dalga" },
+        new { Class = "bi-volume-up", Label = "Ses ac" },
+        new { Class = "bi-volume-mute", Label = "Ses kapa" },
+        new { Class = "bi-lamp", Label = "Lamba" },
+        new { Class = "bi-lamp-fill", Label = "Lamba dolu" },
+        new { Class = "bi-lightbulb", Label = "Ampul" },
+        new { Class = "bi-lightbulb-fill", Label = "Ampul dolu" },
+        new { Class = "bi-lightbulb-off", Label = "Ampul kapali" },
+        new { Class = "bi-window", Label = "Pencere" },
+        new { Class = "bi-window-fullscreen", Label = "Tam ekran pencere" },
+        new { Class = "bi-eye", Label = "Goz / Manzara" },
+        new { Class = "bi-eye-fill", Label = "Goz dolu" },
+        new { Class = "bi-binoculars", Label = "Durbun / Manzara" },
+        new { Class = "bi-binoculars-fill", Label = "Durbun dolu" },
+        new { Class = "bi-easel", Label = "Sehpa / Calisma masasi" },
+        new { Class = "bi-laptop", Label = "Laptop" },
+        new { Class = "bi-laptop-fill", Label = "Laptop dolu" },
+        new { Class = "bi-pc-display", Label = "Bilgisayar ekrani" },
+        new { Class = "bi-power", Label = "Guc / Acma" },
+        new { Class = "bi-plug", Label = "Fis" },
+        new { Class = "bi-plug-fill", Label = "Fis dolu" },
+        new { Class = "bi-battery", Label = "Pil" },
+        new { Class = "bi-battery-full", Label = "Pil dolu" },
+        new { Class = "bi-battery-charging", Label = "Pil sarj" },
+        new { Class = "bi-toggle-on", Label = "Acik anahtar" },
+        new { Class = "bi-toggle-off", Label = "Kapali anahtar" },
+
+        // === Wi-Fi & Internet & Iletisim ===
+        new { Class = "bi-wifi", Label = "Wi-Fi / Internet" },
+        new { Class = "bi-wifi-1", Label = "Wi-Fi zayif" },
+        new { Class = "bi-wifi-2", Label = "Wi-Fi orta" },
+        new { Class = "bi-wifi-off", Label = "Wi-Fi kapali" },
+        new { Class = "bi-router", Label = "Modem / Router" },
+        new { Class = "bi-router-fill", Label = "Router dolu" },
+        new { Class = "bi-broadcast", Label = "Yayin / TV anteni" },
+        new { Class = "bi-broadcast-pin", Label = "Yayin pin" },
+        new { Class = "bi-bluetooth", Label = "Bluetooth" },
+        new { Class = "bi-cast", Label = "Yayinla / Cast" },
+        new { Class = "bi-globe", Label = "Dunya / Internet" },
+        new { Class = "bi-globe2", Label = "Dunya 2" },
+        new { Class = "bi-envelope", Label = "Mektup / E-posta" },
+        new { Class = "bi-envelope-fill", Label = "Mektup dolu" },
+        new { Class = "bi-envelope-paper", Label = "Mektup kagit" },
+        new { Class = "bi-telephone", Label = "Telefon" },
+        new { Class = "bi-telephone-fill", Label = "Telefon dolu" },
+        new { Class = "bi-chat-dots", Label = "Sohbet" },
+        new { Class = "bi-chat-fill", Label = "Sohbet dolu" },
+        new { Class = "bi-chat-quote", Label = "Alinti" },
+        new { Class = "bi-megaphone", Label = "Megafon / Duyuru" },
+        new { Class = "bi-translate", Label = "Ceviri" },
+
+        // === Yemek & Icecek & Restoran ===
+        new { Class = "bi-cup-hot", Label = "Sicak fincan / Kahve" },
+        new { Class = "bi-cup-hot-fill", Label = "Sicak fincan dolu" },
+        new { Class = "bi-cup", Label = "Fincan" },
+        new { Class = "bi-cup-fill", Label = "Fincan dolu" },
+        new { Class = "bi-cup-straw", Label = "Pipetli icecek / Bar" },
+        new { Class = "bi-egg-fried", Label = "Yumurta / Kahvalti" },
+        new { Class = "bi-egg", Label = "Yumurta" },
+        new { Class = "bi-egg-fill", Label = "Yumurta dolu" },
+        new { Class = "bi-basket", Label = "Sepet" },
+        new { Class = "bi-basket2", Label = "Sepet 2" },
+        new { Class = "bi-basket3", Label = "Sepet 3" },
+        new { Class = "bi-cart", Label = "Alisveris sepeti" },
+        new { Class = "bi-cart-fill", Label = "Sepet dolu" },
+        new { Class = "bi-bag", Label = "Canta / Bagaj" },
+        new { Class = "bi-bag-fill", Label = "Canta dolu" },
+        new { Class = "bi-bag-heart", Label = "Canta kalp" },
+        new { Class = "bi-bag-check", Label = "Canta onay" },
+        new { Class = "bi-receipt", Label = "Fis / Hesap" },
+
+        // === Odeme & Para ===
+        new { Class = "bi-credit-card", Label = "Kredi karti" },
+        new { Class = "bi-credit-card-fill", Label = "Kredi karti dolu" },
+        new { Class = "bi-credit-card-2-front", Label = "Kredi karti on" },
+        new { Class = "bi-cash", Label = "Nakit" },
+        new { Class = "bi-cash-coin", Label = "Nakit jeton" },
+        new { Class = "bi-cash-stack", Label = "Nakit yigin" },
+        new { Class = "bi-coin", Label = "Madeni para" },
+        new { Class = "bi-piggy-bank", Label = "Kumbara" },
+        new { Class = "bi-piggy-bank-fill", Label = "Kumbara dolu" },
+        new { Class = "bi-bank", Label = "Banka" },
+        new { Class = "bi-bank2", Label = "Banka 2" },
+        new { Class = "bi-wallet", Label = "Cuzdan" },
+        new { Class = "bi-wallet2", Label = "Cuzdan 2" },
+        new { Class = "bi-wallet-fill", Label = "Cuzdan dolu" },
+        new { Class = "bi-currency-exchange", Label = "Para degisim / Doviz" },
+        new { Class = "bi-currency-dollar", Label = "Dolar" },
+        new { Class = "bi-currency-euro", Label = "Euro" },
+
+        // === Saglik & Spa & Wellness ===
+        new { Class = "bi-heart", Label = "Kalp" },
+        new { Class = "bi-heart-fill", Label = "Kalp dolu" },
+        new { Class = "bi-heart-pulse", Label = "Kalp nabiz / Spa" },
+        new { Class = "bi-heart-pulse-fill", Label = "Kalp nabiz dolu" },
+        new { Class = "bi-emoji-smile", Label = "Gulen yuz" },
+        new { Class = "bi-emoji-smile-fill", Label = "Gulen yuz dolu" },
+        new { Class = "bi-emoji-heart-eyes", Label = "Kalp gozler" },
+        new { Class = "bi-emoji-laughing", Label = "Kahkaha" },
+        new { Class = "bi-emoji-sunglasses", Label = "Gunes gozluklu" },
+        new { Class = "bi-emoji-wink", Label = "Goz kirpan" },
+        new { Class = "bi-emoji-kiss", Label = "Opucuk" },
+        new { Class = "bi-stars", Label = "Yildizlar / VIP" },
+        new { Class = "bi-star", Label = "Yildiz" },
+        new { Class = "bi-star-fill", Label = "Yildiz dolu" },
+        new { Class = "bi-star-half", Label = "Yildiz yari" },
+        new { Class = "bi-gem", Label = "Elmas / Luks" },
+        new { Class = "bi-magic", Label = "Sihir / Asa" },
+        new { Class = "bi-bandaid", Label = "Yara bandi / Ilkyardim" },
+        new { Class = "bi-bandaid-fill", Label = "Yara bandi dolu" },
+
+        // === Spor & Aktivite & Egitim ===
+        new { Class = "bi-bicycle", Label = "Bisiklet" },
+        new { Class = "bi-controller", Label = "Oyun kumandasi" },
+        new { Class = "bi-joystick", Label = "Joystick" },
+        new { Class = "bi-trophy", Label = "Kupa" },
+        new { Class = "bi-trophy-fill", Label = "Kupa dolu" },
+        new { Class = "bi-award", Label = "Madalya / Odul" },
+        new { Class = "bi-award-fill", Label = "Madalya dolu" },
+        new { Class = "bi-stopwatch", Label = "Kronometre" },
+        new { Class = "bi-stopwatch-fill", Label = "Kronometre dolu" },
+        new { Class = "bi-bullseye", Label = "Hedef tahta" },
+        new { Class = "bi-tools", Label = "Aletler / Servis" },
+        new { Class = "bi-puzzle", Label = "Yapboz / Oyun" },
+        new { Class = "bi-puzzle-fill", Label = "Yapboz dolu" },
+
+        // === Ulasim & Otopark & Konum ===
+        new { Class = "bi-car-front", Label = "Araba / Otopark" },
+        new { Class = "bi-car-front-fill", Label = "Araba dolu" },
+        new { Class = "bi-p-square", Label = "P kare / Park" },
+        new { Class = "bi-p-square-fill", Label = "P kare dolu" },
+        new { Class = "bi-p-circle", Label = "P cember" },
+        new { Class = "bi-truck", Label = "Kamyon" },
+        new { Class = "bi-truck-front", Label = "Kamyon on" },
+        new { Class = "bi-airplane", Label = "Ucak / Transfer" },
+        new { Class = "bi-airplane-fill", Label = "Ucak dolu" },
+        new { Class = "bi-airplane-engines", Label = "Ucak jet" },
+        new { Class = "bi-train-front", Label = "Tren" },
+        new { Class = "bi-tram", Label = "Tramvay" },
+        new { Class = "bi-bus-front", Label = "Otobus" },
+        new { Class = "bi-taxi-front", Label = "Taksi" },
+        new { Class = "bi-scooter", Label = "Scooter" },
+        new { Class = "bi-fuel-pump", Label = "Akaryakit pompasi" },
+        new { Class = "bi-fuel-pump-fill", Label = "Pompa dolu" },
+        new { Class = "bi-signpost", Label = "Tabela / Yon" },
+        new { Class = "bi-signpost-2", Label = "Tabela 2" },
+        new { Class = "bi-map", Label = "Harita" },
+        new { Class = "bi-map-fill", Label = "Harita dolu" },
+        new { Class = "bi-geo-alt", Label = "Konum" },
+        new { Class = "bi-geo-alt-fill", Label = "Konum dolu" },
+        new { Class = "bi-compass", Label = "Pusula" },
+        new { Class = "bi-compass-fill", Label = "Pusula dolu" },
+
+        // === Insan & Aile & Cocuk ===
+        new { Class = "bi-people", Label = "Insanlar / Aile" },
+        new { Class = "bi-people-fill", Label = "Insanlar dolu" },
+        new { Class = "bi-person", Label = "Kisi" },
+        new { Class = "bi-person-fill", Label = "Kisi dolu" },
+        new { Class = "bi-person-heart", Label = "Kisi kalp" },
+        new { Class = "bi-person-arms-up", Label = "Eller havada" },
+        new { Class = "bi-person-walking", Label = "Yuruyen kisi" },
+        new { Class = "bi-person-wheelchair", Label = "Tekerlekli sandalye / Erisilebilirlik" },
+        new { Class = "bi-balloon", Label = "Balon / Cocuk" },
+        new { Class = "bi-balloon-heart", Label = "Balon kalp" },
+        new { Class = "bi-gift", Label = "Hediye" },
+        new { Class = "bi-gift-fill", Label = "Hediye dolu" },
+
+        // === Foto & Kamera & Galeri ===
+        new { Class = "bi-camera", Label = "Kamera" },
+        new { Class = "bi-camera-fill", Label = "Kamera dolu" },
+        new { Class = "bi-camera-reels", Label = "Kamera film" },
+        new { Class = "bi-camera-video", Label = "Video kamera" },
+        new { Class = "bi-camera-video-fill", Label = "Video kamera dolu" },
+        new { Class = "bi-image", Label = "Resim" },
+        new { Class = "bi-image-fill", Label = "Resim dolu" },
+        new { Class = "bi-images", Label = "Galeri" },
+        new { Class = "bi-projector", Label = "Projektor / Konferans" },
+
+        // === Is & Toplanti & Egitim ===
+        new { Class = "bi-briefcase", Label = "Brifing canta / Toplanti" },
+        new { Class = "bi-briefcase-fill", Label = "Brifing dolu" },
+        new { Class = "bi-clipboard", Label = "Pano" },
+        new { Class = "bi-clipboard-fill", Label = "Pano dolu" },
+        new { Class = "bi-clipboard-check", Label = "Pano onay" },
+        new { Class = "bi-pencil", Label = "Kalem" },
+        new { Class = "bi-pencil-fill", Label = "Kalem dolu" },
+        new { Class = "bi-pen", Label = "Tukenmez kalem" },
+        new { Class = "bi-pen-fill", Label = "Tukenmez dolu" },
+        new { Class = "bi-book", Label = "Kitap / Kutuphane" },
+        new { Class = "bi-book-fill", Label = "Kitap dolu" },
+        new { Class = "bi-book-half", Label = "Kitap yari" },
+        new { Class = "bi-journal", Label = "Defter" },
+        new { Class = "bi-journal-bookmark", Label = "Defter yer imi" },
+        new { Class = "bi-printer", Label = "Yazici" },
+        new { Class = "bi-printer-fill", Label = "Yazici dolu" },
+
+        // === Genel UI & Sembol ===
+        new { Class = "bi-check-circle", Label = "Onay" },
+        new { Class = "bi-check-circle-fill", Label = "Onay dolu" },
+        new { Class = "bi-check2-circle", Label = "Onay cember" },
+        new { Class = "bi-check2-square", Label = "Onay kare" },
+        new { Class = "bi-check2-all", Label = "Cift onay" },
+        new { Class = "bi-x-circle", Label = "Iptal" },
+        new { Class = "bi-x-circle-fill", Label = "Iptal dolu" },
+        new { Class = "bi-info-circle", Label = "Bilgi" },
+        new { Class = "bi-info-circle-fill", Label = "Bilgi dolu" },
+        new { Class = "bi-question-circle", Label = "Soru" },
+        new { Class = "bi-question-circle-fill", Label = "Soru dolu" },
+        new { Class = "bi-exclamation-circle", Label = "Uyari" },
+        new { Class = "bi-exclamation-triangle", Label = "Dikkat ucgen" },
+        new { Class = "bi-exclamation-triangle-fill", Label = "Dikkat dolu" },
+        new { Class = "bi-tag", Label = "Etiket" },
+        new { Class = "bi-tag-fill", Label = "Etiket dolu" },
+        new { Class = "bi-tags", Label = "Etiketler" },
+        new { Class = "bi-tags-fill", Label = "Etiketler dolu" },
+        new { Class = "bi-bookmark", Label = "Yer imi" },
+        new { Class = "bi-bookmark-fill", Label = "Yer imi dolu" },
+        new { Class = "bi-bookmark-heart", Label = "Yer imi kalp" },
+        new { Class = "bi-bookmark-star", Label = "Yer imi yildiz" },
+        new { Class = "bi-flag", Label = "Bayrak" },
+        new { Class = "bi-flag-fill", Label = "Bayrak dolu" },
+        new { Class = "bi-pin", Label = "Pin / Igne" },
+        new { Class = "bi-pin-angle", Label = "Pin aci" },
+        new { Class = "bi-pin-angle-fill", Label = "Pin aci dolu" },
+        new { Class = "bi-clock", Label = "Saat / 24 saat" },
+        new { Class = "bi-clock-fill", Label = "Saat dolu" },
+        new { Class = "bi-clock-history", Label = "Saat gecmis" },
+        new { Class = "bi-calendar-event", Label = "Takvim olay" },
+        new { Class = "bi-calendar-check", Label = "Takvim onay" },
+        new { Class = "bi-calendar-heart", Label = "Takvim kalp" },
+        new { Class = "bi-calendar-week", Label = "Takvim hafta" },
+        new { Class = "bi-grid", Label = "Grid" },
+        new { Class = "bi-grid-3x3-gap", Label = "Izgara" },
+        new { Class = "bi-three-dots", Label = "Daha fazla" },
+        new { Class = "bi-three-dots-vertical", Label = "Dikey nokta" },
+        new { Class = "bi-gear", Label = "Ayarlar" },
+        new { Class = "bi-gear-fill", Label = "Ayarlar dolu" },
+        new { Class = "bi-sliders", Label = "Surgu" },
+        new { Class = "bi-toggles", Label = "Toggle anahtar" },
+
+        // ============================================================
+        // MATERIAL DESIGN ICONS (MDI) - Otel & Restoran odakli ikonlar
+        // MDI prefix "mdi-" ile baslar; IconCssHelper otomatik render eder.
+        // ============================================================
+
+        // === MDI - Otel & Yatak ===
+        new { Class = "mdi-bed", Label = "Yatak" },
+        new { Class = "mdi-bed-king", Label = "King yatak" },
+        new { Class = "mdi-bed-queen", Label = "Queen yatak" },
+        new { Class = "mdi-bed-single", Label = "Tek kisilik yatak" },
+        new { Class = "mdi-bed-double", Label = "Cift kisilik yatak" },
+        new { Class = "mdi-bed-empty", Label = "Bos yatak" },
+        new { Class = "mdi-sofa", Label = "Koltuk / Kanepe" },
+        new { Class = "mdi-sofa-outline", Label = "Koltuk outline" },
+        new { Class = "mdi-hotel", Label = "Otel binasi" },
+        new { Class = "mdi-balcony", Label = "Balkon / Teras" },
+
+        // === MDI - Banyo & Hijyen ===
+        new { Class = "mdi-bathtub", Label = "Banyo kuveti" },
+        new { Class = "mdi-bathtub-outline", Label = "Banyo kuveti outline" },
+        new { Class = "mdi-shower", Label = "Dus kabini" },
+        new { Class = "mdi-shower-head", Label = "Dus basligi" },
+        new { Class = "mdi-toilet", Label = "Tuvalet" },
+        new { Class = "mdi-hand-wash", Label = "El yikama" },
+        new { Class = "mdi-hair-dryer", Label = "Sac kurutma" },
+        new { Class = "mdi-iron", Label = "Utu" },
+        new { Class = "mdi-washing-machine", Label = "Camasir makinesi" },
+        new { Class = "mdi-broom", Label = "Supurge / Temizlik" },
+        new { Class = "mdi-spray-bottle", Label = "Sprey sise / Temizlik" },
+
+        // === MDI - Yemek & Mutfak ===
+        new { Class = "mdi-room-service", Label = "Oda servisi" },
+        new { Class = "mdi-room-service-outline", Label = "Oda servisi outline" },
+        new { Class = "mdi-silverware-fork-knife", Label = "Catal bicak" },
+        new { Class = "mdi-silverware", Label = "Servis takimi" },
+        new { Class = "mdi-silverware-spoon", Label = "Kasik" },
+        new { Class = "mdi-chef-hat", Label = "Sef sapkasi" },
+        new { Class = "mdi-pizza", Label = "Pizza" },
+        new { Class = "mdi-hamburger", Label = "Hamburger" },
+        new { Class = "mdi-noodles", Label = "Eriste / Makarna" },
+        new { Class = "mdi-rice", Label = "Pirinc / Pilav" },
+        new { Class = "mdi-sushi", Label = "Sushi" },
+        new { Class = "mdi-food", Label = "Yemek" },
+        new { Class = "mdi-food-fork-drink", Label = "Yemek + icecek" },
+        new { Class = "mdi-food-apple", Label = "Elma / Meyve" },
+        new { Class = "mdi-food-croissant", Label = "Krosan / Kahvalti" },
+        new { Class = "mdi-cake", Label = "Pasta" },
+        new { Class = "mdi-cake-variant", Label = "Pasta dilim" },
+        new { Class = "mdi-cookie", Label = "Kurabiye" },
+        new { Class = "mdi-ice-cream", Label = "Dondurma" },
+        new { Class = "mdi-coffee", Label = "Kahve" },
+        new { Class = "mdi-coffee-outline", Label = "Kahve outline" },
+        new { Class = "mdi-tea", Label = "Cay" },
+        new { Class = "mdi-tea-outline", Label = "Cay outline" },
+        new { Class = "mdi-glass-wine", Label = "Sarap kadehi" },
+        new { Class = "mdi-glass-cocktail", Label = "Kokteyl" },
+        new { Class = "mdi-glass-mug-variant", Label = "Bardak" },
+        new { Class = "mdi-beer", Label = "Bira" },
+        new { Class = "mdi-beer-outline", Label = "Bira outline" },
+
+        // === MDI - Oda Esyalari & Beyaz Esya ===
+        new { Class = "mdi-air-conditioner", Label = "Klima" },
+        new { Class = "mdi-fan", Label = "Pervane" },
+        new { Class = "mdi-fireplace", Label = "Sominede" },
+        new { Class = "mdi-stove", Label = "Ocak" },
+        new { Class = "mdi-microwave", Label = "Mikrodalga" },
+        new { Class = "mdi-fridge", Label = "Buzdolabi" },
+        new { Class = "mdi-fridge-outline", Label = "Buzdolabi outline" },
+        new { Class = "mdi-toaster-oven", Label = "Firin / Tost makinesi" },
+        new { Class = "mdi-blender", Label = "Blender" },
+        new { Class = "mdi-coffee-maker", Label = "Kahve makinesi" },
+        new { Class = "mdi-television-classic", Label = "Eski TV" },
+        new { Class = "mdi-television", Label = "TV modern" },
+        new { Class = "mdi-projector", Label = "Projektor" },
+        new { Class = "mdi-curtains", Label = "Perde" },
+        new { Class = "mdi-window-open", Label = "Acik pencere" },
+        new { Class = "mdi-desk", Label = "Calisma masasi" },
+        new { Class = "mdi-table-furniture", Label = "Masa" },
+
+        // === MDI - Spor & Wellness ===
+        new { Class = "mdi-pool", Label = "Havuz" },
+        new { Class = "mdi-swim", Label = "Yuzme" },
+        new { Class = "mdi-spa", Label = "Spa" },
+        new { Class = "mdi-spa-outline", Label = "Spa outline" },
+        new { Class = "mdi-meditation", Label = "Meditasyon" },
+        new { Class = "mdi-yoga", Label = "Yoga" },
+        new { Class = "mdi-dumbbell", Label = "Dambil / Fitness" },
+        new { Class = "mdi-weight-lifter", Label = "Halter / Spor salonu" },
+        new { Class = "mdi-tennis", Label = "Tenis" },
+        new { Class = "mdi-golf", Label = "Golf" },
+
+        // === MDI - Erisilebilirlik & Evcil hayvan ===
+        new { Class = "mdi-wheelchair-accessibility", Label = "Tekerlekli sandalye" },
+        new { Class = "mdi-smoking", Label = "Sigara icme alani" },
+        new { Class = "mdi-smoking-off", Label = "Sigara yasak" },
+        new { Class = "mdi-paw", Label = "Evcil hayvan kabul" },
+        new { Class = "mdi-dog", Label = "Kopek" },
+        new { Class = "mdi-cat", Label = "Kedi" },
+        new { Class = "mdi-elevator", Label = "Asansor" },
+        new { Class = "mdi-stairs", Label = "Merdiven" },
+        new { Class = "mdi-baby", Label = "Bebek / Cocuk dostu" },
+
+        // === MDI - Ulasim & Bagaj ===
+        new { Class = "mdi-luggage", Label = "Bagaj" },
+        new { Class = "mdi-bag-suitcase", Label = "Valiz" },
+        new { Class = "mdi-airport", Label = "Havalimani" },
+        new { Class = "mdi-taxi", Label = "Taksi (MDI)" },
+        new { Class = "mdi-bus", Label = "Otobus (MDI)" }
+    };
+}
+
+<style>
+    .icon-picker-trigger {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px dashed #CBD5E1;
+        background: #F8FAFC;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        transition: 120ms;
+    }
+    .icon-picker-trigger:hover {
+        background: #EFF6FF;
+        border-color: #3B82F6;
+    }
+    .icon-picker-trigger .ipt-preview {
+        font-size: 1.5rem;
+        color: #1E3A8A;
+        flex-shrink: 0;
+        width: 32px;
+        text-align: center;
+    }
+    .icon-picker-trigger .ipt-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex-grow: 1;
+        line-height: 1.2;
+    }
+    .icon-picker-trigger .ipt-info code {
+        font-size: 0.78rem;
+        color: #475569;
+    }
+    .icon-picker-trigger .ipt-info small {
+        font-size: 0.72rem;
+        color: #94A3B8;
+    }
+    .icon-picker-trigger .ipt-arrow {
+        color: #94A3B8;
+    }
+    #iconGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+        gap: 8px;
+        max-height: 520px;
+        overflow-y: auto;
+        padding: 4px;
+    }
+    /* Modal body scroll yapmasin, sadece icon grid scroll olsun.
+       Arama input'u grid'in ustunde sabit kalir. */
+    #iconPickerModal .modal-body {
+        overflow: hidden;
+    }
+    .icon-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid #E2E8F0;
+        background: white;
+        border-radius: 10px;
+        padding: 10px 6px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: 120ms;
+        color: #1E293B;
+    }
+    .icon-cell:hover {
+        background: #EFF6FF;
+        border-color: #3B82F6;
+        transform: translateY(-2px);
+    }
+    .icon-cell .ic-label {
+        font-size: 0.65rem;
+        color: #64748B;
+        text-align: center;
+        line-height: 1.1;
+        max-width: 100%;
+        word-break: break-word;
+    }
+    .am-tab-count {
+        display: inline-block;
+        margin-left: 6px;
+        background: #E2E8F0;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+    .nav-tabs .nav-link.active .am-tab-count {
+        background: #3B82F6;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>
+            Olanak Yönetimi
+        </h2>
+    </div>
+
+    @* Section tabs *@
+    <ul class="nav nav-tabs mb-3" id="amenityTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-hotel-btn" data-bs-toggle="tab" data-bs-target="#tab-hotel" type="button" role="tab">
+                <i class="bi bi-stars me-1"></i> Otel Olanakları
+                <span class="am-tab-count">@Model.Amenities.Count</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-room-btn" data-bs-toggle="tab" data-bs-target="#tab-room" type="button" role="tab">
+                <i class="bi bi-ui-checks-grid me-1"></i> Oda Olanakları
+                <span class="am-tab-count">@Model.RoomAmenities.Count</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        @* ================== Otel Olanaklari Tab ================== *@
+        <div class="tab-pane fade show active" id="tab-hotel" role="tabpanel">
+
+            @* Yeni Otel Olanagi Ekle kart *@
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle text-primary me-2"></i>
+                        Yeni Otel Olanağı Ekle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Amenity" asp-action="Create" method="post" class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Olanak Adı</label>
+                            <input name="CreateForm.Name" class="form-control" placeholder="Örn. Havuz" required />
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">İkon</label>
+                            @{
+                                var hotelCreateId = "create-amenity-icon";
+                            }
+                            <input type="hidden" name="CreateForm.Icon" id="@hotelCreateId" value="" />
+                            <button type="button"
+                                    class="icon-picker-trigger"
+                                    data-target="@hotelCreateId"
+                                    data-preview="@hotelCreateId-preview"
+                                    data-label="@hotelCreateId-label"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#iconPickerModal">
+                                <i id="@hotelCreateId-preview" class="bi bi-grid ipt-preview"></i>
+                                <span class="ipt-info">
+                                    <code id="@hotelCreateId-label">İkon seçilmedi</code>
+                                    <small>Görsel listeden seçmek için tıklayın</small>
+                                </span>
+                                <i class="bi bi-chevron-right ipt-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle me-1"></i>Ekle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Liste *@
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul text-primary me-2"></i>
+                        Otel Olanakları
+                    </h5>
+                    <span class="text-muted small">Toplam: <strong>@Model.Amenities.Count</strong></span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Amenities.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 32%">Ad</th>
+                                        <th style="width: 42%">İkon</th>
+                                        <th class="text-end">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var amenity in Model.Amenities.OrderBy(x => x.Name))
+                                    {
+                                        var iconId = $"amenity-icon-{amenity.Id}";
+                                        // Tam class (font family prefix dahil) - mdi/ti/bi otomatik cozulur.
+                                        var currentIconClass = IconCssHelper.Resolve(amenity.Icon, "bi bi-grid");
+
+                                        <tr>
+                                            <td colspan="3" class="p-0 border-0">
+                                                <form asp-controller="Amenity"
+                                                      asp-action="Edit"
+                                                      asp-route-id="@amenity.Id"
+                                                      method="post"
+                                                      class="d-grid align-items-center"
+                                                      style="grid-template-columns: 2fr 2.5fr 240px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #F1F5F9;">
+
+                                                    <input name="Name" value="@amenity.Name" class="form-control" required />
+
+                                                    <div>
+                                                        <input type="hidden" name="Icon" id="@iconId" value="@amenity.Icon" />
+                                                        <button type="button"
+                                                                class="icon-picker-trigger"
+                                                                data-target="@iconId"
+                                                                data-preview="@iconId-preview"
+                                                                data-label="@iconId-label"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#iconPickerModal">
+                                                            <i id="@iconId-preview" class="@currentIconClass ipt-preview"></i>
+                                                            <span class="ipt-info">
+                                                                <code id="@iconId-label">@(string.IsNullOrWhiteSpace(amenity.Icon) ? "İkon seçilmedi" : amenity.Icon)</code>
+                                                                <small>Değiştirmek için tıklayın</small>
+                                                            </span>
+                                                            <i class="bi bi-chevron-right ipt-arrow"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="text-end">
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                            <i class="bi bi-pencil-square"></i> Güncelle
+                                                        </button>
+                                                        <button type="submit"
+                                                                form="delete-amenity-@amenity.Id"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                onclick="return confirm('Bu olanak silinsin mi?');">
+                                                            <i class="bi bi-trash"></i> Sil
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                                <form id="delete-amenity-@amenity.Id"
+                                                      asp-controller="Amenity"
+                                                      asp-action="Delete"
+                                                      asp-route-id="@amenity.Id"
+                                                      method="post"
+                                                      class="d-none"></form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            Henüz otel olanağı bulunmuyor.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ================== Oda Olanaklari Tab ================== *@
+        <div class="tab-pane fade" id="tab-room" role="tabpanel">
+
+            @* Yeni Oda Olanagi Ekle kart *@
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle text-primary me-2"></i>
+                        Yeni Oda Olanağı Ekle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="RoomAmenity" asp-action="Create" method="post" class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Oda Olanağı Adı</label>
+                            <input name="CreateForm.Name" class="form-control" placeholder="Örn. Klima" required />
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">İkon</label>
+                            @{
+                                var roomCreateId = "create-roomamenity-icon";
+                            }
+                            <input type="hidden" name="CreateForm.Icon" id="@roomCreateId" value="" />
+                            <button type="button"
+                                    class="icon-picker-trigger"
+                                    data-target="@roomCreateId"
+                                    data-preview="@roomCreateId-preview"
+                                    data-label="@roomCreateId-label"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#iconPickerModal">
+                                <i id="@roomCreateId-preview" class="bi bi-grid ipt-preview"></i>
+                                <span class="ipt-info">
+                                    <code id="@roomCreateId-label">İkon seçilmedi</code>
+                                    <small>Görsel listeden seçmek için tıklayın</small>
+                                </span>
+                                <i class="bi bi-chevron-right ipt-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle me-1"></i>Ekle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @* Liste *@
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul text-primary me-2"></i>
+                        Oda Olanakları
+                    </h5>
+                    <span class="text-muted small">Toplam: <strong>@Model.RoomAmenities.Count</strong></span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RoomAmenities.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 32%">Ad</th>
+                                        <th style="width: 42%">İkon</th>
+                                        <th class="text-end">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ra in Model.RoomAmenities.OrderBy(x => x.Name))
+                                    {
+                                        var iconId = $"roomamenity-icon-{ra.Id}";
+                                        // Tam class (font family prefix dahil) - mdi/ti/bi otomatik cozulur.
+                                        var currentIconClass = IconCssHelper.Resolve(ra.Icon, "bi bi-grid");
+
+                                        <tr>
+                                            <td colspan="3" class="p-0 border-0">
+                                                <form asp-controller="RoomAmenity"
+                                                      asp-action="Edit"
+                                                      asp-route-id="@ra.Id"
+                                                      method="post"
+                                                      class="d-grid align-items-center"
+                                                      style="grid-template-columns: 2fr 2.5fr 240px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #F1F5F9;">
+
+                                                    <input name="Name" value="@ra.Name" class="form-control" required />
+
+                                                    <div>
+                                                        <input type="hidden" name="Icon" id="@iconId" value="@ra.Icon" />
+                                                        <button type="button"
+                                                                class="icon-picker-trigger"
+                                                                data-target="@iconId"
+                                                                data-preview="@iconId-preview"
+                                                                data-label="@iconId-label"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#iconPickerModal">
+                                                            <i id="@iconId-preview" class="@currentIconClass ipt-preview"></i>
+                                                            <span class="ipt-info">
+                                                                <code id="@iconId-label">@(string.IsNullOrWhiteSpace(ra.Icon) ? "İkon seçilmedi" : ra.Icon)</code>
+                                                                <small>Değiştirmek için tıklayın</small>
+                                                            </span>
+                                                            <i class="bi bi-chevron-right ipt-arrow"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="text-end">
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                            <i class="bi bi-pencil-square"></i> Güncelle
+                                                        </button>
+                                                        <button type="submit"
+                                                                form="delete-roomamenity-@ra.Id"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                onclick="return confirm('Bu oda olanağı silinsin mi?');">
+                                                            <i class="bi bi-trash"></i> Sil
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                                <form id="delete-roomamenity-@ra.Id"
+                                                      asp-controller="RoomAmenity"
+                                                      asp-action="Delete"
+                                                      asp-route-id="@ra.Id"
+                                                      method="post"
+                                                      class="d-none"></form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            Henüz oda olanağı bulunmuyor.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ================== Icon Picker Modal ================== *@
+<div class="modal fade" id="iconPickerModal" tabindex="-1" aria-labelledby="iconPickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="iconPickerModalLabel">
+                    <i class="bi bi-stars me-2"></i> İkon Seç
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="iconSearch" class="form-control mb-3" placeholder="İkon ara (örn: havuz, kahve, wi-fi, klima...)" autocomplete="off" />
+                <div id="iconGrid">
+                    @foreach (var icon in iconLibrary)
+                    {
+                        <button type="button"
+                                class="icon-cell"
+                                data-icon="@icon.Class"
+                                data-label="@icon.Label"
+                                title="@icon.Label (@icon.Class)">
+                            <i class="@IconCssHelper.Resolve(icon.Class)"></i>
+                            <span class="ic-label">@icon.Label</span>
+                        </button>
+                    }
+                </div>
+                <div id="iconEmpty" class="text-center text-muted py-3" style="display:none;">
+                    <i class="bi bi-search me-2"></i>Aramanızla eşleşen ikon bulunamadı.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Hangi form'un ikon alanina yazacagimizi takip eden state.
+        // Modal acilirken trigger butonundan data-* attribute'larini alir.
+        (function () {
+            let activeTarget = null;   // hidden input id
+            let activePreview = null;  // <i> preview id
+            let activeLabel = null;    // <code> label id
+
+            // Trigger butonlari modal acilis aninda kim oldugunu sakla.
+            document.querySelectorAll('.icon-picker-trigger').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    activeTarget = btn.dataset.target;
+                    activePreview = btn.dataset.preview;
+                    activeLabel = btn.dataset.label;
+
+                    // Modal her acildiginda arama kutusunu sifirla ve tum ikonlari goster.
+                    const search = document.getElementById('iconSearch');
+                    if (search) {
+                        search.value = '';
+                        filterIcons('');
+                        setTimeout(function () { search.focus(); }, 200);
+                    }
+                });
+            });
+
+            // Arama input'undaki yazi degisince ikon kafesini filtrele.
+            function filterIcons(query) {
+                const q = (query || '').toLowerCase().trim();
+                let visibleCount = 0;
+                document.querySelectorAll('#iconGrid .icon-cell').forEach(function (cell) {
+                    const label = (cell.dataset.label || '').toLowerCase();
+                    const cls = (cell.dataset.icon || '').toLowerCase();
+                    const match = !q || label.includes(q) || cls.includes(q);
+                    cell.style.display = match ? '' : 'none';
+                    if (match) visibleCount++;
+                });
+                document.getElementById('iconEmpty').style.display = visibleCount === 0 ? '' : 'none';
+            }
+
+            const searchInput = document.getElementById('iconSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) { filterIcons(e.target.value); });
+            }
+
+            // Icon class adina gore font family prefix'ini cikar (bi/mdi/ti destegi).
+            // "bi-water"  -> "bi bi-water"
+            // "mdi-pizza" -> "mdi mdi-pizza"
+            // "ti-bed"    -> "ti ti-bed"
+            function buildFullIconClass(iconClass) {
+                if (!iconClass) return 'bi bi-grid';
+                if (iconClass.startsWith('mdi-')) return 'mdi ' + iconClass;
+                if (iconClass.startsWith('ti-')) return 'ti ' + iconClass;
+                if (iconClass.startsWith('bi-')) return 'bi ' + iconClass;
+                return 'bi bi-' + iconClass;
+            }
+
+            // Bir ikon hucresine tiklandiginda secimi aktif form'a yaz, modal'i kapat.
+            document.querySelectorAll('#iconGrid .icon-cell').forEach(function (cell) {
+                cell.addEventListener('click', function () {
+                    if (!activeTarget) return;
+
+                    const iconClass = cell.dataset.icon;
+                    const iconLabel = cell.dataset.label;
+
+                    // Hidden input'a sinif adini yaz (bi-water veya mdi-pizza gibi).
+                    const targetInput = document.getElementById(activeTarget);
+                    if (targetInput) targetInput.value = iconClass;
+
+                    // Preview ikonu guncelle (font family prefix dahil tam class).
+                    const previewEl = document.getElementById(activePreview);
+                    if (previewEl) previewEl.className = buildFullIconClass(iconClass) + ' ipt-preview';
+
+                    // Etiket (kod yazisi) guncelle.
+                    const labelEl = document.getElementById(activeLabel);
+                    if (labelEl) labelEl.textContent = iconClass;
+
+                    // Modal'i kapat.
+                    const modalEl = document.getElementById('iconPickerModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                });
+            });
+        })();
+    </script>
+}

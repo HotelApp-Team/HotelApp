@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace HotelApp.Domain.Entities;
@@ -19,9 +19,18 @@ public partial class HotelRoom
 
     public bool IsActive { get; set; }
 
+    // Odanin manzara secimi (Deniz, Sehir vb.). NULL ise manzara belirtilmemis.
+    public int? RoomViewId { get; set; }
+
     public virtual Hotel Hotel { get; set; } = null!;
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
+    public virtual ICollection<RoomAmenity> RoomAmenities { get; set; } = new List<RoomAmenity>();
+
     public virtual RoomType RoomType { get; set; } = null!;
+
+    // Manzara navigation property'si. NULL olabilir (eski kayitlar veya
+    // admin manzara secmemis ise).
+    public virtual RoomView? RoomView { get; set; }
 }

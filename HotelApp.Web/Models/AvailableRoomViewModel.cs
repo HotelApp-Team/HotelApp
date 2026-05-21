@@ -1,4 +1,4 @@
-﻿namespace HotelApp.Web.Models
+namespace HotelApp.Web.Models
 {
     public class AvailableRoomViewModel
     {
@@ -13,5 +13,12 @@
         public int TotalRooms { get; set; }
         public int ReservedCount { get; set; }
         public int AvailableRooms { get; set; }
+        public bool IsActive { get; set; }
+
+        // Manzara bilgisi API'den gelir (NULL olabilir).
+        public string? RoomViewName { get; set; }
+        public string? RoomViewIcon { get; set; }
+
+        public List<RoomAmenityViewModel> RoomAmenities { get; set; } = new();
     }
 }
