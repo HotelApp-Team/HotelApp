@@ -40,7 +40,8 @@ namespace HotelApp.API.Controllers
                 RoomTypeId = request.RoomTypeId,
                 PricePerNight = request.PricePerNight,
                 ExtraGuestPricePerNight = request.ExtraGuestPricePerNight,
-                TotalRooms = request.TotalRooms
+                TotalRooms = request.TotalRooms,
+                RoomViewId = request.RoomViewId
             };
 
             await _service.AddRoomsAsync(dto);
@@ -86,7 +87,8 @@ namespace HotelApp.API.Controllers
                 PricePerNight = request.PricePerNight,
                 ExtraGuestPricePerNight = request.ExtraGuestPricePerNight,
                 TotalRooms = request.TotalRooms,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                RoomViewId = request.RoomViewId
             };
 
             await _service.UpdateRoomsAsync(dto);

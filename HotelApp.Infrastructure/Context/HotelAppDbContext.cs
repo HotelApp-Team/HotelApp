@@ -34,6 +34,8 @@ public partial class HotelAppDbContext : DbContext
 
     public virtual DbSet<RoomType> RoomTypes { get; set; }
 
+    public virtual DbSet<RoomView> RoomViews { get; set; }
+
     public virtual DbSet<RoomAmenity> RoomAmenities { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -115,7 +117,11 @@ public partial class HotelAppDbContext : DbContext
 
             entity.HasIndex(e => e.RoomTypeId, "IX_HotelRooms_RoomTypeId");
 
-            entity.HasIndex(e => new { e.HotelId, e.RoomTypeId }, "UQ_HotelRooms").IsUnique();
+            entity.HasIndex(e => e.RoomViewId, "IX_HotelRooms_RoomViewId");
+
+            // Unique constraint manzara dahil uclu kombinasyon: ayni otelde ayni
+            // oda tipinden farkli manzaralarla birden cok kayit acilabilsin.
+            entity.HasIndex(e => new { e.HotelId, e.RoomTypeId, e.RoomViewId }, "UQ_HotelRooms_HotelType_View").IsUnique();
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
@@ -132,6 +138,13 @@ public partial class HotelAppDbContext : DbContext
                 .HasForeignKey(d => d.RoomTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HotelRooms_RoomTypes");
+
+            // RoomView iliskisi: NULL'a izin verir, RoomView silinirse oda silinmez
+            // sadece FK NULL'a duser (SET NULL).
+            entity.HasOne(d => d.RoomView).WithMany(p => p.HotelRooms)
+                .HasForeignKey(d => d.RoomViewId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_HotelRooms_RoomViews");
 
             entity.HasMany(d => d.RoomAmenities).WithMany(p => p.HotelRooms)
                 .UsingEntity<Dictionary<string, object>>(
@@ -260,6 +273,18 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<RoomView>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_RoomViews");
+
+            entity.HasIndex(e => e.Name, "UQ_RoomViews_Name").IsUnique();
+
+            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07AF05B875");
@@ -321,6 +346,8 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.HotelName).HasMaxLength(200);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.RoomTypeName).HasMaxLength(100);
+            entity.Property(e => e.RoomViewName).HasMaxLength(50);
+            entity.Property(e => e.RoomViewIcon).HasMaxLength(50);
         });
 
         modelBuilder.Entity<VwReservationDetail>(entity =>

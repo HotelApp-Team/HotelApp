@@ -52,6 +52,7 @@ public class AdminHotelFormViewModel
     public List<AdminAmenityItemViewModel> AllAmenities { get; set; } = new();
     public List<int> SelectedAmenityIds { get; set; } = new();
     public List<RoomTypeAdminViewModel> RoomTypes { get; set; } = new();
+    public List<RoomViewAdminViewModel> RoomViews { get; set; } = new();
     public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
     public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
 }
@@ -105,4 +106,7 @@ public class AdminHotelRoomFormViewModel
 
     [Range(1, int.MaxValue)]
     public int TotalRooms { get; set; }
+
+    // Manzara opsiyoneldir; admin bos birakirsa NULL kalir.
+    public int? RoomViewId { get; set; }
 }

@@ -30,6 +30,12 @@ namespace HotelApp.Domain.DTOs
 
         public string HotelName { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;
+
+        // Manzara bilgisi (NULL olabilir; manzara secilmemis odalarda bos).
+        public int? RoomViewId { get; set; }
+        public string? RoomViewName { get; set; }
+        public string? RoomViewIcon { get; set; }
+
         public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
     }
 
@@ -44,6 +50,12 @@ namespace HotelApp.Domain.DTOs
         public bool IsActive { get; set; }
         public string HotelName { get; set; } = string.Empty;  // düzeltildi
         public string RoomTypeName { get; set; } = string.Empty;
+
+        // Manzara bilgisi (NULL olabilir).
+        public int? RoomViewId { get; set; }
+        public string? RoomViewName { get; set; }
+        public string? RoomViewIcon { get; set; }
+
         public int ReservationCount { get; set; }
         public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
     }
@@ -68,6 +80,9 @@ namespace HotelApp.Domain.DTOs
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
+
+        // Manzara opsiyoneldir; admin bos birakirsa NULL kalir.
+        public int? RoomViewId { get; set; }
     }
 
     public class CreateHotelRoomRequestDto
@@ -86,6 +101,9 @@ namespace HotelApp.Domain.DTOs
         [Required(ErrorMessage = "Oda sayısı zorunludur.")]
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
+
+        // Manzara opsiyoneldir.
+        public int? RoomViewId { get; set; }
     }
 
     public class UpdateHotelRoomDto
@@ -112,6 +130,9 @@ namespace HotelApp.Domain.DTOs
         public int TotalRooms { get; set; }
 
         public bool IsActive { get; set; }
+
+        // Manzara opsiyoneldir; admin secimini degistirip kaydedebilir.
+        public int? RoomViewId { get; set; }
     }
 
     public class UpdateHotelRoomRequestDto
@@ -132,6 +153,9 @@ namespace HotelApp.Domain.DTOs
         public int TotalRooms { get; set; }
 
         public bool IsActive { get; set; }
+
+        // Manzara opsiyoneldir.
+        public int? RoomViewId { get; set; }
     }
 
 }

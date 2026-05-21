@@ -1,11 +1,13 @@
-﻿using HotelApp.Web.Filters;
-using HotelApp.Web.Helpers;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers;
 
+// Otel olanaklari icin CRUD action'lari. Sayfa render'i artik
+// AmenityMgmtController/Index uzerinden tek sayfada yapiliyor.
+// Bu controller sadece form post hedefi olarak duruyor.
 [Route("Admin/Amenities")]
 [ServiceFilter(typeof(AdminFilter))]
 public class AmenityController : Controller
@@ -18,21 +20,10 @@ public class AmenityController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var response = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
-
-        var model = new AdminAmenityPageViewModel
-        {
-            Amenities = response.Success ? response.Data ?? new() : new(),
-            CreateForm = new AdminAmenityFormViewModel(),
-            EditForm = new AdminAmenityFormViewModel()
-        };
-
-        if (!response.Success)
-            TempData["ErrorMessage"] = response.Message ?? "Olanak listesi alınamadı.";
-
-        return View("~/Views/Admin/Amenities.cshtml", model);
+        // Eski URL'i hala yazan biri olursa yeni birlesik sayfaya gonder.
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Create")]
@@ -41,9 +32,8 @@ public class AmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var pageModel = await BuildAmenityPageModelAsync();
-            pageModel.CreateForm = model;
-            return View("~/Views/Admin/Amenities.cshtml", pageModel);
+            TempData["ErrorMessage"] = "Olanak bilgileri eksik veya hatalı.";
+            return RedirectToAction("Index", "AmenityMgmt");
         }
 
         var response = await _apiService.PostAsync<object>("amenities", new
@@ -52,16 +42,10 @@ public class AmenityController : Controller
             model.Icon
         });
 
-        if (!response.Success)
-        {
-            var pageModel = await BuildAmenityPageModelAsync();
-            pageModel.CreateForm = model;
-            TempData["ErrorMessage"] = response.Message ?? "Olanak eklenemedi.";
-            return View("~/Views/Admin/Amenities.cshtml", pageModel);
-        }
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Olanak başarıyla eklendi." : response.Message ?? "Olanak eklenemedi.";
 
-        TempData["SuccessMessage"] = "Olanak başarıyla eklendi.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Edit/{id}")]
@@ -70,9 +54,8 @@ public class AmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var pageModel = await BuildAmenityPageModelAsync();
-            pageModel.EditForm = model;
-            return View("~/Views/Admin/Amenities.cshtml", pageModel);
+            TempData["ErrorMessage"] = "Olanak bilgileri eksik veya hatalı.";
+            return RedirectToAction("Index", "AmenityMgmt");
         }
 
         var response = await _apiService.PutAsync($"amenities/{id}", new
@@ -82,16 +65,10 @@ public class AmenityController : Controller
             model.Icon
         });
 
-        if (!response.Success)
-        {
-            var pageModel = await BuildAmenityPageModelAsync();
-            pageModel.EditForm = model;
-            TempData["ErrorMessage"] = response.Message ?? "Olanak güncellenemedi.";
-            return View("~/Views/Admin/Amenities.cshtml", pageModel);
-        }
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Olanak başarıyla güncellendi." : response.Message ?? "Olanak güncellenemedi.";
 
-        TempData["SuccessMessage"] = "Olanak başarıyla güncellendi.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Delete/{id}")]
@@ -103,18 +80,6 @@ public class AmenityController : Controller
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
             response.Success ? "Olanak başarıyla silindi." : response.Message ?? "Olanak silinemedi.";
 
-        return RedirectToAction(nameof(Index));
-    }
-
-    private async Task<AdminAmenityPageViewModel> BuildAmenityPageModelAsync()
-    {
-        var response = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
-
-        return new AdminAmenityPageViewModel
-        {
-            Amenities = response.Success ? response.Data ?? new() : new(),
-            CreateForm = new AdminAmenityFormViewModel(),
-            EditForm = new AdminAmenityFormViewModel()
-        };
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 }

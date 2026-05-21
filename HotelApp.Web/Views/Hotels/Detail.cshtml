@@ -235,6 +235,34 @@
 
         <!-- ================= ODALAR ================= -->
         <section id="rooms-section" class="hd-section">
+
+            @* Oda siralama dropdown'i icin minimal stil. Sadece bu sayfaya ozel. *@
+            <style>
+                .hd-section-head {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                }
+                .hd-rooms-sort {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .hd-sort-label {
+                    font-size: 0.9rem;
+                    color: #475569;
+                    font-weight: 500;
+                    margin: 0;
+                    white-space: nowrap;
+                }
+                .hd-sort-select {
+                    min-width: 220px;
+                    width: auto;
+                }
+            </style>
+
             <div class="hd-section-head">
                 <div>
                     <span class="section-eyebrow">Müsait Odalar</span>
@@ -250,6 +278,24 @@
                         }
                     </h3>
                 </div>
+
+                @* En az 2 oda varsa siralama dropdown'u goster (tek oda varsa anlamsiz). *@
+                @if (Model.Rooms != null && Model.Rooms.Count() > 1)
+                {
+                    <div class="hd-rooms-sort">
+                        <label for="roomSort" class="hd-sort-label">
+                            <i class="bi bi-sort-down"></i> Sırala:
+                        </label>
+                        <select id="roomSort" class="form-select form-select-sm hd-sort-select">
+                            <option value="default">Önerilen</option>
+                            <option value="price-asc">Ucuzdan Pahalıya</option>
+                            <option value="price-desc">Pahalıdan Ucuza</option>
+                            <option value="capacity-asc">Kapasite: Az → Çok</option>
+                            <option value="capacity-desc">Kapasite: Çok → Az</option>
+                            <option value="name-asc">Oda Tipi: A → Z</option>
+                        </select>
+                    </div>
+                }
             </div>
 
             @if (Model.Rooms != null && Model.Rooms.Any())
@@ -500,14 +546,8 @@
                     <ul class="hd-amenities-list">
                         @foreach (var a in Model.Amenities)
                         {
-                            var iconClass = "bi bi-check-circle-fill";
-
-                            if (!string.IsNullOrWhiteSpace(a.Icon))
-                            {
-                                iconClass = a.Icon.StartsWith("bi ")
-                                    ? a.Icon
-                                    : $"bi bi-{a.Icon}";
-                            }
+                            // Icon class prefix'i IconCssHelper ile cozulur (bi/mdi/ti destegi).
+                            var iconClass = IconCssHelper.Resolve(a.Icon, "bi bi-check-circle-fill");
 
                             <li>
                                 <i class="@iconClass"></i>
@@ -528,6 +568,53 @@
 
 @section Scripts {
     <script>
+        // === Oda siralama (client-side) ===
+        // Dropdown'a tiklayinca hd-rooms container'i icindeki kartlari
+        // data-* attribute'larina gore yeniden dizer. Sayfa yenilenmez.
+        (function () {
+            const sortSelect = document.getElementById('roomSort');
+            const container = document.querySelector('.hd-rooms');
+            if (!sortSelect || !container) return;
+
+            // Orijinal siralamayi sakla ki "Onerilen" secimi geri donebilsin.
+            const originalOrder = Array.from(container.querySelectorAll('.hd-room-wrap'));
+
+            sortSelect.addEventListener('change', function () {
+                const cards = Array.from(container.querySelectorAll('.hd-room-wrap'));
+                const value = sortSelect.value;
+                let sorted;
+
+                switch (value) {
+                    case 'price-asc':
+                        sorted = cards.slice().sort((a, b) =>
+                            parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+                        break;
+                    case 'price-desc':
+                        sorted = cards.slice().sort((a, b) =>
+                            parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+                        break;
+                    case 'capacity-asc':
+                        sorted = cards.slice().sort((a, b) =>
+                            parseInt(a.dataset.capacity) - parseInt(b.dataset.capacity));
+                        break;
+                    case 'capacity-desc':
+                        sorted = cards.slice().sort((a, b) =>
+                            parseInt(b.dataset.capacity) - parseInt(a.dataset.capacity));
+                        break;
+                    case 'name-asc':
+                        sorted = cards.slice().sort((a, b) =>
+                            (a.dataset.name || '').localeCompare(b.dataset.name || '', 'tr'));
+                        break;
+                    default:
+                        sorted = originalOrder;
+                        break;
+                }
+
+                // appendChild zaten varolan elementi yeni siraya tasir (clone gerekmez).
+                sorted.forEach(card => container.appendChild(card));
+            });
+        })();
+
         (function () {
             // Galeri modal — gallery item tikladiginda dogru slayta git
             const galleryModal = document.getElementById('galleryModal');

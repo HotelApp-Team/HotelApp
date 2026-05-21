@@ -1,0 +1,983 @@
+/* ===================================================================
+   HasTur — admin-hotel.css
+   Otel Ekle / Düzenle ekranina ozel UI stilleri.
+   admin.css'i bozmaz, sadece bu sayfadaki "hp-" prefix'li class'lari
+   etkiler. wwwroot/css/admin-hotel.css olarak kaydedip
+   HotelEdit.cshtml icinden link verilir.
+   =================================================================== */
+
+/* ============================================================
+   SAYFA BASLIGI
+   ============================================================ */
+.hp-page-head {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--admin-shadow);
+}
+
+.hp-breadcrumb {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+    .hp-breadcrumb a {
+        color: var(--text-secondary);
+        text-decoration: none;
+    }
+
+        .hp-breadcrumb a:hover {
+            color: var(--primary);
+        }
+
+.hp-bc-sep {
+    opacity: 0.5;
+}
+
+.hp-bc-current {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.hp-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.hp-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    font-size: 1.55rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .hp-title i {
+        color: var(--primary);
+    }
+
+.hp-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    margin: 6px 0 0;
+    max-width: 60ch;
+}
+
+.hp-meta-line {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+    .hp-meta-line span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+.hp-head-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   SECTION TABS (Genel · Görseller · Odalar · Olanaklar)
+   ============================================================ */
+.hp-section-tabs {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 6px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 16px;
+    box-shadow: var(--admin-shadow);
+}
+
+.hp-tab {
+    background: transparent;
+    border: 0;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+}
+
+    .hp-tab:hover {
+        background: var(--admin-bg);
+        color: var(--text-main);
+    }
+
+    .hp-tab.active {
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+.hp-tab-count {
+    background: #FFF;
+    color: var(--text-secondary);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    border: 1px solid var(--border);
+    font-weight: 600;
+}
+
+.hp-tab.active .hp-tab-count {
+    background: var(--primary);
+    color: #FFF;
+    border-color: var(--primary);
+}
+
+/* ============================================================
+   LAYOUT (sol form + sag yan panel)
+   ============================================================ */
+.hp-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.hp-main {
+    min-width: 0;
+}
+
+.hp-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 80px;
+}
+
+@media (max-width: 1280px) {
+    .hp-split {
+        grid-template-columns: 1fr;
+    }
+
+    .hp-side {
+        position: static;
+    }
+}
+
+/* ============================================================
+   CARD (form bolumleri)
+   ============================================================ */
+.hp-card {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.hp-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.hp-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.hp-card-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.02rem;
+    margin: 0;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.hp-card-count {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-left: 4px;
+}
+
+.hp-card-desc {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin: 4px 0 0;
+}
+
+.hp-card-body {
+    padding: 20px 22px 22px;
+}
+
+/* ============================================================
+   HELP / ADORNMENT
+   ============================================================ */
+.hp-help {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .hp-help i {
+        font-size: 0.8rem;
+    }
+
+/* Input affix (sol/sag icon veya birim) */
+.hp-affix {
+    position: relative;
+}
+
+.hp-affix-left,
+.hp-affix-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.hp-affix-left {
+    left: 12px;
+}
+
+.hp-affix-right {
+    right: 12px;
+}
+
+.hp-has-left {
+    padding-left: 34px !important;
+}
+
+.hp-has-right {
+    padding-right: 32px !important;
+}
+
+.hp-coord-helper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--primary-soft);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--primary);
+}
+
+    .hp-coord-helper i {
+        font-size: 1rem;
+    }
+
+/* ============================================================
+   YILDIZ SECICI
+   ============================================================ */
+.hp-star-pick {
+    display: inline-flex;
+    gap: 0;
+    margin-bottom: 4px;
+}
+
+.hp-star {
+    width: 36px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #CBD5E1;
+    cursor: pointer;
+    font-size: 1.05rem;
+    border: 1px solid var(--border);
+    background: #FFF;
+    transition: all 0.12s;
+}
+
+    .hp-star:first-child {
+        border-radius: var(--admin-radius-sm) 0 0 var(--admin-radius-sm);
+    }
+
+    .hp-star:last-child {
+        border-radius: 0 var(--admin-radius-sm) var(--admin-radius-sm) 0;
+    }
+
+    .hp-star + .hp-star {
+        border-left: 0;
+    }
+
+    .hp-star.on {
+        color: #F59E0B;
+        background: #FFFBEB;
+    }
+
+    .hp-star:hover {
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+/* Gercek number input — gorsel olarak gizli ama validasyon icin gerekli */
+.hp-star-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================================
+   YAYIN DURUMU SWITCH SATIRI
+   ============================================================ */
+.hp-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius-sm);
+    background: #FAFCFE;
+}
+
+.hp-switch-text strong {
+    display: block;
+    font-size: 0.92rem;
+    color: var(--text-main);
+}
+
+.hp-switch-text small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+/* Buyuk form-switch */
+.hp-switch-control .form-check-input {
+    width: 44px !important;
+    height: 24px !important;
+    margin-top: 0 !important;
+    cursor: pointer;
+}
+
+    .hp-switch-control .form-check-input:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+/* ============================================================
+   STICKY SAVE BAR
+   ============================================================ */
+.hp-save-bar {
+    position: sticky;
+    bottom: 16px;
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(15, 23, 55, 0.12);
+    margin-top: 18px;
+    margin-bottom: 16px;
+    z-index: 10;
+}
+
+.hp-sb-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.hp-sb-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #94A3B8;
+}
+
+.hp-sb-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ============================================================
+   COMPOSER (yeni gorsel / yeni oda formu sarmali)
+   ============================================================ */
+.hp-composer {
+    background: linear-gradient(180deg, #FAFCFE, #FFF);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--admin-radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.hp-room-composer {
+    background: linear-gradient(180deg, #FAFCFE, #FFF);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--admin-radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    transition: border-color 0.15s;
+}
+
+    .hp-room-composer:hover {
+        border-color: var(--primary);
+    }
+
+.hp-rc-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+    .hp-rc-head i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .hp-rc-head strong {
+        font-size: 0.92rem;
+    }
+
+/* ============================================================
+   GORSEL GRID
+   ============================================================ */
+.hp-img-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.hp-img-tile {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius-sm);
+    overflow: hidden;
+    position: relative;
+}
+
+.hp-img-thumb {
+    aspect-ratio: 4 / 3;
+    background-color: #F1F5F9;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+}
+
+.hp-img-main-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #FFF;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .hp-img-main-badge i {
+        color: #F59E0B;
+    }
+
+.hp-img-form {
+    padding: 10px 10px 4px;
+    border-bottom: 1px dashed #F1F5F9;
+}
+
+.hp-img-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.hp-img-field {
+    flex: 1;
+}
+
+    .hp-img-field .form-label {
+        font-size: 0.68rem !important;
+        margin-bottom: 4px !important;
+    }
+
+.hp-img-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.hp-img-delete {
+    padding: 8px 10px 10px;
+}
+
+/* ============================================================
+   ODA KARTLARI
+   ============================================================ */
+.hp-room-card {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--admin-shadow);
+}
+
+.hp-room-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.hp-room-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+    .hp-room-icon.passive {
+        background: #FEF2F2;
+        color: #B91C1C;
+    }
+
+.hp-room-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.hp-room-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.hp-room-sub {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+    .hp-room-sub span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+.hp-sep {
+    color: #CBD5E1;
+}
+
+.hp-room-status {
+    flex-shrink: 0;
+}
+
+.hp-room-form {
+    padding: 12px 0;
+    border-top: 1px dashed var(--border);
+}
+
+/* ============================================================
+   CHIP GROUP (Olanaklar)
+   ============================================================ */
+.hp-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.hp-chip {
+    display: inline-flex;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.hp-chip-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.hp-chip-body {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #FFF;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    font-weight: 500;
+    transition: all 0.12s;
+}
+
+.hp-chip:hover .hp-chip-body {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.hp-chip-check {
+    display: none;
+    font-size: 0.9rem;
+}
+
+.hp-chip-input:checked + .hp-chip-body {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+    .hp-chip-input:checked + .hp-chip-body .hp-chip-check {
+        display: inline-block;
+    }
+
+.hp-chip-input:focus-visible + .hp-chip-body {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Oda olanak bolumu (oda karti icinde) */
+.hp-room-amenities {
+    border-top: 1px dashed var(--border);
+    margin-top: 12px;
+    padding-top: 14px;
+}
+
+.hp-ra-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hp-ra-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   ATANMIS OLANAKLAR (TEK TEK KALDIRMA)
+   ============================================================ */
+.hp-removable {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+}
+
+.hp-removable-title {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .hp-removable-title i {
+        color: var(--primary);
+    }
+
+.hp-removable-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.hp-removable-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 6px 12px;
+    border: 1px solid #FECACA;
+    background: #FFF;
+    color: #991B1B;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+    .hp-removable-chip:hover {
+        background: #FEF2F2;
+        border-color: #DC2626;
+    }
+
+    .hp-removable-chip i {
+        font-size: 0.95rem;
+        margin-left: 2px;
+    }
+
+/* ============================================================
+   YAN PANEL (Side Card)
+   ============================================================ */
+.hp-side-card {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 18px;
+    box-shadow: var(--admin-shadow);
+}
+
+    .hp-side-card h6 {
+        font-family: 'IBM Plex Serif', Georgia, serif;
+        margin: 0 0 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .hp-side-card h6 i {
+            color: var(--primary);
+        }
+
+.hp-tip-list {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+    .hp-tip-list li {
+        display: flex;
+        gap: 8px;
+        padding: 6px 0;
+        align-items: flex-start;
+    }
+
+        .hp-tip-list li i {
+            color: var(--primary);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+/* Kurulum adimlari */
+.hp-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hp-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.83rem;
+}
+
+.hp-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hp-step.current {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.hp-step.locked {
+    color: #94A3B8;
+}
+
+    .hp-step.locked .hp-step-num {
+        background: #F1F5F9;
+        color: #94A3B8;
+    }
+
+/* Tehlikeli bolge */
+.hp-side-danger {
+    background: #FEF2F2 !important;
+    border-color: #FECACA !important;
+}
+
+    .hp-side-danger h6 {
+        color: #B91C1C !important;
+    }
+
+        .hp-side-danger h6 i {
+            color: #B91C1C !important;
+        }
+
+.hp-side-danger-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+}
+
+.hp-btn-danger {
+    background: #FFF !important;
+    border: 1px solid #FECACA !important;
+    color: #B91C1C !important;
+    font-weight: 600;
+}
+
+    .hp-btn-danger:hover {
+        background: #FEF2F2 !important;
+        border-color: #DC2626 !important;
+    }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.hp-empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--text-secondary);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--admin-radius);
+    background: #FAFCFE;
+}
+
+    .hp-empty i {
+        font-size: 2.2rem;
+        opacity: 0.5;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .hp-empty p {
+        margin: 0 0 4px;
+        font-size: 0.9rem;
+    }
+
+        .hp-empty p.small {
+            font-size: 0.8rem;
+        }
+
+/* ============================================================
+   STATUS PILL (admin.css'te tanimli ama burda da kullanilir)
+   admin.css'tekilerin sadece icerikten kaynakli scope'una guvenmemek icin
+   bu sayfada da garantili calismasi adina tanimli birakildi.
+   ============================================================ */
+.hp-page-head .status-pill,
+.hp-room-head .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+    .hp-page-head .status-pill.active,
+    .hp-room-head .status-pill.active {
+        background: #F0FDF4;
+        color: #15803D;
+        border: 1px solid #BBF7D0;
+    }
+
+    .hp-page-head .status-pill.passive,
+    .hp-room-head .status-pill.passive {
+        background: #FEF2F2;
+        color: #B91C1C;
+        border: 1px solid #FECACA;
+    }
+
+    .hp-page-head .status-pill .status-dot,
+    .hp-room-head .status-pill .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .hp-page-head .status-pill.active .status-dot,
+    .hp-room-head .status-pill.active .status-dot {
+        background: #16A34A;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+    }
+
+    .hp-page-head .status-pill.passive .status-dot,
+    .hp-room-head .status-pill.passive .status-dot {
+        background: #DC2626;
+    }
