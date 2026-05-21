@@ -99,11 +99,13 @@ internal static class Sprint5CardGuards
     }
 
     // S5-03 Admin olanak yönetimi ekranı başladıysa ilgili contract testleri aktif olur.
+    // Not: AmenityMgmtController/AmenityMgmt.cshtml refactor sonrasi eklendi
+    // (eski Amenities.cshtml ve RoomAmenities.cshtml tek sayfada birlestirildi).
     public static bool S503_AmenityUiImplemented()
     {
-        return CandidateAdminControllerSources("AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs")
+        return CandidateAdminControllerSources("AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs", "AmenityMgmtController.cs")
                 .Any(source => ContainsAny(source, "Amenity", "Amenities", "api/amenities", "DeleteAsync"))
-            || CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"))
+            || CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml")
                 .Any(source => ContainsAny(source, "Olanak", "Amenity", "Amenities", "Icon"));
     }
 

@@ -25,6 +25,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Reservations)
                 .Include(x => x.RoomAmenities)
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -36,6 +37,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Reservations)
                 .Include(x => x.RoomAmenities)
                 .ToListAsync();
@@ -45,6 +47,7 @@ namespace HotelApp.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomAmenities)
                 .Where(x => x.RoomType.MaxGuests >= maxGuests)
@@ -55,6 +58,7 @@ namespace HotelApp.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomAmenities)
                 .Where(x => x.RoomType.Name.Contains(name))
@@ -67,6 +71,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Reservations)
                 .Include(x => x.RoomAmenities)
                 .ToListAsync();
@@ -78,6 +83,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Where(x => x.HotelId == hotelId)
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Reservations)
                 .Include(x => x.RoomAmenities)
                 .ToListAsync();
@@ -89,6 +95,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .Where(x => x.RoomTypeId == roomTypeId)
                 .Include(x => x.Hotel)
                 .Include(x => x.RoomType)
+                .Include(x => x.RoomView)
                 .Include(x => x.Reservations)
                 .Include(x => x.RoomAmenities)
                 .ToListAsync();

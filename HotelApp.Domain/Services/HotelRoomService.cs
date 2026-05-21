@@ -17,10 +17,15 @@ namespace HotelApp.Domain.Services
             var roomType = await _unitOfWork.RoomTypeRepository.GetByIdAsync(dto.RoomTypeId);
             if (roomType == null) throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
+            // Manzara da unique key'in parcasi: ayni otel + ayni oda tipi + ayni
+            // manzara kombinasyonunda tekrar kayit acilamaz. Suit-Deniz varken
+            // Suit-Sehir eklenebilir cunku manzaralar farkli.
             var existing = await _unitOfWork.HotelRoomRepository
-                .FindAsync(x => x.HotelId == dto.HotelId && x.RoomTypeId == dto.RoomTypeId);
+                .FindAsync(x => x.HotelId == dto.HotelId
+                             && x.RoomTypeId == dto.RoomTypeId
+                             && x.RoomViewId == dto.RoomViewId);
 
-            if (existing != null) throw new InvalidOperationException("Aynı otel ve oda tipi için zaten kayıt mevcut.");
+            if (existing != null) throw new InvalidOperationException("Aynı otel, oda tipi ve manzara için zaten kayıt mevcut.");
 
             var entity = new HotelRoom
             {
@@ -29,6 +34,7 @@ namespace HotelApp.Domain.Services
                 PricePerNight = dto.PricePerNight,
                 ExtraGuestPricePerNight = dto.ExtraGuestPricePerNight,
                 TotalRooms = dto.TotalRooms,
+                RoomViewId = dto.RoomViewId,
                 IsActive = true
             };
 
@@ -63,6 +69,9 @@ namespace HotelApp.Domain.Services
                 IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomViewId = x.RoomViewId,
+                RoomViewName = x.RoomView?.Name,
+                RoomViewIcon = x.RoomView?.Icon,
                 RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
@@ -89,6 +98,9 @@ namespace HotelApp.Domain.Services
                 IsActive = room.IsActive,
                 HotelName = room.Hotel?.Name ?? string.Empty,
                 RoomTypeName = room.RoomType?.Name ?? string.Empty,
+                RoomViewId = room.RoomViewId,
+                RoomViewName = room.RoomView?.Name,
+                RoomViewIcon = room.RoomView?.Icon,
                 ReservationCount = room.Reservations.Count,
                 RoomAmenities = MapRoomAmenities(room.RoomAmenities)
             };
@@ -110,6 +122,9 @@ namespace HotelApp.Domain.Services
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
                 MaxGuests = x.RoomType?.MaxGuests ?? 0,
+                RoomViewId = x.RoomViewId,
+                RoomViewName = x.RoomView?.Name,
+                RoomViewIcon = x.RoomView?.Icon,
                 RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
@@ -128,6 +143,9 @@ namespace HotelApp.Domain.Services
                 IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomViewId = x.RoomViewId,
+                RoomViewName = x.RoomView?.Name,
+                RoomViewIcon = x.RoomView?.Icon,
                 RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
@@ -146,13 +164,16 @@ namespace HotelApp.Domain.Services
             if (roomType == null)
                 throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
+            // Duplicate kontrolu manzara dahil uclu kombinasyonla yapilir:
+            // ayni otelde ayni oda tipi + ayni manzara baska bir kayitta varsa engelle.
             var duplicate = await _unitOfWork.HotelRoomRepository.FindAsync(x =>
                 x.Id != dto.Id &&
                 x.HotelId == dto.HotelId &&
-                x.RoomTypeId == dto.RoomTypeId);
+                x.RoomTypeId == dto.RoomTypeId &&
+                x.RoomViewId == dto.RoomViewId);
 
             if (duplicate != null)
-                throw new InvalidOperationException("Bu otelde bu oda tipi zaten mevcut.");
+                throw new InvalidOperationException("Bu otelde bu oda tipi ve manzara kombinasyonu zaten mevcut.");
 
             if (entity.Reservations.Any() && entity.TotalRooms != dto.TotalRooms)
                 throw new InvalidOperationException("Rezervasyon varken oda sayısı değiştirilemez.");
@@ -165,6 +186,7 @@ namespace HotelApp.Domain.Services
             entity.PricePerNight = dto.PricePerNight;
             entity.ExtraGuestPricePerNight = dto.ExtraGuestPricePerNight;
             entity.TotalRooms = dto.TotalRooms;
+            entity.RoomViewId = dto.RoomViewId;
             entity.IsActive = dto.IsActive;
 
             _unitOfWork.HotelRoomRepository.Update(entity);

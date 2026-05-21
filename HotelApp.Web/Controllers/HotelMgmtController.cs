@@ -332,7 +332,8 @@ public class HotelMgmtController : Controller
             model.RoomTypeId,
             PricePerNight = pricePerNight,
             ExtraGuestPricePerNight = extraGuestPricePerNight,
-            model.TotalRooms
+            model.TotalRooms,
+            model.RoomViewId
         });
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
@@ -375,7 +376,8 @@ public class HotelMgmtController : Controller
                 PricePerNight = pricePerNight,
                 ExtraGuestPricePerNight = extraGuestPricePerNight,
                 model.TotalRooms,
-                IsActive = isActive
+                IsActive = isActive,
+                model.RoomViewId
             });
 
         TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
@@ -441,6 +443,12 @@ public class HotelMgmtController : Controller
         model.RoomTypes = roomTypeResponse.Success
             ? roomTypeResponse.Data ?? new List<RoomTypeAdminViewModel>()
             : new List<RoomTypeAdminViewModel>();
+
+        // Manzara dropdown'i icin liste. Hata olursa bos dondur ki form acilsin.
+        var roomViewResponse = await _apiService.GetAsync<List<RoomViewAdminViewModel>>("roomviews");
+        model.RoomViews = roomViewResponse.Success
+            ? roomViewResponse.Data ?? new List<RoomViewAdminViewModel>()
+            : new List<RoomViewAdminViewModel>();
 
         if (hotelId > 0)
         {

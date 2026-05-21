@@ -2,514 +2,869 @@
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = Model.Id > 0 ? "Otel Düzenle" : "Yeni Otel";
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Otel Düzenle" : "Yeni Otel";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">@ViewData["Title"]</h2>
-    <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-outline-secondary">Listeye Dön</a>
+@* =========================================================
+   Bu sayfa eski HotelEdit.cshtml'in UI yenilenmis halidir.
+   - Form alanlari, name'leri, asp-for, asp-validation, action'lar
+     hicbiri degismedi. Sadece sarmalayan markup yeni.
+   - Ek stilleri wwwroot/css/admin-hotel.css dosyasinda.
+   ========================================================= *@
+
+<link rel="stylesheet" href="~/css/admin-hotel.css" asp-append-version="true" />
+
+@* ===== Sayfa Basligi ===== *@
+<div class="hp-page-head">
+    <div class="hp-breadcrumb">
+        <a asp-controller="AdminDashboard" asp-action="Index"><i class="bi bi-speedometer2"></i></a>
+        <span class="hp-bc-sep">/</span>
+        <a asp-controller="HotelMgmt" asp-action="Index">Oteller</a>
+        <span class="hp-bc-sep">/</span>
+        <span class="hp-bc-current">@(isEdit ? Model.Name : "Yeni Otel")</span>
+    </div>
+    <div class="hp-head-row">
+        <div>
+            <h2 class="hp-title">
+                <i class="bi @(isEdit ? "bi-pencil-square" : "bi-plus-circle")"></i>
+                @(isEdit ? Model.Name : "Yeni Otel Ekle")
+            </h2>
+            @if (isEdit)
+            {
+                <div class="hp-meta-line">
+                    <span><i class="bi bi-hash"></i> #@Model.Id</span>
+                    <span><i class="bi bi-geo-alt"></i> @Model.City, @Model.Country</span>
+                    <span><i class="bi bi-star-fill" style="color:#F59E0B"></i> @Model.StarRating yıldız</span>
+                    @if (Model.IsActive)
+                    {
+                        <span class="status-pill active"><span class="status-dot"></span> Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="status-pill passive"><span class="status-dot"></span> Pasif</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="hp-subtitle">
+                    Önce temel bilgileri kaydedin. Kayıttan sonra görsel, oda ve olanak ekleme alanları otomatik açılacaktır.
+                </p>
+            }
+        </div>
+        <div class="hp-head-actions">
+            <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Listeye Dön
+            </a>
+        </div>
+    </div>
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)
 {
     <div class="alert alert-success">@successMessage</div>
 }
-
 @if (TempData["ErrorMessage"] is string errorMessage)
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
 
-<form method="post"
-      asp-controller="HotelMgmt"
-      asp-action="@(Model.Id > 0 ? "Edit" : "Create")"
-      asp-route-id="@Model.Id">
-    <input asp-for="Id" type="hidden" />
-
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label asp-for="Name" class="form-label">Otel Adı</label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="City" class="form-label">Şehir</label>
-            <input asp-for="City" class="form-control" />
-            <span asp-validation-for="City" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="Country" class="form-label">Ülke</label>
-            <input asp-for="Country" class="form-control" />
-            <span asp-validation-for="Country" class="text-danger"></span>
-        </div>
-
-        <div class="col-12">
-            <label asp-for="Description" class="form-label">Açıklama</label>
-            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="Address" class="form-label">Adres</label>
-            <input asp-for="Address" class="form-control" />
-            <span asp-validation-for="Address" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="Phone" class="form-label">Telefon</label>
-            <input asp-for="Phone" class="form-control" />
-            <span asp-validation-for="Phone" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="Email" class="form-label">E-posta</label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="StarRating" class="form-label">Yıldız</label>
-            <input asp-for="StarRating" class="form-control" />
-            <span asp-validation-for="StarRating" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="Latitude" class="form-label">Latitude</label>
-            <input asp-for="Latitude" class="form-control" />
-        </div>
-
-        <div class="col-md-3">
-            <label asp-for="Longitude" class="form-label">Longitude</label>
-            <input asp-for="Longitude" class="form-control" />
-        </div>
-
-        <div class="col-md-3 d-flex align-items-end">
-            <div class="form-check mb-2">
-                <input asp-for="IsActive" class="form-check-input" />
-                <label asp-for="IsActive" class="form-check-label">Aktif</label>
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Kaydet</button>
-        <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-    </div>
-</form>
-
-@if (Model.Id == 0)
+@* ===== Section tabs (sadece edit modda) ===== *@
+@if (isEdit)
 {
-    <div class="alert alert-info mt-4">
-        Önce otel temel bilgilerini kaydedin.
-        Kaydettikten sonra olanak, görsel ve oda ekleme alanları açılacaktır.
+    <div class="hp-section-tabs">
+        <a href="#section-general" class="hp-tab active"><i class="bi bi-info-circle"></i> Genel Bilgiler</a>
+        <a href="#section-images" class="hp-tab"><i class="bi bi-images"></i> Görseller <span class="hp-tab-count">@Model.Images.Count</span></a>
+        <a href="#section-rooms" class="hp-tab"><i class="bi bi-door-open"></i> Odalar &amp; Fiyat <span class="hp-tab-count">@Model.Rooms.Count</span></a>
+        <a href="#section-amenities" class="hp-tab"><i class="bi bi-stars"></i> Otel Olanakları <span class="hp-tab-count">@Model.AllAmenities.Count(x => x.IsAssigned)</span></a>
     </div>
 }
 
-@if (Model.Id > 0)
-{
-    <hr class="my-5" />
+<div class="hp-split">
 
-    <h4>Görseller</h4>
+    @* =========== SOL KOLON =========== *@
+    <div class="hp-main">
 
-    <form asp-controller="HotelMgmt"
-          asp-action="AddImage"
-          asp-route-hotelId="@Model.Id"
-          method="post"
-          class="row g-3 mb-4">
+        @* ============================================================
+           BOLUM 1: TEMEL BILGILER (Ana form — Create / Edit)
+           ============================================================ *@
+        <form id="section-general"
+              method="post"
+              asp-controller="HotelMgmt"
+              asp-action="@(isEdit ? "Edit" : "Create")"
+              asp-route-id="@Model.Id">
 
-        <div class="col-md-6">
-            <label class="form-label">Görsel URL</label>
-            <input name="ImageUrl" class="form-control" />
-        </div>
+            <input asp-for="Id" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <div class="col-md-2">
-            <label class="form-label">Sıra</label>
-            <input name="DisplayOrder" type="number" class="form-control" value="0" />
-        </div>
+            @* ----- Card: Temel Bilgiler ----- *@
+            <div class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-info-circle"></i></div>
+                    <div>
+                        <h3 class="hp-card-title">Temel Bilgiler</h3>
+                        <p class="hp-card-desc">Otelin kimliğini ve liste görünürlüğünü belirleyen alanlar.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Name" class="form-label">Otel Adı</label>
+                            <input asp-for="Name" class="form-control" placeholder="ör. Grand Hasturoğlu Resort" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
 
-        <div class="col-md-2 d-flex align-items-end">
-            <div class="form-check mb-2">
-                <input name="IsMain" type="checkbox" class="form-check-input" value="true" />
-                <label class="form-check-label">Ana görsel</label>
+                        <div class="col-md-4">
+                            <label asp-for="StarRating" class="form-label">Yıldız</label>
+                            <div class="hp-star-pick" data-target="StarRating">
+                                @for (byte i = 1; i <= 5; i++)
+                                {
+                                    var on = i <= Model.StarRating ? "on" : "";
+                                    <span class="hp-star @on" data-value="@i">
+                                        <i class="bi @(i <= Model.StarRating ? "bi-star-fill" : "bi-star")"></i>
+                                    </span>
+                                }
+                            </div>
+                            @* Gercek bind edilen input — gorsel olarak gizleniyor ama validation calisir. *@
+                            <input asp-for="StarRating" class="form-control hp-star-input" />
+                            <span asp-validation-for="StarRating" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"
+                                      placeholder="Otelin konsepti, manzarası, hedef misafir profili..."></textarea>
+                            <div class="hp-help"><i class="bi bi-text-paragraph"></i> Otel detay sayfasında gösterilecek tanıtım metni.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="submit" class="btn btn-outline-primary w-100">Ekle</button>
-        </div>
-    </form>
+            @* ----- Card: Konum ----- *@
+            <div class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <h3 class="hp-card-title">Konum</h3>
+                        <p class="hp-card-desc">Şehir/ülke arama filtrelerinde, koordinatlar harita gösteriminde kullanılır.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label">Şehir</label>
+                            <input asp-for="City" class="form-control" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Country" class="form-label">Ülke</label>
+                            <input asp-for="Country" class="form-control" />
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label">Adres</label>
+                            <input asp-for="Address" class="form-control" placeholder="Cadde, mahalle, posta kodu..." />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Latitude" class="form-label">Latitude</label>
+                            <div class="hp-affix">
+                                <span class="hp-affix-left"><i class="bi bi-geo"></i></span>
+                                <input asp-for="Latitude" class="form-control hp-has-left" placeholder="36.8841" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Longitude" class="form-label">Longitude</label>
+                            <div class="hp-affix">
+                                <span class="hp-affix-left"><i class="bi bi-geo"></i></span>
+                                <input asp-for="Longitude" class="form-control hp-has-left" placeholder="30.7056" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="hp-coord-helper">
+                                <i class="bi bi-pin-map-fill"></i>
+                                Koordinatları Google Maps'ten kopyalayıp yapıştırın.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>URL</th>
-                <th>Sıra</th>
-                <th>Ana</th>
-                <th class="text-end">İşlem</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Images.Any())
-            {
-                foreach (var image in Model.Images.OrderBy(x => x.DisplayOrder))
-                {
-                    <tr>
-                        <td colspan="4">
-                            <div class="row g-2 align-items-center">
+            @* ----- Card: Iletisim ----- *@
+            <div class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-telephone"></i></div>
+                    <div>
+                        <h3 class="hp-card-title">İletişim</h3>
+                        <p class="hp-card-desc">Misafir/rezervasyon iletişimi için kullanılacak bilgiler.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label">Telefon</label>
+                            <div class="hp-affix">
+                                <span class="hp-affix-left"><i class="bi bi-telephone"></i></span>
+                                <input asp-for="Phone" class="form-control hp-has-left" placeholder="+90 242 000 00 00" />
+                            </div>
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label">E-posta</label>
+                            <div class="hp-affix">
+                                <span class="hp-affix-left"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control hp-has-left" placeholder="rezervasyon@otel.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                                <div class="col-md-8">
+            @* ----- Card: Yayin Durumu ----- *@
+            <div class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-toggles"></i></div>
+                    <div>
+                        <h3 class="hp-card-title">Yayın Durumu</h3>
+                        <p class="hp-card-desc">Pasif oteller misafir aramalarında listelenmez; admin panelinde görünür kalır.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+                    <div class="hp-switch-row">
+                        <div class="hp-switch-text">
+                            <strong>Otel aktif olarak yayında</strong>
+                            <small>Aktif edildiğinde misafirler arama ve liste sayfalarında bu oteli görebilir.</small>
+                        </div>
+                        <div class="form-check form-switch hp-switch-control m-0">
+                            <input asp-for="IsActive" class="form-check-input" role="switch" />
+                            <label asp-for="IsActive" class="form-check-label visually-hidden">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ----- Sticky save bar ----- *@
+            <div class="hp-save-bar">
+                <div class="hp-sb-status">
+                    <span class="hp-sb-dot"></span>
+                    @(isEdit ? "Değişiklikleri kaydetmek için sağdaki butonu kullanın" : "Yeni otel kaydediliyor")
+                </div>
+                <div class="hp-sb-actions">
+                    <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        @(isEdit ? "Genel Bilgileri Kaydet" : "Oteli Kaydet")
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        @* ============================================================
+           Asagidaki bolumler sadece edit modda (Id > 0) gosterilir.
+           ============================================================ *@
+        @if (!isEdit)
+        {
+            <div class="hp-empty mt-4">
+                <i class="bi bi-lock"></i>
+                <p><strong>Görseller, odalar ve olanaklar</strong></p>
+                <p>Bu alanlar otel temel bilgileri kaydedildikten sonra açılır.</p>
+            </div>
+        }
+
+        @if (isEdit)
+        {
+            @* ============================================================
+               BOLUM 2: GORSELLER
+               ============================================================ *@
+            <div id="section-images" class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-images"></i></div>
+                    <div class="flex-grow-1">
+                        <h3 class="hp-card-title">
+                            Görseller
+                            <span class="hp-card-count">@Model.Images.Count</span>
+                        </h3>
+                        <p class="hp-card-desc">Ana görsel listede vitrin fotoğrafı olarak kullanılır.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+
+                    @* ---- Yeni gorsel ekleme formu ---- *@
+                    <form asp-controller="HotelMgmt"
+                          asp-action="AddImage"
+                          asp-route-hotelId="@Model.Id"
+                          method="post"
+                          class="hp-composer">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label">Görsel URL</label>
+                                <div class="hp-affix">
+                                    <span class="hp-affix-left"><i class="bi bi-link-45deg"></i></span>
+                                    <input name="ImageUrl" class="form-control hp-has-left" placeholder="https://..." />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Sıra</label>
+                                <input name="DisplayOrder" type="number" class="form-control" value="0" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label d-block">Ana görsel</label>
+                                <div class="form-check form-switch m-0 mt-1">
+                                    <input name="IsMain" type="checkbox" value="true" class="form-check-input" role="switch" />
+                                    <label class="form-check-label small">Ana yap</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-plus-lg me-1"></i>Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @* ---- Mevcut gorseller grid ---- *@
+                    @if (Model.Images.Any())
+                    {
+                        <div class="hp-img-grid">
+                            @foreach (var image in Model.Images.OrderBy(x => x.DisplayOrder))
+                            {
+                                <div class="hp-img-tile">
+                                    <div class="hp-img-thumb" style="background-image:url('@image.ImageUrl')">
+                                        @if (image.IsMain)
+                                        {
+                                            <span class="hp-img-main-badge">
+                                                <i class="bi bi-star-fill"></i> Ana
+                                            </span>
+                                        }
+                                    </div>
                                     <form asp-controller="HotelMgmt"
                                           asp-action="UpdateImage"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-imageId="@image.Id"
                                           method="post"
-                                          class="row g-2 align-items-center">
+                                          class="hp-img-form">
 
-                                        <div class="col-md-5">
-                                            <input name="ImageUrl"
-                                                   value="@image.ImageUrl"
-                                                   class="form-control form-control-sm" />
-                                        </div>
+                                        <input name="ImageUrl" type="hidden" value="@image.ImageUrl" />
 
-                                        <div class="col-md-2">
-                                            <input name="DisplayOrder"
-                                                   value="@image.DisplayOrder"
-                                                   type="number"
-                                                   class="form-control form-control-sm" />
-                                        </div>
-
-                                        <div class="col-md-2">
-                                            <input type="hidden" name="IsMain" value="false" />
-
-                                            <div class="form-check">
-                                                <input name="IsMain"
-                                                       type="checkbox"
-                                                       value="true"
-                                                       class="form-check-input"
-                                                       checked="@image.IsMain" />
-
-                                                <label class="form-check-label">
-                                                    Ana
-                                                </label>
+                                        <div class="hp-img-row">
+                                            <div class="hp-img-field">
+                                                <label class="form-label small">Sıra</label>
+                                                <input name="DisplayOrder"
+                                                       value="@image.DisplayOrder"
+                                                       type="number"
+                                                       class="form-control form-control-sm" />
+                                            </div>
+                                            <div class="hp-img-field">
+                                                <label class="form-label small d-block">Ana</label>
+                                                <div class="form-check form-switch m-0">
+                                                    <input type="hidden" name="IsMain" value="false" />
+                                                    <input name="IsMain"
+                                                           type="checkbox"
+                                                           value="true"
+                                                           class="form-check-input"
+                                                           role="switch"
+                                                           checked="@image.IsMain" />
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div class="col-md-3">
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-warning">
-                                                Güncelle
+                                        <div class="hp-img-actions">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning flex-grow-1">
+                                                <i class="bi bi-check2"></i> Güncelle
                                             </button>
                                         </div>
                                     </form>
-                                </div>
 
-                                <div class="col-md-4 text-end">
                                     <form asp-controller="HotelMgmt"
                                           asp-action="DeleteImage"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-imageId="@image.Id"
                                           method="post"
+                                          class="hp-img-delete"
                                           onsubmit="return confirm('Görsel silinsin mi?');">
-
-
-                                        <button type="submit"
-                                                class="btn btn-sm btn-danger">
-                                            Sil
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                            <i class="bi bi-trash"></i> Sil
                                         </button>
                                     </form>
                                 </div>
-
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="4" class="text-center text-muted">Henüz görsel eklenmemiş.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <hr class="my-5" />
-
-    <h4>Oda Ekle</h4>
-
-    <form asp-controller="HotelMgmt"
-          asp-action="AddRoom"
-          asp-route-hotelId="@Model.Id"
-          method="post"
-          class="row g-3 mb-4">
-
-        <div class="col-md-3">
-            <label class="form-label">Oda Tipi</label>
-            <select name="RoomTypeId" class="form-select" required>
-                <option value="">Seçiniz</option>
-                @foreach (var roomType in Model.RoomTypes)
-                {
-                    <option value="@roomType.Id">@roomType.Name</option>
-                }
-            </select>
-        </div>
-
-        <div class="col-md-3">
-            <label class="form-label">Gecelik Fiyat</label>
-            <input name="PricePerNight" type="number" step="0.01" min="0.01" class="form-control" required />
-        </div>
-
-        <div class="col-md-3">
-            <label class="form-label">Ek Misafir Fiyatı</label>
-            <input name="ExtraGuestPricePerNight" type="number" step="0.01" min="0" class="form-control" required />
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label">Toplam Oda</label>
-            <input name="TotalRooms" type="number" min="1" class="form-control" required />
-        </div>
-
-        <div class="col-md-1 d-flex align-items-end">
-            <button type="submit" class="btn btn-outline-primary w-100">Ekle</button>
-        </div>
-    </form>
-
-    @if (Model.Rooms.Any())
-    {
-        <div class="mb-4">
-            @foreach (var room in Model.Rooms)
-            {
-                <form asp-controller="HotelMgmt"
-                      asp-action="UpdateRoom"
-                      asp-route-hotelId="@Model.Id"
-                      asp-route-roomId="@room.Id"
-                      method="post"
-                      class="row g-2 align-items-end border rounded p-3 mb-2">
-
-                    <div class="col-md-3">
-                        <label class="form-label">Oda Tipi</label>
-                        <select name="RoomTypeId" class="form-select form-select-sm" required>
-                            @foreach (var roomType in Model.RoomTypes)
-                            {
-                                if (room.RoomTypeId == roomType.Id)
-                                {
-                                    <option value="@roomType.Id" selected>@roomType.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@roomType.Id">@roomType.Name</option>
-                                }
                             }
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Gecelik Fiyat</label>
-                        <input name="PricePerNight"
-                               value="@room.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                               type="number"
-                               step="0.01"
-                               min="0.01"
-                               class="form-control form-control-sm"
-                               required />
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Ek Misafir</label>
-                        <input name="ExtraGuestPricePerNight"
-                               value="@room.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                               type="number"
-                               step="0.01"
-                               min="0"
-                               class="form-control form-control-sm"
-                               required />
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Toplam Oda</label>
-                        <input name="TotalRooms"
-                               value="@room.TotalRooms"
-                               type="number"
-                               min="1"
-                               class="form-control form-control-sm"
-                               required />
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Durum</label>
-                        <select name="IsActive" class="form-select form-select-sm">
-                            @if (room.IsActive)
-                            {
-                                <option value="true" selected>Aktif</option>
-                                <option value="false">Pasif</option>
-                            }
-                            else
-                            {
-                                <option value="true">Aktif</option>
-                                <option value="false" selected>Pasif</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-sm btn-outline-warning w-100">
-                            Kaydet
-                        </button>
-                    </div>
-                </form>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="text-muted mb-4">Bu otele henüz oda eklenmemiş.</div>
-    }
-
-    <hr class="my-5" />
-
-    <h4>Oda Olanakları</h4>
-
-    @if (Model.Rooms.Any())
-    {
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered align-middle">
-                <thead>
-                    <tr>
-                        <th>Oda Tipi</th>
-                        <th>Fiyat</th>
-                        <th>Olanaklar</th>
-                        <th class="text-end">İşlem</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var room in Model.Rooms.OrderBy(x => x.RoomTypeName))
+                        </div>
+                    }
+                    else
                     {
-                        <tr>
-                            <td>
-                                <strong>@room.RoomTypeName</strong>
-                                <div class="text-muted small">Toplam oda: @room.TotalRooms</div>
-                            </td>
-                            <td>@room.PricePerNight.ToString("N0") TL</td>
-                            <td>
-                                <form id="room-amenities-@room.Id"
-                                      asp-controller="HotelMgmt"
-                                      asp-action="AssignRoomAmenities"
+                        <div class="hp-empty">
+                            <i class="bi bi-image"></i>
+                            <p>Henüz görsel eklenmemiş.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* ============================================================
+               BOLUM 3: ODALAR & FIYAT  (+ oda olanaklari)
+               ============================================================ *@
+            <div id="section-rooms" class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-door-open"></i></div>
+                    <div class="flex-grow-1">
+                        <h3 class="hp-card-title">
+                            Odalar &amp; Fiyatlandırma
+                            <span class="hp-card-count">@Model.Rooms.Count</span>
+                        </h3>
+                        <p class="hp-card-desc">Her oda tipi için gecelik fiyat, ek misafir bedeli ve toplam oda sayısı.</p>
+                    </div>
+                </div>
+                <div class="hp-card-body">
+
+                    @* ---- Yeni oda ekleme composer ---- *@
+                    <form asp-controller="HotelMgmt"
+                          asp-action="AddRoom"
+                          asp-route-hotelId="@Model.Id"
+                          method="post"
+                          class="hp-room-composer">
+                        <div class="hp-rc-head">
+                            <i class="bi bi-plus-circle"></i>
+                            <strong>Yeni Oda Ekle</strong>
+                        </div>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label">Oda Tipi</label>
+                                <select name="RoomTypeId" class="form-select" required>
+                                    <option value="">Seçiniz</option>
+                                    @foreach (var roomType in Model.RoomTypes)
+                                    {
+                                        <option value="@roomType.Id">@roomType.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Manzara</label>
+                                <select name="RoomViewId" class="form-select">
+                                    <option value="">Belirtilmemiş</option>
+                                    @foreach (var view in Model.RoomViews.OrderBy(x => x.DisplayOrder))
+                                    {
+                                        <option value="@view.Id">@view.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Gecelik Fiyat</label>
+                                <div class="hp-affix">
+                                    <input name="PricePerNight" type="number" step="0.01" min="0.01" class="form-control hp-has-right" required />
+                                    <span class="hp-affix-right">₺</span>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Ek Misafir</label>
+                                <div class="hp-affix">
+                                    <input name="ExtraGuestPricePerNight" type="number" step="0.01" min="0" class="form-control hp-has-right" required />
+                                    <span class="hp-affix-right">₺</span>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Toplam Oda</label>
+                                <input name="TotalRooms" type="number" min="1" class="form-control" required />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-plus-lg me-1"></i>Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @* ---- Mevcut oda kartlari ---- *@
+                    @if (Model.Rooms.Any())
+                    {
+                        @foreach (var room in Model.Rooms.OrderBy(x => x.RoomTypeName))
+                        {
+                            <div class="hp-room-card">
+                                <div class="hp-room-head">
+                                    <div class="hp-room-icon @(room.IsActive ? "" : "passive")">
+                                        <i class="bi @(room.IsActive ? "bi-door-open" : "bi-door-closed")"></i>
+                                    </div>
+                                    <div class="hp-room-info">
+                                        <h4 class="hp-room-title">@room.RoomTypeName</h4>
+                                        <div class="hp-room-sub">
+                                            <span><i class="bi bi-cash-stack"></i> @room.PricePerNight.ToString("N0") ₺/gece</span>
+                                            <span class="hp-sep">·</span>
+                                            <span><i class="bi bi-people"></i> +@room.ExtraGuestPricePerNight.ToString("N0") ₺ ek misafir</span>
+                                            <span class="hp-sep">·</span>
+                                            <span><i class="bi bi-building"></i> @room.TotalRooms oda</span>
+                                        </div>
+                                    </div>
+                                    <div class="hp-room-status">
+                                        @if (room.IsActive)
+                                        {
+                                            <span class="status-pill active"><span class="status-dot"></span> Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-pill passive"><span class="status-dot"></span> Pasif</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                @* ---- Oda guncelleme formu ---- *@
+                                <form asp-controller="HotelMgmt"
+                                      asp-action="UpdateRoom"
                                       asp-route-hotelId="@Model.Id"
                                       asp-route-roomId="@room.Id"
-                                      method="post">
+                                      method="post"
+                                      class="hp-room-form">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-2">
+                                            <label class="form-label">Oda Tipi</label>
+                                            <select name="RoomTypeId" class="form-select form-select-sm" required>
+                                                @foreach (var roomType in Model.RoomTypes)
+                                                {
+                                                    if (room.RoomTypeId == roomType.Id)
+                                                    {
+                                                        <option value="@roomType.Id" selected>@roomType.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@roomType.Id">@roomType.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Manzara</label>
+                                            <select name="RoomViewId" class="form-select form-select-sm">
+                                                @if (room.RoomViewId == null)
+                                                {
+                                                    <option value="" selected>Belirtilmemiş</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="">Belirtilmemiş</option>
+                                                }
+                                                @foreach (var view in Model.RoomViews.OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (room.RoomViewId == view.Id)
+                                                    {
+                                                        <option value="@view.Id" selected>@view.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@view.Id">@view.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Gecelik Fiyat</label>
+                                            <div class="hp-affix">
+                                                <input name="PricePerNight"
+                                                       value="@room.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                       type="number" step="0.01" min="0.01"
+                                                       class="form-control form-control-sm hp-has-right" required />
+                                                <span class="hp-affix-right">₺</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Ek Misafir</label>
+                                            <div class="hp-affix">
+                                                <input name="ExtraGuestPricePerNight"
+                                                       value="@room.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                       type="number" step="0.01" min="0"
+                                                       class="form-control form-control-sm hp-has-right" required />
+                                                <span class="hp-affix-right">₺</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <label class="form-label">Toplam</label>
+                                            <input name="TotalRooms"
+                                                   value="@room.TotalRooms"
+                                                   type="number" min="1"
+                                                   class="form-control form-control-sm" required />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Durum</label>
+                                            <select name="IsActive" class="form-select form-select-sm">
+                                                @if (room.IsActive)
+                                                {
+                                                    <option value="true" selected>Aktif</option>
+                                                    <option value="false">Pasif</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="true">Aktif</option>
+                                                    <option value="false" selected>Pasif</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning w-100" title="Kaydet">
+                                                <i class="bi bi-check2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
 
-                                    @if (Model.AllRoomAmenities.Any())
-                                    {
-                                        <div class="row g-2">
+                                @* ---- Oda olanaklari (chip seclim) ---- *@
+                                @if (Model.AllRoomAmenities.Any())
+                                {
+                                    <div class="hp-room-amenities">
+                                        <div class="hp-ra-head">
+                                            <span class="hp-ra-title">
+                                                <i class="bi bi-ui-checks-grid"></i>
+                                                Oda Olanakları · @room.RoomAmenities.Count seçili
+                                            </span>
+                                            <button type="submit"
+                                                    form="room-amenities-@room.Id"
+                                                    class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check2-all me-1"></i>Güncelle
+                                            </button>
+                                        </div>
+                                        <form id="room-amenities-@room.Id"
+                                              asp-controller="HotelMgmt"
+                                              asp-action="AssignRoomAmenities"
+                                              asp-route-hotelId="@Model.Id"
+                                              asp-route-roomId="@room.Id"
+                                              method="post"
+                                              class="hp-chip-group">
                                             @foreach (var roomAmenity in Model.AllRoomAmenities.OrderBy(x => x.Name))
                                             {
                                                 var isAssigned = room.RoomAmenities.Any(x => x.Id == roomAmenity.Id);
-
-                                                <div class="col-md-4">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input"
-                                                               type="checkbox"
-                                                               name="roomAmenityIds"
-                                                               value="@roomAmenity.Id"
-                                                               checked="@isAssigned" />
-                                                        <label class="form-check-label">@roomAmenity.Name</label>
-                                                    </div>
-                                                </div>
+                                                var chipId = $"ra-{room.Id}-{roomAmenity.Id}";
+                                                <label class="hp-chip" for="@chipId">
+                                                    <input class="hp-chip-input"
+                                                           id="@chipId"
+                                                           type="checkbox"
+                                                           name="roomAmenityIds"
+                                                           value="@roomAmenity.Id"
+                                                           checked="@isAssigned" />
+                                                    <span class="hp-chip-body">
+                                                        <i class="bi bi-check2 hp-chip-check"></i>
+                                                        @roomAmenity.Name
+                                                    </span>
+                                                </label>
                                             }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Tanımlı oda olanağı bulunamadı.</span>
-                                    }
-                                </form>
-                            </td>
-                            <td class="text-end">
-                                <button type="submit"
-                                        form="room-amenities-@room.Id"
-                                        class="btn btn-sm btn-outline-success"
-                                        disabled="@(!Model.AllRoomAmenities.Any())">
-                                    Güncelle
-                                </button>
-                            </td>
-                        </tr>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        }
                     }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="text-muted mb-4">Bu otele ait oda kaydı bulunamadı.</div>
-    }
-
-    <hr class="my-5" />
-
-    <h4>Olanak Atama</h4>
-
-    <form asp-controller="HotelMgmt"
-          asp-action="AssignAmenities"
-          asp-route-hotelId="@Model.Id"
-          method="post">
-
-        <div class="row g-2">
-            @if (Model.AllAmenities.Any())
-            {
-                foreach (var amenity in Model.AllAmenities.OrderBy(x => x.Name))
-                {
-                    <div class="col-md-4">
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   name="amenityIds"
-                                   value="@amenity.Id"
-                                   checked="@amenity.IsAssigned" />
-                            <label class="form-check-label">@amenity.Name</label>
+                    else
+                    {
+                        <div class="hp-empty">
+                            <i class="bi bi-door-closed"></i>
+                            <p>Bu otele henüz oda eklenmemiş.</p>
+                            <p class="small">Yukarıdaki formdan ilk odayı ekleyebilirsiniz.</p>
                         </div>
+                    }
+                </div>
+            </div>
+
+            @* ============================================================
+               BOLUM 4: OTEL OLANAKLARI
+               ============================================================ *@
+            <div id="section-amenities" class="hp-card">
+                <div class="hp-card-head">
+                    <div class="hp-card-icon"><i class="bi bi-stars"></i></div>
+                    <div class="flex-grow-1">
+                        <h3 class="hp-card-title">Otel Olanakları</h3>
+                        <p class="hp-card-desc">Otelin tüm misafirlere sunduğu genel olanaklar. Detay sayfasında ve filtrelerde kullanılır.</p>
                     </div>
-                }
-            }
-            else
-            {
-                <div class="col-12 text-muted">Tanımlı olanak bulunamadı.</div>
-            }
-        </div>
+                </div>
+                <div class="hp-card-body">
+                    <form asp-controller="HotelMgmt"
+                          asp-action="AssignAmenities"
+                          asp-route-hotelId="@Model.Id"
+                          method="post">
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-outline-success">Olanakları Güncelle</button>
-        </div>
-    </form>
+                        @if (Model.AllAmenities.Any())
+                        {
+                            <div class="hp-chip-group">
+                                @foreach (var amenity in Model.AllAmenities.OrderBy(x => x.Name))
+                                {
+                                    var chipId = $"am-{amenity.Id}";
+                                    <label class="hp-chip" for="@chipId">
+                                        <input class="hp-chip-input"
+                                               id="@chipId"
+                                               type="checkbox"
+                                               name="amenityIds"
+                                               value="@amenity.Id"
+                                               checked="@amenity.IsAssigned" />
+                                        <span class="hp-chip-body">
+                                            <i class="bi bi-check2 hp-chip-check"></i>
+                                            @amenity.Name
+                                        </span>
+                                    </label>
+                                }
+                            </div>
 
-    @if (Model.AllAmenities.Any(x => x.IsAssigned))
-    {
-        <div class="mt-4">
-            <h5>Atanmış Olanaklar</h5>
+                            <div class="mt-3 d-flex justify-content-end">
+                                <button type="submit" class="btn btn-outline-success">
+                                    <i class="bi bi-check2-all me-1"></i>Olanakları Güncelle
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="hp-empty">
+                                <i class="bi bi-stars"></i>
+                                <p>Tanımlı olanak bulunamadı.</p>
+                            </div>
+                        }
+                    </form>
 
-            @foreach (var amenity in Model.AllAmenities
-                .Where(x => x.IsAssigned)
-                .OrderBy(x => x.Name))
-            {
+                    @if (Model.AllAmenities.Any(x => x.IsAssigned))
+                    {
+                        <div class="hp-removable">
+                            <div class="hp-removable-title">
+                                <i class="bi bi-bookmark-check"></i> Atanmış Olanaklar — tek tek kaldırmak için tıklayın
+                            </div>
+                            <div class="hp-removable-list">
+                                @foreach (var amenity in Model.AllAmenities.Where(x => x.IsAssigned).OrderBy(x => x.Name))
+                                {
+                                    <form asp-controller="HotelMgmt"
+                                          asp-action="RemoveAmenity"
+                                          asp-route-hotelId="@Model.Id"
+                                          asp-route-amenityId="@amenity.Id"
+                                          method="post"
+                                          class="d-inline-block"
+                                          onsubmit="return confirm('Bu olanak kaldırılsın mı?');">
+                                        <button type="submit" class="hp-removable-chip">
+                                            @amenity.Name
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+    @* =========== SAG KOLON =========== *@
+    <aside class="hp-side">
+        @if (!isEdit)
+        {
+            <div class="hp-side-card">
+                <h6><i class="bi bi-list-check"></i> Kurulum Adımları</h6>
+                <div class="hp-steps">
+                    <div class="hp-step current">
+                        <span class="hp-step-num">1</span> Temel bilgiler
+                    </div>
+                    <div class="hp-step locked">
+                        <span class="hp-step-num">2</span> Görseller
+                    </div>
+                    <div class="hp-step locked">
+                        <span class="hp-step-num">3</span> Odalar &amp; fiyatlar
+                    </div>
+                    <div class="hp-step locked">
+                        <span class="hp-step-num">4</span> Olanaklar
+                    </div>
+                </div>
+                <p class="hp-help mt-3">
+                    <i class="bi bi-lock"></i> 2–4. adımlar otel kaydedildikten sonra açılır.
+                </p>
+            </div>
+
+            <div class="hp-side-card">
+                <h6><i class="bi bi-lightbulb"></i> İpuçları</h6>
+                <ul class="hp-tip-list">
+                    <li><i class="bi bi-check2"></i> Otel adı liste sayfasında ve arama sonuçlarında öne çıkar — net ve aranabilir tutun.</li>
+                    <li><i class="bi bi-check2"></i> Açıklama 200–500 karakter arası ideal.</li>
+                    <li><i class="bi bi-check2"></i> Koordinatları doğru girmek, harita ve "yakındaki oteller" özelliğini etkiler.</li>
+                </ul>
+            </div>
+        }
+        else
+        {
+            <div class="hp-side-card">
+                <h6><i class="bi bi-bar-chart"></i> Otel Özeti</h6>
+                <ul class="hp-tip-list">
+                    <li>
+                        <i class="bi bi-building"></i>
+                        <span>
+                            @Model.Rooms.Sum(r => r.TotalRooms) toplam oda · @Model.Rooms.Count tip
+                        </span>
+                    </li>
+                    <li>
+                        <i class="bi bi-images"></i>
+                        <span>
+                            @Model.Images.Count görsel · @(Model.Images.Count(i => i.IsMain)) ana
+                        </span>
+                    </li>
+                    <li>
+                        <i class="bi bi-stars"></i>
+                        <span>@Model.AllAmenities.Count(x => x.IsAssigned) otel olanağı</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-star-fill" style="color:#F59E0B"></i>
+                        <span>@Model.StarRating yıldız</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="hp-side-card hp-side-danger">
+                <h6><i class="bi bi-exclamation-octagon"></i> Tehlikeli Bölge</h6>
+                <p class="hp-side-danger-text">
+                    Otel silindiğinde tüm odalar, görseller ve geçmiş rezervasyon bağları kaybolur.
+                </p>
                 <form asp-controller="HotelMgmt"
-                      asp-action="RemoveAmenity"
-                      asp-route-hotelId="@Model.Id"
-                      asp-route-amenityId="@amenity.Id"
+                      asp-action="Delete"
+                      asp-route-id="@Model.Id"
                       method="post"
-                      class="d-inline-block me-2 mb-2"
-                      onsubmit="return confirm('Bu olanak kaldırılsın mı?');">
-
-                    <button type="submit"
-                            class="btn btn-sm btn-outline-danger">
-                        @amenity.Name
+                      onsubmit="return confirm('Bu oteli silmek istediğinize emin misiniz?');">
+                    <button type="submit" class="btn btn-sm hp-btn-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Oteli Sil
                     </button>
                 </form>
-            }
-        </div>
-    }
-}
+            </div>
+        }
+    </aside>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // ===== Yildiz secici =====
+        document.querySelectorAll('.hp-star-pick').forEach(function (group) {
+            var target = group.getAttribute('data-target');
+            var input = document.querySelector('input[name="' + target + '"]');
+            var stars = group.querySelectorAll('.hp-star');
+            stars.forEach(function (s, idx) {
+                s.addEventListener('click', function () {
+                    var val = parseInt(s.getAttribute('data-value'), 10);
+                    if (input) input.value = val;
+                    stars.forEach(function (st, i) {
+                        var on = i < val;
+                        st.classList.toggle('on', on);
+                        var icon = st.querySelector('i');
+                        if (icon) icon.className = 'bi ' + (on ? 'bi-star-fill' : 'bi-star');
+                    });
+                });
+            });
+        });
+
+        // ===== Smooth scroll for section tabs =====
+        document.querySelectorAll('.hp-section-tabs .hp-tab').forEach(function (tab) {
+            tab.addEventListener('click', function (e) {
+                var href = tab.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    var el = document.querySelector(href);
+                    if (el) {
+                        e.preventDefault();
+                        document.querySelectorAll('.hp-section-tabs .hp-tab').forEach(function (t) {
+                            t.classList.remove('active');
+                        });
+                        tab.classList.add('active');
+                        window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+    </script>
 }

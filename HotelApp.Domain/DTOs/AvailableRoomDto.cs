@@ -25,6 +25,11 @@ namespace HotelApp.Domain.DTOs
         public int ReservedCount { get; set; }
         public int AvailableRooms { get; set; }
 
+        // Manzara bilgisi sp_SearchAvailableRooms SP'sinden gelir.
+        // NULL olabilir; manzara secilmemis odalarda chip render edilmez.
+        public string? RoomViewName { get; set; }
+        public string? RoomViewIcon { get; set; }
+
         [NotMapped]
         public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
     }
