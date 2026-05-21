@@ -108,9 +108,11 @@ public class Sprint5AdminHotelAmenitiesContractTests
         if (!Sprint5CardGuards.S503_AmenityUiImplemented())
             return;
 
+        // Olanak yonetimi tek sayfada toplandi: AmenityMgmtController/AmenityMgmt.cshtml.
+        // Eski Amenity/RoomAmenity controller'lar CRUD endpoint olarak korundu, eski view'lar silindi.
         var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs" },
-            viewNames: new[] { "Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml") });
+            controllerNames: new[] { "AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs", "AmenityMgmtController.cs" },
+            viewNames: new[] { "Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml" });
 
         AssertContainsAny(source, "api/amenities", "\"amenities", "'amenities");
         AssertContainsAny(source, "GetAsync", "GetTAsync");
@@ -198,7 +200,7 @@ public class Sprint5AdminHotelAmenitiesContractTests
             sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml")));
 
         if (Sprint5CardGuards.S503_AmenityUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml"));
 
         return sources.ToList();
     }
