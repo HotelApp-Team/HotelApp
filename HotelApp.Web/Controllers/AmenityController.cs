@@ -32,7 +32,7 @@ public class AmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Olanak bilgileri eksik veya hatalı.";
+            TempData["Error"] = "Olanak bilgileri eksik veya hatalı.";
             return RedirectToAction("Index", "AmenityMgmt");
         }
 
@@ -42,7 +42,7 @@ public class AmenityController : Controller
             model.Icon
         });
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla eklendi." : response.Message ?? "Olanak eklenemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");
@@ -54,7 +54,7 @@ public class AmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Olanak bilgileri eksik veya hatalı.";
+            TempData["Error"] = "Olanak bilgileri eksik veya hatalı.";
             return RedirectToAction("Index", "AmenityMgmt");
         }
 
@@ -65,7 +65,7 @@ public class AmenityController : Controller
             model.Icon
         });
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla güncellendi." : response.Message ?? "Olanak güncellenemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");
@@ -77,7 +77,7 @@ public class AmenityController : Controller
     {
         var response = await _apiService.DeleteAsync($"amenities/{id}");
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla silindi." : response.Message ?? "Olanak silinemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");

@@ -119,9 +119,17 @@ public partial class HotelAppDbContext : DbContext
 
             entity.HasIndex(e => e.RoomViewId, "IX_HotelRooms_RoomViewId");
 
-            // Unique constraint manzara dahil uclu kombinasyon: ayni otelde ayni
-            // oda tipinden farkli manzaralarla birden cok kayit acilabilsin.
-            entity.HasIndex(e => new { e.HotelId, e.RoomTypeId, e.RoomViewId }, "UQ_HotelRooms_HotelType_View").IsUnique();
+            // Unique constraint manzara dahil ama NULL-aware: iki filtered index.
+            // SQL Server'da default unique index NULL'lari esit saymaz, bu yuzden
+            // NULL manzara icin ayri filtered unique index gerekiyor ki "Suite + NULL"
+            // ikinci kez girilmesin. NOT NULL manzaralar icin uclu kombinasyon tek.
+            entity.HasIndex(e => new { e.HotelId, e.RoomTypeId }, "UQ_HotelRooms_NoView")
+                .IsUnique()
+                .HasFilter("[RoomViewId] IS NULL");
+
+            entity.HasIndex(e => new { e.HotelId, e.RoomTypeId, e.RoomViewId }, "UQ_HotelRooms_WithView")
+                .IsUnique()
+                .HasFilter("[RoomViewId] IS NOT NULL");
 
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");

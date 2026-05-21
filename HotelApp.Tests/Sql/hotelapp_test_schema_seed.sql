@@ -1,6 +1,11 @@
 USE [master];
 GO
 
+-- QUOTED_IDENTIFIER ON: filtered unique index'lerin (UQ_HotelRooms_NoView, _WithView)
+-- olusturulmasi icin gereklidir. sqlcmd default'unda OFF gelir.
+SET QUOTED_IDENTIFIER ON;
+GO
+
 IF DB_ID(N'$(DatabaseName)') IS NOT NULL
 BEGIN
     ALTER DATABASE [$(DatabaseName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -65,12 +70,22 @@ CREATE TABLE HotelRooms (
     -- Manzara FK (NULL'a izin var, mevcut kayit etkilenmesin).
     RoomViewId INT NULL,
     CONSTRAINT CHK_HotelRooms_Total CHECK (TotalRooms > 0),
-    -- Unique constraint manzara dahil uclu kombinasyon: ayni otel + oda tipi + farkli manzara birlikte tutulur.
-    CONSTRAINT UQ_HotelRooms_HotelType_View UNIQUE (HotelId, RoomTypeId, RoomViewId),
     CONSTRAINT FK_HotelRooms_Hotels FOREIGN KEY(HotelId) REFERENCES Hotels(Id),
     CONSTRAINT FK_HotelRooms_RoomTypes FOREIGN KEY(RoomTypeId) REFERENCES RoomTypes(Id),
     CONSTRAINT FK_HotelRooms_RoomViews FOREIGN KEY(RoomViewId) REFERENCES RoomViews(Id) ON DELETE SET NULL
 );
+GO
+
+-- Unique constraint manzara dahil ama NULL-aware: iki filtered index ile bolundu.
+-- NULL manzara icin (HotelId, RoomTypeId) tek olsun; NOT NULL manzara icin uclu kombinasyon tek.
+CREATE UNIQUE INDEX UQ_HotelRooms_NoView
+    ON HotelRooms(HotelId, RoomTypeId)
+    WHERE RoomViewId IS NULL;
+GO
+
+CREATE UNIQUE INDEX UQ_HotelRooms_WithView
+    ON HotelRooms(HotelId, RoomTypeId, RoomViewId)
+    WHERE RoomViewId IS NOT NULL;
 GO
 
 CREATE TABLE RoomAmenities (

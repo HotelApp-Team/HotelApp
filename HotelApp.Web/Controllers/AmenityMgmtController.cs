@@ -32,10 +32,12 @@ public class AmenityMgmtController : Controller
             RoomAmenities = roomAmenityResponse.Success ? roomAmenityResponse.Data ?? new() : new()
         };
 
+        // TempData anahtarlari _AdminLayout ile uyumlu: "Success" / "Error".
+        // Bu anahtarlar admin controller standardi (RoomType, AdminUserMgmt vb. tum admin sayfalari ayni).
         if (!amenityResponse.Success)
-            TempData["ErrorMessage"] = amenityResponse.Message ?? "Otel olanaklari listesi alýnamadý.";
+            TempData["Error"] = amenityResponse.Message ?? "Otel olanaklari listesi alinamadi.";
         else if (!roomAmenityResponse.Success)
-            TempData["ErrorMessage"] = roomAmenityResponse.Message ?? "Oda olanaklari listesi alýnamadý.";
+            TempData["Error"] = roomAmenityResponse.Message ?? "Oda olanaklari listesi alinamadi.";
 
         return View("~/Views/Admin/AmenityMgmt.cshtml", model);
     }

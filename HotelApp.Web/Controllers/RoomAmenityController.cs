@@ -32,7 +32,7 @@ public class RoomAmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Oda olanağı bilgileri eksik veya hatalı.";
+            TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
             return RedirectToAction("Index", "AmenityMgmt");
         }
 
@@ -42,7 +42,7 @@ public class RoomAmenityController : Controller
             model.Icon
         });
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı eklendi." : response.Message ?? "Oda olanağı eklenemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");
@@ -54,7 +54,7 @@ public class RoomAmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Oda olanağı bilgileri eksik veya hatalı.";
+            TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
             return RedirectToAction("Index", "AmenityMgmt");
         }
 
@@ -65,7 +65,7 @@ public class RoomAmenityController : Controller
             model.Icon
         });
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı güncellendi." : response.Message ?? "Oda olanağı güncellenemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");
@@ -77,7 +77,7 @@ public class RoomAmenityController : Controller
     {
         var response = await _apiService.DeleteAsync($"room-amenities/{id}");
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı silindi." : response.Message ?? "Oda olanağı silinemedi.";
 
         return RedirectToAction("Index", "AmenityMgmt");

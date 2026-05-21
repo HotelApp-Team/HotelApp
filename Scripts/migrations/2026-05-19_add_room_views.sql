@@ -29,6 +29,9 @@ USE HotelAppDB;
 GO
 
 SET NOCOUNT ON;
+-- QUOTED_IDENTIFIER ON gereklidir, aksi halde filtered index CREATE statement'i
+-- "incorrect SET options" hatasi verir. sqlcmd default'unda kapali geliyor.
+SET QUOTED_IDENTIFIER ON;
 GO
 
 -- 1) RoomViews tablosu (lookup).
@@ -157,15 +160,47 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (
+-- Eski UQ_HotelRooms_HotelType_View tek index'ti; SQL Server'da NULL'lar unique
+-- index'te esit sayilmaz, yani "Suite + NULL manzara" iki kez kayit edilebilirdi.
+-- Bu yuzden iki filtered index'e bolduk: NULL kayitlar icin (HotelId, RoomTypeId)
+-- unique; NOT NULL kayitlar icin (HotelId, RoomTypeId, RoomViewId) unique.
+IF EXISTS (
     SELECT 1 FROM sys.indexes
     WHERE name = 'UQ_HotelRooms_HotelType_View'
       AND object_id = OBJECT_ID('dbo.HotelRooms')
 )
 BEGIN
-    CREATE UNIQUE INDEX UQ_HotelRooms_HotelType_View
-        ON dbo.HotelRooms(HotelId, RoomTypeId, RoomViewId);
-    PRINT 'Yeni UQ_HotelRooms_HotelType_View unique index eklendi.';
+    DROP INDEX UQ_HotelRooms_HotelType_View ON dbo.HotelRooms;
+    PRINT 'Eski UQ_HotelRooms_HotelType_View kaldirildi (filtered index'lerle degistiriliyor).';
+END
+GO
+
+-- NULL manzara icin: ayni otel + oda tipi + NULL manzara tek kez olsun.
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UQ_HotelRooms_NoView'
+      AND object_id = OBJECT_ID('dbo.HotelRooms')
+)
+BEGIN
+    CREATE UNIQUE INDEX UQ_HotelRooms_NoView
+        ON dbo.HotelRooms(HotelId, RoomTypeId)
+        WHERE RoomViewId IS NULL;
+    PRINT 'UQ_HotelRooms_NoView filtered unique index eklendi.';
+END
+GO
+
+-- NOT NULL manzara icin: ayni otel + oda tipi + ayni manzara tek kez olsun
+-- (Suite-Deniz / Suite-Sehir gibi farkli manzaralar ayri kayitlar olarak yasar).
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UQ_HotelRooms_WithView'
+      AND object_id = OBJECT_ID('dbo.HotelRooms')
+)
+BEGIN
+    CREATE UNIQUE INDEX UQ_HotelRooms_WithView
+        ON dbo.HotelRooms(HotelId, RoomTypeId, RoomViewId)
+        WHERE RoomViewId IS NOT NULL;
+    PRINT 'UQ_HotelRooms_WithView filtered unique index eklendi.';
 END
 GO
 
