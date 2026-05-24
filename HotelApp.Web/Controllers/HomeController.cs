@@ -48,4 +48,32 @@ public class HomeController : Controller
     }
 
     public IActionResult Faq() => View();
+
+    // Status code (404, 403, 500 vb.) yakalandiginda Program.cs'teki
+    // UseStatusCodePagesWithReExecute("/Home/Error/{0}") tarafindan cagrilir.
+    // Tarayicinin default 404 ekrani yerine siteyle uyumlu nazik bir sayfa gosterir.
+    [Route("Home/Error/{code:int?}")]
+    public IActionResult Error(int? code)
+    {
+        var model = new ErrorPageViewModel
+        {
+            StatusCode = code ?? 500,
+            Title = (code ?? 500) switch
+            {
+                404 => "Sayfa bulunamadı",
+                403 => "Erişim izniniz yok",
+                401 => "Giriş yapmanız gerekiyor",
+                _   => "Bir şeyler ters gitti"
+            },
+            Message = (code ?? 500) switch
+            {
+                404 => "Aradığınız sayfa burada değil. Adres yanlış olabilir ya da sayfa kaldırılmış olabilir.",
+                403 => "Bu sayfaya erişim yetkiniz yok. Hesabınızla yetkili olduğunuz alanlara dönebilirsiniz.",
+                401 => "Bu sayfayı görmek için giriş yapmanız gerekiyor.",
+                _   => "Beklenmeyen bir hata oluştu. Birkaç saniye sonra tekrar deneyebilirsiniz."
+            }
+        };
+
+        return View("Error", model);
     }
+}

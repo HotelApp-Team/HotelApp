@@ -54,18 +54,24 @@ public class ProfileController : Controller
     }
 
     // E46 için profil güncelleme formundan gelen bilgileri API'ye gönderir.
+    // PRG pattern: hata olsa bile GET'e redirect et, hata mesaji TempData uzerinden gosterilir.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile([Bind(Prefix = "Profile")] ProfileViewModel model)
     {
-        // Form validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
+        // Form validasyonu başarısızsa ilk hatayi TempData'ya koyup GET'e redirect et.
         if (!ModelState.IsValid)
         {
-            var invalidPage = await BuildPageAsync(profile: model);
-            if (invalidPage == null)
-                return RedirectToAction("Index", "Home");
+            var firstError = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m));
 
-            return View("Index", invalidPage);
+            TempData["ProfileErrorMessage"] = string.IsNullOrWhiteSpace(firstError)
+                ? "Lütfen profil bilgilerinizi kontrol edin."
+                : firstError;
+
+            return RedirectToAction(nameof(Index));
         }
 
         // Profil formundan gelen veriyi API'ye gönderilecek request nesnesine mapler.
@@ -85,31 +91,36 @@ public class ProfileController : Controller
             // Navbar'da görünen kullanıcı adını güncel profil bilgisiyle senkronlar.
             HttpContext.Session.SetString("UserFullName", $"{model.FirstName} {model.LastName}");
             TempData["SuccessMessage"] = "Profil bilgileriniz güncellendi.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
-        // API hata döndürürse mesajı form üzerinde gösterir.
-        ViewData["ProfileErrorMessage"] = response.Message;
-        var page = await BuildPageAsync(profile: model);
-        if (page == null)
-            return RedirectToAction("Index", "Home");
-
-        return View("Index", page);
+        // API hata döndürürse mesajı TempData'ya koyup GET'e redirect et.
+        TempData["ProfileErrorMessage"] = response.Message;
+        return RedirectToAction(nameof(Index));
     }
 
     // E47 için şifre değiştirme formundan gelen bilgileri API'ye gönderir.
+    // PRG (Post-Redirect-Get) pattern: hata olsa bile sayfayi GET ile yeniden ac.
+    // Boylece F5 ile form yeniden submit edilmez ve sayfa hata bolumune scroll olur.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword([Bind(Prefix = "ChangePassword")] ChangePasswordViewModel model)
     {
-        // Şifre formu validasyonu başarısızsa aynı sayfayı hata mesajlarıyla tekrar gösterir.
+        // Şifre formu validasyonu başarısızsa hatayi TempData'ya koyup GET'e redirect eder.
+        // Sayfa #change-password anchor ile sifre formunun ustune scroll olur.
         if (!ModelState.IsValid)
         {
-            var page = await BuildPageAsync(changePassword: model);
-            if (page == null)
-                return RedirectToAction("Index", "Home");
+            // Required/StringLength gibi field-level hatalari ozet halinde tek mesajda topla.
+            var firstError = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m));
 
-            return View("Index", page);
+            TempData["PasswordErrorMessage"] = string.IsNullOrWhiteSpace(firstError)
+                ? "Şifre bilgilerinizi kontrol edin."
+                : firstError;
+
+            return RedirectToAction(nameof(Index), null, "change-password");
         }
 
         // Formdan gelen şifre bilgilerini E47 API endpoint'ine gönderir.
@@ -119,16 +130,12 @@ public class ProfileController : Controller
         if (response.Success)
         {
             TempData["SuccessMessage"] = "Şifreniz başarıyla değiştirildi.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
-        // API hata döndürürse mesajı form üzerinde gösterir.
-        ViewData["PasswordErrorMessage"] = response.Message;
-        var errorPage = await BuildPageAsync(changePassword: model);
-        if (errorPage == null)
-            return RedirectToAction("Index", "Home");
-
-        return View("Index", errorPage);
+        // API hata döndürürse mesajı TempData'ya koy ve sifre formunun ustune scroll et.
+        TempData["PasswordErrorMessage"] = response.Message;
+        return RedirectToAction(nameof(Index), null, "change-password");
     }
 
     // E03, E46 ve E47 akışlarında profil ve şifre formlarını aynı View için sayfa modeline dönüştürür.

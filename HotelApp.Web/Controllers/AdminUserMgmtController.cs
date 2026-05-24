@@ -41,7 +41,13 @@ public class AdminUserMgmtController : Controller
             .Where(x => !string.IsNullOrWhiteSpace(x.Value))
             .Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value!)}"));
 
+        // 1) Filtreli sorgu - tablo ve sayfalama icin.
         var response = await _apiService.GetAsync<AdminUsersResponseViewModel>(query);
+
+        // 2) Filtresiz sorgu - stat cards icin GLOBAL sayaclar.
+        // Filtre uygulansa bile ust kartlarda sistemin gercek toplam/aktif/pasif/admin sayisi gozuksun.
+        // Yoksa "Toplam Kullanici: 0" yaniltici olur ve admin sistemde kullanici kalmadigini sanir.
+        var globalResponse = await _apiService.GetAsync<AdminUsersResponseViewModel>("admin/users?page=1&pageSize=1");
 
         // Filtre değerlerini tekrar view model'e koyar; sayfa yenilenince seçimler kaybolmaz.
         var model = new AdminUsersPageViewModel
@@ -59,12 +65,26 @@ public class AdminUserMgmtController : Controller
             return View(model);
         }
 
-        // API'den gelen sayfalı kullanıcı sonucunu ve özet sayaçları view model'e mapler.
-        model.TotalCount = response.Data?.TotalCount ?? 0;
-        model.ActiveCount = response.Data?.ActiveCount ?? 0;
-        model.PassiveCount = response.Data?.PassiveCount ?? 0;
-        model.AdminCount = response.Data?.AdminCount ?? 0;
+        // Filtreli sonuc - tablo verisi + filtrelenmis kayit sayisi (pagination icin).
+        model.FilteredCount = response.Data?.TotalCount ?? 0;
         model.Users = response.Data?.Data ?? new();
+
+        // Global sayaclar - stat cards icin. Global istek de basariliysa onu kullan, degilse filtreli sayilara dus.
+        if (globalResponse.Success && globalResponse.Data is not null)
+        {
+            model.TotalCount = globalResponse.Data.TotalCount;
+            model.ActiveCount = globalResponse.Data.ActiveCount;
+            model.PassiveCount = globalResponse.Data.PassiveCount;
+            model.AdminCount = globalResponse.Data.AdminCount;
+        }
+        else
+        {
+            // Global istek bozuksa eski davranisa duser; en azindan tutarli kalir.
+            model.TotalCount = response.Data?.TotalCount ?? 0;
+            model.ActiveCount = response.Data?.ActiveCount ?? 0;
+            model.PassiveCount = response.Data?.PassiveCount ?? 0;
+            model.AdminCount = response.Data?.AdminCount ?? 0;
+        }
 
         return View(model);
     }

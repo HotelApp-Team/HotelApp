@@ -29,6 +29,12 @@ public class AuthController : Controller
     [HttpGet]
     public async Task<IActionResult> Login(string? returnUrl = null)
     {
+        // Tarayicinin Login sayfasini cache'lemesini engelle.
+        // Yoksa kullanici onceki hatali submit'ten sonra geri gelince eski "Gecersiz email" mesajini gorebilir.
+        Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        Response.Headers["Pragma"] = "no-cache";
+        Response.Headers["Expires"] = "0";
+
         // Zaten giriş yapmışsa: ReturnUrl varsa oraya (sadece site içi adresse), yoksa ana sayfaya yönlendir.
         if (HttpContext.Session.IsAuthenticated(_configuration))
         {

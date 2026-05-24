@@ -57,8 +57,15 @@
                     @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
                     @Html.AntiForgeryToken()
 
-                    @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre"). *@
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    @* Backend'den gelen genel hatalar burada gorunur (orn: "yanlis email/sifre").
+                       Sadece bos key'li (ModelOnly) hata varsa render et; aksi halde sticky/cache mesaji gozukmesin. *@
+                    @{
+                        var hasModelOnlyError = ViewData.ModelState[string.Empty]?.Errors.Count > 0;
+                    }
+                    @if (hasModelOnlyError)
+                    {
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    }
 
                     @* Kullaniciya gorunmeyen alan — geri donus adresini POST'a tasir. *@
                     <input type="hidden" asp-for="ReturnUrl" />
