@@ -1,25 +1,48 @@
-﻿@model ErrorViewModel
+@model HotelApp.Web.Models.ErrorPageViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = $"{Model?.StatusCode} - {Model?.Title}";
+
+    // Model null gelirse (orn. eski code path) genel hatayi gosterelim.
+    var code = Model?.StatusCode ?? 500;
+    var title = Model?.Title ?? "Bir şeyler ters gitti";
+    var message = Model?.Message ?? "Beklenmeyen bir hata oluştu.";
+
+    // 404/403/401 icin farkli ikon goster; gerisi icin genel uyari ikonu.
+    var iconClass = code switch
+    {
+        404 => "bi-compass",
+        403 => "bi-shield-lock",
+        401 => "bi-person-lock",
+        _   => "bi-exclamation-octagon"
+    };
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+            @* Buyuk ikon - kullaniciyi rahatsiz etmeyen sembolik gosterim *@
+            <div class="mb-4 text-primary">
+                <i class="bi @iconClass" style="font-size: 4rem;"></i>
+            </div>
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+            @* Status code'u gosteren buyuk basamak *@
+            <h1 class="display-4 fw-bold mb-2">@code</h1>
+
+            @* Asil baslik ve aciklama *@
+            <h2 class="h4 mb-3">@title</h2>
+            <p class="text-muted mb-4">@message</p>
+
+            @* Kullaniciya geri donus secenekleri *@
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-house-door me-1"></i>Anasayfaya Dön
+                </a>
+                <a asp-controller="Hotels" asp-action="Search" class="btn btn-outline-secondary">
+                    <i class="bi bi-search me-1"></i>Otelleri Keşfet
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>

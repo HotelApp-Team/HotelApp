@@ -9,9 +9,14 @@ public class AdminUsersPageViewModel
     public bool? IsActive { get; set; }
     public int CurrentPage { get; set; } = 1;
     public int PageSize { get; set; } = 10;
+    // GLOBAL sayilar - stat cards icin (filtreden bagimsiz).
     public int TotalCount { get; set; }
     public int ActiveCount { get; set; }
     public int PassiveCount { get; set; }
     public int AdminCount { get; set; }
+
+    // Filtreli sonuc - tablo basligi ve sayfalama hesabi icin kullanilir.
+    public int FilteredCount { get; set; }
+
     public List<AdminUserViewModel> Users { get; set; } = new();
 }
