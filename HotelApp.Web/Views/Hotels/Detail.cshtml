@@ -54,25 +54,6 @@
     var trCulture = new System.Globalization.CultureInfo("tr-TR");
 }
 
-@if (TempData["Error"] != null)
-{
-    <div class="container mt-3">
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    </div>
-}
-
-@* Yorum gonderildikten sonra ReviewsController buraya redirect eder ve TempData["Success"]
-   ile basari mesaji birakir. Mesaj bir kerelik gosterilir. *@
-@if (TempData["Success"] != null)
-{
-    <div class="container mt-3">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
-        </div>
-    </div>
-}
-
 <!-- ================= HERO ================= -->
 <div class="hd-hero" style="background-image: url('@mainImageUrl')">
     <div class="hd-hero-overlay"></div>
