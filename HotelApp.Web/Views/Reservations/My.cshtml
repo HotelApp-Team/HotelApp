@@ -98,12 +98,15 @@ else
             var daysUntil = (r.CheckInDate.Date - today).Days;
 
             <article class="res-card">
-                @* Sol — otel gorseli placeholder (gerçek görsel modelde yok; CityImageHelper ile sonra eklenebilir) *@
+                @* Sol — otel gorseli placeholder; tiklayinca otelin detay sayfasina gider.
+                   Gerçek görsel modelde yok; CityImageHelper ile sonra eklenebilir. *@
                 <div class="res-card-media">
-                    <div class="res-card-thumb"
-                         data-label="@r.HotelName">
+                    <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@r.HotelId"
+                       class="res-card-thumb"
+                       data-label="@r.HotelName"
+                       title="@r.HotelName otel detayina git">
                         <i class="bi bi-building"></i>
-                    </div>
+                    </a>
                 </div>
 
                 @* Orta — metadata *@
@@ -120,7 +123,10 @@ else
                         }
                     </div>
 
-                    <h3 class="res-card-title">@r.HotelName</h3>
+                    <h3 class="res-card-title">
+                        <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@r.HotelId"
+                           class="res-card-title-link">@r.HotelName</a>
+                    </h3>
                     <div class="res-card-sub">
                         <i class="bi bi-house-door"></i>@r.RoomTypeName
                     </div>
