@@ -32,6 +32,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// 404, 403, 500 gibi status code'larda /Home/Error/{code} action'ina yonlendir.
+// UseExceptionHandler sadece atilan istisnalari yakalar; status code'lari yakalamaz.
+// UseStatusCodePagesWithReExecute kullanici dostu hata sayfalari icin gereklidir.
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
