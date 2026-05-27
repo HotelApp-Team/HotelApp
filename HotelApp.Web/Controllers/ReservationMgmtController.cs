@@ -5,16 +5,32 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
 {
+    /// <summary>
+    /// Admin panelinde rezervasyon listeleme, filtreleme ve durum guncelleme islemlerini yonetir.
+    /// </summary>
     [ServiceFilter(typeof(AdminFilter))]
     public class ReservationMgmtController : Controller
     {
         private readonly ApiService _apiService;
 
+        /// <summary>
+        /// ReservationMgmtController sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="apiService">API ile haberlesmek icin kullanilan servis.</param>
         public ReservationMgmtController(ApiService apiService)
         {
             _apiService = apiService;
         }
 
+        /// <summary>
+        /// Admin rezervasyon yonetim sayfasini filtre ve sayfalama bilgilerine gore getirir.
+        /// </summary>
+        /// <param name="status">Opsiyonel rezervasyon durumu filtresi.</param>
+        /// <param name="hotelId">Opsiyonel otel Id filtresi.</param>
+        /// <param name="from">Opsiyonel baslangic tarihi filtresi.</param>
+        /// <param name="to">Opsiyonel bitis tarihi filtresi.</param>
+        /// <param name="page">Getirilecek sayfa numarasi.</param>
+        /// <returns>Admin rezervasyon yonetim view sonucunu doner.</returns>
         public async Task<IActionResult> Index(string? status, int? hotelId, DateTime? from, DateTime? to, int page = 1)
         {
             var endpoint = $"admin/reservations?page={page}&pageSize=10";
@@ -43,6 +59,12 @@ namespace HotelApp.Web.Controllers
             return View("~/Views/Admin/Reservations.cshtml", model);
         }
 
+        /// <summary>
+        /// Belirtilen rezervasyonun durumunu admin API uzerinden gunceller.
+        /// </summary>
+        /// <param name="id">Durumu guncellenecek rezervasyonun Id degeri.</param>
+        /// <param name="status">Yeni rezervasyon durumu.</param>
+        /// <returns>Rezervasyon yonetim sayfasina yonlendirir.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
@@ -51,6 +73,12 @@ namespace HotelApp.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Belirtilen rezervasyonu onaylar veya onayini kaldirir.
+        /// </summary>
+        /// <param name="id">Onay durumu guncellenecek rezervasyonun Id degeri.</param>
+        /// <param name="confirm">true ise onaylar, false ise onayi kaldirir.</param>
+        /// <returns>Rezervasyon yonetim sayfasina yonlendirir.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id, bool confirm)

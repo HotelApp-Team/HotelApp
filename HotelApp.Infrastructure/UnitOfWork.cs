@@ -22,8 +22,10 @@ public class UnitOfWork : IUnitOfWork
     private IHotelRepository? _hotelRepository;
     private IHotelImageRepository? _hotelImageRepository;
     private IAmenityRepository? _amenityRepository;
+    private IRoomAmenityRepository? _roomAmenityRepository;
     private IUserRepository? _userRepository;
     private IAdminRepository? _adminRepository;
+    private IRoomImageRepository? _roomImageRepository;
 
     // Aynı request içinde kullanılacak DbContext'i alır.
     public UnitOfWork(HotelAppDbContext context)
@@ -50,6 +52,9 @@ public class UnitOfWork : IUnitOfWork
     public IAmenityRepository AmenityRepository =>
         _amenityRepository ??= new AmenityRepository(_context);
 
+    public IRoomAmenityRepository RoomAmenityRepository =>
+        _roomAmenityRepository ??= new RoomAmenityRepository(_context);
+
     public IUserRepository UserRepository =>
         _userRepository ??= new UserRepository(_context);
 
@@ -61,6 +66,8 @@ public class UnitOfWork : IUnitOfWork
 
     public IAdminRepository AdminRepository =>
         _adminRepository ??= new AdminRepository(_context);
+    public IRoomImageRepository RoomImageRepository =>
+        _roomImageRepository ??= new RoomImageRepository(_context);
 
     // Yapılan değişiklikleri veritabanına kaydeder.
     public async Task<int> SaveChangesAsync()

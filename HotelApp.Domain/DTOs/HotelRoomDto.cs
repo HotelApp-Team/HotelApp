@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -24,11 +24,20 @@ namespace HotelApp.Domain.DTOs
 
         [Range(1, int.MaxValue, ErrorMessage = "Oda sayısı en az 1 olmalı.")]
         public int TotalRooms { get; set; }
+        public bool IsActive { get; set; }
         public int MaxGuests { get; set; }
 
 
         public string HotelName { get; set; } = string.Empty;
         public string RoomTypeName { get; set; } = string.Empty;
+
+        public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
+
+
+        public string? MainImageUrl { get; set; }
+
+        public List<RoomImageDto> Images { get; set; } = new();
+
     }
 
     public class DetailHotelRoomDto
@@ -43,6 +52,7 @@ namespace HotelApp.Domain.DTOs
         public string HotelName { get; set; } = string.Empty;  // düzeltildi
         public string RoomTypeName { get; set; } = string.Empty;
         public int ReservationCount { get; set; }
+        public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
     }
 
     public class CreateHotelRoomDto

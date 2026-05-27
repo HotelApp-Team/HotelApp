@@ -1,11 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace HotelApp.Domain.Entities;
-
-// Log sınıfının amacı, Logs tablosundaki sistem kayıtlarını temsil etmektir.
-// Hangi işlemde ne olduğu, işlemi kimin yaptığı ve hata detayı gibi log bilgilerini tutar.
-// SOLID: SRP kullanır; sadece log entity verisini temsil eder.
 
 public partial class Log
 {

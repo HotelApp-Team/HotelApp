@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace HotelApp.Domain.Entities;
@@ -13,15 +13,20 @@ public partial class HotelRoom
 
     public decimal PricePerNight { get; set; }
 
-    public decimal ExtraGuestPricePerNight { get; set; }
-
     public int TotalRooms { get; set; }
 
     public bool IsActive { get; set; }
 
+    public decimal ExtraGuestPricePerNight { get; set; }
+
     public virtual Hotel Hotel { get; set; } = null!;
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+
+    public virtual ICollection<RoomAmenity> RoomAmenities { get; set; } = new List<RoomAmenity>();
+
+    public virtual ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
 
     public virtual RoomType RoomType { get; set; } = null!;
 }

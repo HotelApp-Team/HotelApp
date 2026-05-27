@@ -1,14 +1,28 @@
-﻿using HotelApp.Domain.DTOs;
+using HotelApp.Domain.DTOs;
 using HotelApp.Domain.Entities;
 using HotelApp.Domain.Interfaces;
 
 namespace HotelApp.Domain.Services
 {
+    /// <summary>
+    /// Otel odalariyla ilgili is kurallarini yoneten servis sinifidir.
+    /// Oda ekleme, guncelleme, silme, listeleme ve musait oda arama islemlerini gerceklestirir.
+    /// </summary>
     public class HotelRoomService : IHotelRoomService
     {
+        /// <summary>
+        /// HotelRoomService sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="unitOfWork">Repository islemlerine erisim icin kullanilan UnitOfWork nesnesi.</param>
         private readonly IUnitOfWork _unitOfWork;
         public HotelRoomService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
+        /// <summary>
+        /// Belirtilen otel ve oda tipi icin yeni oda kaydi olusturur.
+        /// </summary>
+        /// <param name="dto">Olusturulacak oda bilgilerini iceren DTO.</param>
+        /// <exception cref="KeyNotFoundException">Hotel veya oda tipi bulunamazsa firlatilir.</exception>
+        /// <exception cref="InvalidOperationException">Ayni otel ve oda tipi icin kayit varsa firlatilir.</exception>
         public async Task AddRoomsAsync(CreateHotelRoomDto dto)
         {
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.HotelId);
@@ -36,6 +50,14 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+
+        /// <summary>
+        /// Belirtilen Id degerine sahip oda kaydini siler.
+        /// Rezervasyonu olan odalar silinemez.
+        /// </summary>
+        /// <param name="id">Silinecek oda kaydinin Id degeri.</param>
+        /// <exception cref="KeyNotFoundException">Oda bulunamazsa firlatilir.</exception>
+        /// <exception cref="InvalidOperationException">Odaya ait rezervasyon varsa firlatilir.</exception>
         public async Task DeleteRoomsAsync(int id)
         {
             var rooms = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(id);
@@ -48,6 +70,11 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+
+        /// <summary>
+        /// Tum otel odalarini detay bilgileriyle birlikte getirir.
+        /// </summary>
+        /// <returns>Otel odasi DTO listesini doner.</returns>
         public async Task<IEnumerable<HotelRoomDto>> GetAllRoomsAsync()
         {
             var rooms = await _unitOfWork.HotelRoomRepository.GetRoomsWithDetailsAsync();
@@ -60,16 +87,33 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
-                RoomTypeName = x.RoomType?.Name ?? string.Empty
+                RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
 
+        /// <summary>
+        /// Belirtilen otel, sehir, tarih araligi ve misafir sayisina gore musait odalari getirir.
+        /// </summary>
+        /// <param name="hotelId">Arama yapilacak otelin Id degeri.</param>
+        /// <param name="city">Otelin bulundugu sehir.</param>
+        /// <param name="checkIn">Giris tarihi.</param>
+        /// <param name="checkOut">Cikis tarihi.</param>
+        /// <param name="guestCount">Misafir sayisi.</param>
+        /// <returns>Musait oda DTO listesini doner.</returns>
         public async Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(int hotelId, string city, DateTime checkIn, DateTime checkOut, int guestCount)
         {
             return await _unitOfWork.HotelRoomRepository.GetAvailableRoomsAsync(hotelId, city, checkIn, checkOut, guestCount);
         }
 
+
+        /// <summary>
+        /// Belirtilen Id degerine sahip otel odasini detay bilgileriyle birlikte getirir.
+        /// </summary>
+        /// <param name="id">Getirilecek oda kaydinin Id degeri.</param>
+        /// <returns>Oda detayi; bulunamazsa null.</returns>
         public async Task<DetailHotelRoomDto?> GetRoomByIdAsync(int id)
         {
             var room = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(id);
@@ -87,10 +131,16 @@ namespace HotelApp.Domain.Services
                 IsActive = room.IsActive,
                 HotelName = room.Hotel?.Name ?? string.Empty,
                 RoomTypeName = room.RoomType?.Name ?? string.Empty,
-                ReservationCount = room.Reservations.Count
+                ReservationCount = room.Reservations.Count,
+                RoomAmenities = MapRoomAmenities(room.RoomAmenities)
             };
         }
 
+        /// <summary>
+        /// Belirtilen otele ait odalari, oda tipi, imkan ve gorsel bilgileriyle birlikte getirir.
+        /// </summary>
+        /// <param name="hotelId">Odalari listelenecek otelin Id degeri.</param>
+        /// <returns>Belirtilen otele ait oda DTO listesini doner.</returns>
         public async Task<IEnumerable<HotelRoomDto>> GetRoomsByHotelAsync(int hotelId)
         {
             var rooms = await _unitOfWork.HotelRoomRepository.GetRoomsByHotelAsync(hotelId);
@@ -103,12 +153,37 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
                 RoomTypeName = x.RoomType?.Name ?? string.Empty,
-                MaxGuests = x.RoomType?.MaxGuests ?? 0
+                MaxGuests = x.RoomType?.MaxGuests ?? 0,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities),
+
+                MainImageUrl = x.RoomImages
+                .OrderByDescending(i => i.IsMain)
+                .ThenBy(i => i.DisplayOrder)
+                .Select(i => i.ImageUrl)
+                .FirstOrDefault(),
+
+                Images=x.RoomImages
+                .OrderByDescending(i => i.IsMain)
+                .ThenBy(i => i.DisplayOrder)
+                .Select(x => new RoomImageDto
+                {
+                    Id = x.Id,
+                    HotelRoomId= x.HotelRoomId,
+                    ImageUrl = x.ImageUrl,
+                    IsMain = x.IsMain,
+                    DisplayOrder = x.DisplayOrder
+                }).ToList()
             });
         }
 
+        /// <summary>
+        /// Belirtilen oda tipine ait otel odalarini getirir.
+        /// </summary>
+        /// <param name="roomTypeId">Odalari listelenecek oda tipinin Id degeri.</param>
+        /// <returns>Belirtilen oda tipine ait oda DTO listesini doner.</returns>
         public async Task<IEnumerable<HotelRoomDto>> GetRoomsByTypeAsync(int roomTypeId)
         {
             var rooms = await _unitOfWork.HotelRoomRepository.GetRoomsByRoomTypeAsync(roomTypeId);
@@ -120,11 +195,20 @@ namespace HotelApp.Domain.Services
                 PricePerNight = x.PricePerNight,
                 ExtraGuestPricePerNight = x.ExtraGuestPricePerNight,
                 TotalRooms = x.TotalRooms,
+                IsActive = x.IsActive,
                 HotelName = x.Hotel?.Name ?? string.Empty,
-                RoomTypeName = x.RoomType?.Name ?? string.Empty
+                RoomTypeName = x.RoomType?.Name ?? string.Empty,
+                RoomAmenities = MapRoomAmenities(x.RoomAmenities)
             });
         }
 
+        /// <summary>
+        /// Mevcut otel odasi kaydini gunceller.
+        /// Rezervasyonu olan odalarda oda sayisi degistirilemez ve oda pasife cekilemez.
+        /// </summary>
+        /// <param name="dto">Guncellenecek oda bilgilerini iceren DTO.</param>
+        /// <exception cref="KeyNotFoundException">Oda, hotel veya oda tipi bulunamazsa firlatilir.</exception>
+        /// <exception cref="InvalidOperationException">Is kurali ihlali durumunda firlatilir.</exception>
         public async Task UpdateRoomsAsync(UpdateHotelRoomDto dto)
         {
             var entity = await _unitOfWork.HotelRoomRepository.GetRoomWithDetailsAsync(dto.Id);
@@ -150,6 +234,9 @@ namespace HotelApp.Domain.Services
             if (entity.Reservations.Any() && entity.TotalRooms != dto.TotalRooms)
                 throw new InvalidOperationException("Rezervasyon varken oda sayısı değiştirilemez.");
 
+            if (entity.Reservations.Any() && !dto.IsActive)
+                throw new InvalidOperationException("Aktif rezervasyonu olan oda pasife çekilemez.");
+
             entity.HotelId = dto.HotelId;
             entity.RoomTypeId = dto.RoomTypeId;
             entity.PricePerNight = dto.PricePerNight;
@@ -159,6 +246,21 @@ namespace HotelApp.Domain.Services
 
             _unitOfWork.HotelRoomRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// RoomAmenity entity listesini RoomAmenityDto listesine donusturur.
+        /// </summary>
+        /// <param name="amenities">Donusturulecek oda imkani listesi.</param>
+        /// <returns>RoomAmenityDto listesini doner.</returns>
+        private static List<RoomAmenityDto> MapRoomAmenities(IEnumerable<RoomAmenity> amenities)
+        {
+            return amenities.Select(a => new RoomAmenityDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Icon = a.Icon
+            }).ToList();
         }
     }
 }

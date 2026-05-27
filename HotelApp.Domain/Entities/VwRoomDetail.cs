@@ -1,4 +1,7 @@
-﻿namespace HotelApp.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace HotelApp.Domain.Entities;
 
 public partial class VwRoomDetail
 {
@@ -15,6 +18,8 @@ public partial class VwRoomDetail
     public int MaxGuests { get; set; }
 
     public decimal PricePerNight { get; set; }
+
+    public decimal ExtraGuestPricePerNight { get; set; }
 
     public int TotalRooms { get; set; }
 

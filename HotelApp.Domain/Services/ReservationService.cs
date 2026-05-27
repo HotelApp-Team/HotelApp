@@ -10,12 +10,26 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
 {
+    /// <summary>
+    /// Rezervasyon islemlerine ait is kurallarini yoneten servis sinifidir.
+    /// Kullanici rezervasyonlarini listeleme, rezervasyon olusturma, iptal etme
+    /// ve gecmis rezervasyonlari tamamlama islemlerini gerceklestirir.
+    /// </summary>
     public class ReservationService : IReservationService
     {
+        /// <summary>
+        /// ReservationService sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="unitOfWork">Repository islemlerine erisim icin kullanilan UnitOfWork nesnesi.</param>
         private readonly IUnitOfWork _unitOfWork;
 
         public ReservationService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
+        /// <summary>
+        /// Belirtilen kullaniciya ait rezervasyonlari getirir.
+        /// </summary>
+        /// <param name="userId">Rezervasyonlari listelenecek kullanicinin Id degeri.</param>
+        /// <returns>Kullanicinin rezervasyon DTO listesini doner.</returns>
         public async Task<IEnumerable<ReservationDto>> GetUserReservationsAsync(int userId)
         {
             var reservations = await _unitOfWork.ReservationRepository.GetByUserIdAsync(userId);
@@ -24,6 +38,11 @@ namespace HotelApp.Domain.Services
 
         }
 
+        /// <summary>
+        /// Belirtilen kullaniciya ait rezervasyon detaylarini view uzerinden getirir.
+        /// </summary>
+        /// <param name="userId">Rezervasyon detaylari listelenecek kullanicinin Id degeri.</param>
+        /// <returns>Kullanicinin rezervasyon detay DTO listesini doner.</returns>
         public async Task<IEnumerable<ReservationDetailDto>> GetUserReservationDetailsAsync(int userId)
         {
             var details = await _unitOfWork.ReservationRepository
@@ -37,14 +56,19 @@ namespace HotelApp.Domain.Services
                 HotelId = x.HotelId,
                 HotelName = x.HotelName,
                 RoomTypeName = x.RoomTypeName,
-                CheckInDate = x.CheckInDate,
-                CheckOutDate = x.CheckOutDate,
+                CheckInDate = x.CheckInDate.ToDateTime(TimeOnly.MinValue),
+                CheckOutDate = x.CheckOutDate.ToDateTime(TimeOnly.MinValue),
                 GuestCount = x.GuestCount,
                 TotalPrice = x.TotalPrice,
                 Status = x.Status
             });
         }
 
+        /// <summary>
+        /// Verilen Id degerine sahip rezervasyonu detay bilgileriyle birlikte getirir.
+        /// </summary>
+        /// <param name="id">Getirilecek rezervasyonun Id degeri.</param>
+        /// <returns>Rezervasyon DTO nesnesi; bulunamazsa null.</returns>
         public async Task<ReservationDto?> GetReservationByIdAsync(int id)
         {
             var reservation = await _unitOfWork.ReservationRepository.GetWithDetailsAsync(id);
@@ -55,7 +79,15 @@ namespace HotelApp.Domain.Services
             return MapToDto(reservation);
         }
 
-
+        /// <summary>
+        /// Belirtilen kullanici icin yeni rezervasyon olusturur.
+        /// Tarih, misafir sayisi, odeme yontemi, oda aktifligi ve kapasite kontrollerini yapar.
+        /// </summary>
+        /// <param name="userId">Rezervasyonu olusturan kullanicinin Id degeri.</param>
+        /// <param name="dto">Rezervasyon olusturma bilgilerini iceren DTO.</param>
+        /// <returns>Olusturulan rezervasyon DTO nesnesini doner.</returns>
+        /// <exception cref="InvalidOperationException">Validasyon veya is kurali ihlali durumunda firlatilir.</exception>
+        /// <exception cref="KeyNotFoundException">Oda bulunamazsa veya aktif degilse firlatilir.</exception>
         public async Task<ReservationDto> CreateReservationAsync(int userId, CreateReservationDto dto)
         {
             if (dto.CheckInDate < DateOnly.FromDateTime(DateTime.Today))
@@ -97,6 +129,16 @@ namespace HotelApp.Domain.Services
             return MapToDto(reservationWithDetails);
         }
 
+        /// <summary>
+        /// Belirtilen rezervasyonu iptal eder.
+        /// Kullanici yalnizca kendi rezervasyonunu iptal edebilir; admin tum rezervasyonlari iptal edebilir.
+        /// </summary>
+        /// <param name="id">Iptal edilecek rezervasyonun Id degeri.</param>
+        /// <param name="userId">Islemi yapan kullanicinin Id degeri.</param>
+        /// <param name="isAdmin">Islemi yapan kullanicinin admin olup olmadigini belirtir.</param>
+        /// <exception cref="KeyNotFoundException">Rezervasyon bulunamazsa firlatilir.</exception>
+        /// <exception cref="UnauthorizedAccessException">Kullanicinin iptal yetkisi yoksa firlatilir.</exception>
+        /// <exception cref="InvalidOperationException">Rezervasyon durumu iptal icin uygun degilse firlatilir.</exception>
         public async Task CancelReservationAsync(int id, int userId, bool isAdmin)
         {
             var reservation = await _unitOfWork.ReservationRepository.GetByIdAsync(id);
@@ -127,14 +169,21 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        // Check-out tarihi gecmis Confirmed rezervasyonlari Completed yapan toplu UPDATE'i tetikler.
-        // Repository ExecuteUpdateAsync kullaniyor; SaveChanges cagirmaya gerek yok.
-        // Donus: etkilenen kayit sayisi (loglama/observability icin).
+        /// <summary>
+        /// Check-out tarihi gecmis Confirmed rezervasyonlari Completed durumuna gunceller.
+        /// Repository toplu guncelleme yaptigi icin SaveChanges cagirmaya gerek yoktur.
+        /// </summary>
+        /// <returns>Guncellenen rezervasyon kaydi sayisini doner.</returns>
         public async Task<int> MarkPastReservationsCompletedAsync()
         {
             return await _unitOfWork.ReservationRepository.MarkPastConfirmedAsCompletedAsync();
         }
 
+        /// <summary>
+        /// Reservation entity nesnesini ReservationDto nesnesine donusturur.
+        /// </summary>
+        /// <param name="reservation">Donusturulecek rezervasyon entity nesnesi.</param>
+        /// <returns>ReservationDto nesnesini doner.</returns>
         public static ReservationDto MapToDto(Reservation reservation)
         {
             return new ReservationDto
@@ -157,7 +206,5 @@ namespace HotelApp.Domain.Services
                 CreatedAt = reservation.CreatedAt
             };
         }
-
-
     }
 }

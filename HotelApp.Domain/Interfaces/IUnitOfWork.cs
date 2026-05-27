@@ -15,7 +15,9 @@ public interface IUnitOfWork : IDisposable
     IHotelRepository HotelRepository { get; }
     IHotelImageRepository HotelImageRepository { get; }
     IAmenityRepository AmenityRepository { get; }
+    IRoomAmenityRepository RoomAmenityRepository { get; }
     IAdminRepository AdminRepository { get; }
+    IRoomImageRepository RoomImageRepository { get; }
 
     // Yapılan değişiklikleri veritabanına kaydeder.
     Task<int> SaveChangesAsync();

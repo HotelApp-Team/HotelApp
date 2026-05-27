@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using HotelApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -7,10 +7,6 @@ namespace HotelApp.Infrastructure.Context;
 
 public partial class HotelAppDbContext : DbContext
 {
-    public HotelAppDbContext()
-    {
-    }
-
     public HotelAppDbContext(DbContextOptions<HotelAppDbContext> options)
         : base(options)
     {
@@ -32,23 +28,27 @@ public partial class HotelAppDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<RoomImage> RoomImages { get; set; }
+
     public virtual DbSet<RoomType> RoomTypes { get; set; }
+
+    public virtual DbSet<RoomAmenity> RoomAmenities { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<VwHotelSummary> VwHotelSummaries { get; set; }
 
-    public virtual DbSet<VwRoomDetail> VwRoomDetails { get; set; }
-
     public virtual DbSet<VwReservationDetail> VwReservationDetails { get; set; }
+
+    public virtual DbSet<VwRoomDetail> VwRoomDetails { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Amenity>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Amenitie__3214EC074E291C60");
+            entity.HasKey(e => e.Id).HasName("PK__Amenitie__3214EC076EEC5595");
 
-            entity.HasIndex(e => e.Name, "UQ__Amenitie__737584F60DFEE2C7").IsUnique();
+            entity.HasIndex(e => e.Name, "UQ__Amenitie__737584F68DC63E18").IsUnique();
 
             entity.Property(e => e.Icon).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(100);
@@ -56,7 +56,7 @@ public partial class HotelAppDbContext : DbContext
 
         modelBuilder.Entity<Hotel>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Hotels__3214EC07A717F1A8");
+            entity.HasKey(e => e.Id).HasName("PK__Hotels__3214EC079DF3CACE");
 
             entity.HasIndex(e => e.City, "IX_Hotels_City");
 
@@ -88,14 +88,14 @@ public partial class HotelAppDbContext : DbContext
                         .HasConstraintName("FK_HotelAmenities_Hotels"),
                     j =>
                     {
-                        j.HasKey("HotelId", "AmenityId").HasName("PK__HotelAme__EE40948FE4CC7574");
+                        j.HasKey("HotelId", "AmenityId").HasName("PK__HotelAme__EE40948F679E84E4");
                         j.ToTable("HotelAmenities");
                     });
         });
 
         modelBuilder.Entity<HotelImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__HotelIma__3214EC07FD447ED7");
+            entity.HasKey(e => e.Id).HasName("PK__HotelIma__3214EC0743DC57E5");
 
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
 
@@ -107,7 +107,7 @@ public partial class HotelAppDbContext : DbContext
 
         modelBuilder.Entity<HotelRoom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__HotelRoo__3214EC0780BEE822");
+            entity.HasKey(e => e.Id).HasName("PK__HotelRoo__3214EC07D8ABE90E");
 
             entity.HasIndex(e => e.HotelId, "IX_HotelRooms_HotelId");
 
@@ -115,11 +115,9 @@ public partial class HotelAppDbContext : DbContext
 
             entity.HasIndex(e => new { e.HotelId, e.RoomTypeId }, "UQ_HotelRooms").IsUnique();
 
+            entity.Property(e => e.ExtraGuestPricePerNight).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.ExtraGuestPricePerNight)
-                .HasColumnType("decimal(10, 2)")
-                .HasDefaultValue(0m);
 
             entity.HasOne(d => d.Hotel).WithMany(p => p.HotelRooms)
                 .HasForeignKey(d => d.HotelId)
@@ -130,11 +128,29 @@ public partial class HotelAppDbContext : DbContext
                 .HasForeignKey(d => d.RoomTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HotelRooms_RoomTypes");
+
+            entity.HasMany(d => d.RoomAmenities).WithMany(p => p.HotelRooms)
+                .UsingEntity<Dictionary<string, object>>(
+                    "HotelRoomAmenity",
+                    r => r.HasOne<RoomAmenity>().WithMany()
+                        .HasForeignKey("RoomAmenityId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_HotelRoomAmenities_RoomAmenities"),
+                    l => l.HasOne<HotelRoom>().WithMany()
+                        .HasForeignKey("HotelRoomId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_HotelRoomAmenities_HotelRooms"),
+                    j =>
+                    {
+                        j.HasKey("HotelRoomId", "RoomAmenityId")
+                            .HasName("PK_HotelRoomAmenities");
+                        j.ToTable("HotelRoomAmenities");
+                    });
         });
 
         modelBuilder.Entity<Log>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Logs__3214EC07CE31DA47");
+            entity.HasKey(e => e.Id).HasName("PK__Logs__3214EC07AC4EE53A");
 
             entity.HasIndex(e => e.Level, "IX_Logs_Level");
 
@@ -159,7 +175,7 @@ public partial class HotelAppDbContext : DbContext
 
         modelBuilder.Entity<Reservation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Reservat__3214EC0775B4D8B3");
+            entity.HasKey(e => e.Id).HasName("PK__Reservat__3214EC0746F46965");
 
             entity.HasIndex(e => new { e.CheckInDate, e.CheckOutDate }, "IX_Reservations_Dates");
 
@@ -188,7 +204,7 @@ public partial class HotelAppDbContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Reviews__3214EC0790F1D6EB");
+            entity.HasKey(e => e.Id).HasName("PK__Reviews__3214EC077A64544E");
 
             entity.ToTable(tb => tb.HasTrigger("trg_UpdateHotelRating"));
 
@@ -212,16 +228,27 @@ public partial class HotelAppDbContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07A4894E2A");
+            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC0782282B49");
 
             entity.HasIndex(e => e.Name, "UQ_Roles_Name").IsUnique();
 
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<RoomImage>(entity =>
+        {
+            entity.HasIndex(e => e.HotelRoomId, "IX_RoomImages_HotelRoomId");
+
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+
+            entity.HasOne(d => d.HotelRoom).WithMany(p => p.RoomImages)
+                .HasForeignKey(d => d.HotelRoomId)
+                .HasConstraintName("FK_RoomImages_HotelRooms");
+        });
+
         modelBuilder.Entity<RoomType>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__RoomType__3214EC0761FB9A9E");
+            entity.HasKey(e => e.Id).HasName("PK__RoomType__3214EC07DF186721");
 
             entity.HasIndex(e => e.Name, "UQ_RoomTypes_Name").IsUnique();
 
@@ -230,16 +257,25 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<RoomAmenity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_RoomAmenities");
+
+            entity.HasIndex(e => e.Name, "UQ_RoomAmenities_Name").IsUnique();
+
+            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07AF05B875");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC075FC12906");
 
             entity.HasIndex(e => e.Email, "IX_Users_Email");
 
-            entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
+            entity.HasIndex(e => e.PasswordResetToken, "IX_Users_PasswordResetToken").HasFilter("([PasswordResetToken] IS NOT NULL)");
 
-            entity.HasIndex(e => e.PasswordResetToken, "IX_Users_PasswordResetToken")
-                .HasFilter("[PasswordResetToken] IS NOT NULL");
+            entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Email).HasMaxLength(200);
@@ -281,18 +317,6 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<VwRoomDetail>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("vw_RoomDetails");
-
-            entity.Property(e => e.City).HasMaxLength(100);
-            entity.Property(e => e.HotelName).HasMaxLength(200);
-            entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.RoomTypeName).HasMaxLength(100);
-        });
-
         modelBuilder.Entity<VwReservationDetail>(entity =>
         {
             entity
@@ -310,6 +334,19 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.RoomTypeName).HasMaxLength(100);
             entity.Property(e => e.Status).HasMaxLength(20);
             entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
+        });
+
+        modelBuilder.Entity<VwRoomDetail>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_RoomDetails");
+
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.ExtraGuestPricePerNight).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.HotelName).HasMaxLength(200);
+            entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.RoomTypeName).HasMaxLength(100);
         });
 
         OnModelCreatingPartial(modelBuilder);

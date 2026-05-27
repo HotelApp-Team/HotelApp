@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace HotelApp.Domain.Entities;
@@ -25,17 +25,17 @@ public partial class User
 
     public DateTime? VerificationTokenExpiry { get; set; }
 
-    public string? PasswordResetToken { get; set; }
-
-    public DateTime? PasswordResetTokenExpiry { get; set; }
-
-    public DateTime? PasswordResetRequestedAt { get; set; }
-
     public int FailedLoginAttempts { get; set; }
 
     public DateTime? LockoutEndTime { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public string? PasswordResetToken { get; set; }
+
+    public DateTime? PasswordResetTokenExpiry { get; set; }
+
+    public DateTime? PasswordResetRequestedAt { get; set; }
 
     public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
 

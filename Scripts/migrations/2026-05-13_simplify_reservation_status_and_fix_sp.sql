@@ -298,6 +298,11 @@ BEGIN
 END;
 GO
 
+
+
+CREATE INDEX IX_RoomImages_HotelRoomId
+ON RoomImages(HotelRoomId);
+
 PRINT 'sp_SearchAvailableRooms guncellendi.';
 GO
 

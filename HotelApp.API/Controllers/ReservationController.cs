@@ -7,6 +7,10 @@ using System.Security.Claims;
 
 namespace HotelApp.API.Controllers
 {
+    /// <summary>
+    /// Kullanici rezervasyonlarini listeleme, detay goruntuleme,
+    /// fatura bilgisi alma, rezervasyon olusturma ve iptal etme islemlerini yonetir.
+    /// </summary>
     [Authorize]
     [Route("api/reservations")]
     [ApiController]
@@ -15,12 +19,21 @@ namespace HotelApp.API.Controllers
         private readonly IReservationService _reservationService;
         private readonly ILoggerService _logger;
 
+        /// <summary>
+        /// ReservationController sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="reservationService">Rezervasyon islemleri icin kullanilan servis.</param>
+        /// <param name="logger">Loglama islemleri icin kullanilan servis.</param>
         public ReservationController(IReservationService reservationService, ILoggerService logger)
         {
             _reservationService = reservationService;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Giris yapmis kullanicinin rezervasyon detaylarini getirir.
+        /// </summary>
+        /// <returns>Kullaniciya ait rezervasyon detay listesini doner.</returns>
         [HttpGet("my")]
         public async Task<IActionResult> GetMyReservations()
         {
@@ -32,6 +45,12 @@ namespace HotelApp.API.Controllers
             return Ok(reservation);
         }
 
+        /// <summary>
+        /// Belirtilen Id degerine sahip rezervasyonu getirir.
+        /// Kullanici yalnizca kendi rezervasyonunu, admin ise tum rezervasyonlari goruntuleyebilir.
+        /// </summary>
+        /// <param name="id">Getirilecek rezervasyonun Id degeri.</param>
+        /// <returns>Rezervasyon bilgilerini doner.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -51,6 +70,12 @@ namespace HotelApp.API.Controllers
             return Ok(reservation);
         }
 
+        /// <summary>
+        /// Belirtilen rezervasyon icin fatura bilgisini getirir.
+        /// Kullanici yalnizca kendi rezervasyon faturasini, admin ise tum faturalarin bilgisini goruntuleyebilir.
+        /// </summary>
+        /// <param name="id">Faturasi goruntulenecek rezervasyonun Id degeri.</param>
+        /// <returns>Rezervasyon fatura bilgisini doner.</returns>
         [HttpGet("{id}/invoice")]
         public async Task<IActionResult> GetInvoice(int id)
         {
@@ -74,6 +99,11 @@ namespace HotelApp.API.Controllers
             return Ok(reservation);
         }
 
+        /// <summary>
+        /// Giris yapmis kullanici icin yeni rezervasyon olusturur.
+        /// </summary>
+        /// <param name="dto">Rezervasyon olusturma bilgilerini iceren DTO.</param>
+        /// <returns>Olusturulan rezervasyon bilgisini doner.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateReservationDto dto)
         {
@@ -89,6 +119,12 @@ namespace HotelApp.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = reservation.Id }, reservation);
         }
 
+        /// <summary>
+        /// Belirtilen rezervasyonu iptal eder.
+        /// Kullanici yalnizca kendi rezervasyonunu, admin ise tum rezervasyonlari iptal edebilir.
+        /// </summary>
+        /// <param name="id">Iptal edilecek rezervasyonun Id degeri.</param>
+        /// <returns>Basarili olursa 204 NoContent doner.</returns>
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -106,6 +142,11 @@ namespace HotelApp.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// JWT claim bilgileri uzerinden giris yapmis kullanicinin Id degerini okumaya calisir.
+        /// </summary>
+        /// <param name="userId">Basarili olursa kullanici Id degeri atanir.</param>
+        /// <returns>Kullanici Id degeri okunabilirse true, aksi halde false doner.</returns>
         private bool TryGetCurrentUserId(out int userId)
         {
             userId = 0;
@@ -115,6 +156,12 @@ namespace HotelApp.API.Controllers
             return int.TryParse(userIdClaim, out userId);
         }
 
+        /// <summary>
+        /// Rezervasyon controller islemleri icin bilgi seviyesinde log kaydi olusturur.
+        /// </summary>
+        /// <param name="message">Log mesajı.</param>
+        /// <param name="userId">Varsa islemi yapan kullanicinin Id degeri.</param>
+        /// <param name="userEmail">Varsa islemi yapan kullanicinin e-posta adresi.</param>
         private async Task LogInfoAsync(string message, int? userId = null, string? userEmail = null)
         {
             await _logger.LogInfoAsync(

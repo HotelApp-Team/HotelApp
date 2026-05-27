@@ -11,12 +11,26 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Infrastructure.Repositories
 {
+    /// <summary>
+    /// Reservation entity'si icin veritabani erisim islemlerini yoneten repository sinifidir.
+    /// Kullanici rezervasyonlari, rezervasyon detaylari, rezervasyon olusturma,
+    /// gecmis rezervasyonlari tamamlama ve konaklama gecmisi kontrolu sorgularini gerceklestirir.
+    /// </summary>
     public class ReservationRepository : Repository<Reservation>, IReservationRepository
     {
+        /// <summary>
+        /// ReservationRepository sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="context">Veritabani islemleri icin kullanilan DbContext nesnesi.</param>
         public ReservationRepository(HotelAppDbContext context) : base(context)
         {
         }
 
+        /// <summary>
+        /// Belirtilen kullaniciya ait rezervasyonlari otel odasi, otel ve oda tipi detaylariyla birlikte getirir.
+        /// </summary>
+        /// <param name="userId">Rezervasyonlari listelenecek kullanicinin Id degeri.</param>
+        /// <returns>Kullaniciya ait rezervasyon listesini doner.</returns>
         public async Task<IEnumerable<Reservation>> GetByUserIdAsync(int userId)
         {
             return await _dbSet
@@ -29,6 +43,11 @@ namespace HotelApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Belirtilen kullaniciya ait rezervasyon detaylarini view uzerinden getirir.
+        /// </summary>
+        /// <param name="userId">Rezervasyon detaylari listelenecek kullanicinin Id degeri.</param>
+        /// <returns>Kullaniciya ait rezervasyon detay listesini doner.</returns>
         public async Task<IEnumerable<VwReservationDetail>> GetReservationDetailsByUserIdAsync(int userId)
         {
             return await _context.VwReservationDetails
@@ -37,6 +56,11 @@ namespace HotelApp.Infrastructure.Repositories
                  .ToListAsync();
         }
 
+        /// <summary>
+        /// Verilen Id degerine sahip rezervasyonu kullanici, otel odasi, otel ve oda tipi detaylariyla birlikte getirir.
+        /// </summary>
+        /// <param name="id">Getirilecek rezervasyonun Id degeri.</param>
+        /// <returns>Rezervasyon detayi; bulunamazsa null.</returns>
         public async Task<Reservation?> GetWithDetailsAsync(int id)
         {
             return await _dbSet
@@ -48,6 +72,18 @@ namespace HotelApp.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        /// <summary>
+        /// sp_MakeReservation stored procedure'unu kullanarak yeni rezervasyon olusturur.
+        /// Procedure sonucunda olusan ReservationId degeriyle rezervasyon kaydini tekrar okur.
+        /// </summary>
+        /// <param name="hotelRoomId">Rezervasyon yapilacak otel odasinin Id degeri.</param>
+        /// <param name="userId">Rezervasyonu yapan kullanicinin Id degeri.</param>
+        /// <param name="checkInDate">Giris tarihi.</param>
+        /// <param name="checkOutDate">Cikis tarihi.</param>
+        /// <param name="guestCount">Misafir sayisi.</param>
+        /// <param name="paymentMethod">Odeme yontemi.</param>
+        /// <returns>Olusturulan rezervasyon kaydini doner.</returns>
+        /// <exception cref="InvalidOperationException">Procedure rezervasyon olusturamazsa veya olusan kayit geri okunamazsa firlatilir.</exception>
         public async Task<Reservation> MakeReservationAsync(int hotelRoomId, int userId, DateOnly checkInDate, DateOnly checkOutDate, int guestCount, string paymentMethod)
         {
             var hotelRoomParam = new SqlParameter("@HotelRoomId", hotelRoomId);
@@ -108,9 +144,10 @@ namespace HotelApp.Infrastructure.Repositories
             return reservation;
         }
 
-        // Check-out tarihi bugunden onceki "Confirmed" rezervasyonlari tek SQL UPDATE'i ile "Completed" yapar.
-        // ExecuteUpdateAsync entity'leri belege yuklemeden direkt UPDATE calistirir; binlerce kayit icin de hizli.
-        // Donus: SQL'in etkiledigi satir sayisi.
+        /// <summary>
+        /// Check-out tarihi gecmis Confirmed rezervasyonlari Completed durumuna toplu olarak gunceller.
+        /// </summary>
+        /// <returns>Guncellenen rezervasyon kaydi sayisini doner.</returns>
         public async Task<int> MarkPastConfirmedAsCompletedAsync()
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
@@ -121,13 +158,15 @@ namespace HotelApp.Infrastructure.Repositories
                     .SetProperty(r => r.Status, "Completed"));
         }
 
-        // Yorum yazma yetkisi kontrolu icin VwReservationDetail uzerinden sorgu.
-        // View'de Reservation + HotelRoom + Hotel join'i hazir, ek includere gerek yok.
-        // Esnek kural: Background service "Completed"a cevirmediyse bile,
-        // checkout tarihi gecmis "Confirmed" rezervasyonlar da yorum yazma hakki saglar.
+        /// <summary>
+        /// Belirtilen kullanicinin belirtilen otelde tamamlanmis veya check-out tarihi gecmis konaklamasi olup olmadigini kontrol eder.
+        /// </summary>
+        /// <param name="userId">Kontrol edilecek kullanicinin Id degeri.</param>
+        /// <param name="hotelId">Kontrol edilecek otelin Id degeri.</param>
+        /// <returns>Kullanici ilgili otelde konaklamayi tamamlamissa true, aksi halde false doner.</returns>
         public async Task<bool> HasCompletedStayAsync(int userId, int hotelId)
         {
-            var today = DateTime.Today;
+            var today = DateOnly.FromDateTime(DateTime.Today);
 
             return await _context.VwReservationDetails
                 .AnyAsync(v => v.UserId == userId

@@ -1,4 +1,4 @@
-﻿namespace HotelApp.Web.Models
+namespace HotelApp.Web.Models
 {
     public class AvailableRoomViewModel
     {
@@ -13,5 +13,13 @@
         public int TotalRooms { get; set; }
         public int ReservedCount { get; set; }
         public int AvailableRooms { get; set; }
+
+        public bool IsActive { get; set; }
+        public List<RoomAmenityViewModel> RoomAmenities { get; set; } = new();
+
+        public string? MainImageUrl { get; set; }
+
+        public List<RoomImageViewModel> Images { get; set; } = new();
+
     }
 }

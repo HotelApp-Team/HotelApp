@@ -5,16 +5,27 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
 {
+    /// <summary>
+    /// Web arayuzunde kullanici yorumlarini listeleme, yorum olusturma
+    /// ve yorum silme islemlerini yonetir.
+    /// </summary>
     public class ReviewsController : Controller
     {
         private readonly ApiService _apiService;
 
+        /// <summary>
+        /// ReviewsController sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="apiService">API ile haberlesmek icin kullanilan servis.</param>
         public ReviewsController(ApiService apiService)
         {
             _apiService = apiService;
         }
 
-        // Kullanicinin kendi yorumlarini listeleyen sayfa.
+        /// <summary>
+        /// Giris yapmis kullanicinin kendi yorumlarini listeler.
+        /// </summary>
+        /// <returns>Kullanicinin yorumlari view sonucunu doner.</returns>
         [ServiceFilter(typeof(AuthFilter))]
         public async Task<IActionResult> My()
         {
@@ -29,9 +40,13 @@ namespace HotelApp.Web.Controllers
             return View(response.Data ?? new List<ReviewViewModel>());
         }
 
-        // Web projesinde [Authorize] calismaz cunku auth scheme kurulu degil
-        // (Program.cs'de AddAuthentication/UseAuthentication yok). Bunun yerine
-        // session/JWT tabanli AuthFilter kullaniyoruz.
+        /// <summary>
+        /// Giris yapmis kullanici icin belirtilen otele yeni yorum ekler.
+        /// Web projesinde session/JWT tabanli AuthFilter ile yetki kontrolu yapilir.
+        /// </summary>
+        /// <param name="hotelId">Yorum eklenecek otelin Id degeri.</param>
+        /// <param name="model">Yorum bilgilerini iceren view model.</param>
+        /// <returns>Otel detay sayfasina yonlendirir.</returns>
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]
@@ -47,6 +62,12 @@ namespace HotelApp.Web.Controllers
             return RedirectToAction("Detail", "Hotels", new { id = hotelId });
         }
 
+        /// <summary>
+        /// Belirtilen yorumu siler.
+        /// Islem sonucunu TempData uzerinden kullaniciya gosterir.
+        /// </summary>
+        /// <param name="id">Silinecek yorumun Id degeri.</param>
+        /// <returns>Kullanici yorumlari sayfasina yonlendirir.</returns>
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]

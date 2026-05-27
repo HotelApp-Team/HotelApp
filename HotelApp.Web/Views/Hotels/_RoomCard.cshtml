@@ -5,18 +5,14 @@
     var checkIn = ViewData["CheckIn"]?.ToString();
     var checkOut = ViewData["CheckOut"]?.ToString();
 
-    // Search'ten gelen guestCount bu oda tipinin MaxGuests'inden buyukse
-    // Booking linkinde max'a indir; aksi takdirde Booking sayfasindaki
-    // <input max="@Model.MaxGuests"> validasyonu yuzunden "Değer X veya
-    // daha küçük olmalıdır" hatasi cikiyordu. Min 1 ile koruyoruz.
     int requestedGuests;
     if (!int.TryParse(ViewData["GuestCount"]?.ToString(), out requestedGuests) || requestedGuests < 1)
     {
         requestedGuests = 1;
     }
+
     var clampedGuests = Math.Min(requestedGuests, Model.MaxGuests);
     var guestCount = clampedGuests.ToString();
-
     var trCulture = new System.Globalization.CultureInfo("tr-TR");
 }
 
@@ -24,13 +20,43 @@
     <article class="hd-room">
 
         <div class="hd-room-media">
-            @* Oda gorseli alani — model'de oda gorseli alani yok, bu yuzden bir
-               placeholder gosteriliyor. Backend'e ileride RoomTypeImageUrl eklenirse
-               buradaki <div> bir <img> ile degistirilebilir. *@
-            <div class="hd-room-img-ph">
-                <i class="bi bi-door-open"></i>
-                <span>Oda görseli</span>
-            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.MainImageUrl))
+            {
+                <button type="button"
+                        class="hd-room-img-button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#roomImageModal-@roomId">
+                    <img src="@Model.MainImageUrl"
+                         alt="@Model.RoomTypeName"
+                         class="hd-room-img"
+                         loading="lazy" />
+                </button>
+
+                <div class="modal fade"
+                     id="roomImageModal-@roomId"
+                     tabindex="-1"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content bg-dark border-0">
+                            <div class="modal-body p-0">
+                                <img src="@Model.MainImageUrl"
+                                     alt="@Model.RoomTypeName"
+                                     class="d-block w-100"
+                                     style="max-height: 80vh; object-fit: contain; background: #fff;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="hd-room-img-ph">
+                    <i class="bi bi-door-open"></i>
+                    <span>Oda görseli</span>
+                </div>
+            }
+
         </div>
 
         <div class="hd-room-body">
@@ -40,12 +66,24 @@
                 <i class="bi bi-people"></i> Maksimum @Model.MaxGuests kişi
             </div>
 
-            <div class="hd-room-chips">
-                <span class="hd-room-chip"><i class="bi bi-wifi"></i> Wi-Fi</span>
-                <span class="hd-room-chip"><i class="bi bi-snow"></i> Klima</span>
-                <span class="hd-room-chip"><i class="bi bi-cup-hot"></i> Kahvaltı</span>
-                <span class="hd-room-chip"><i class="bi bi-tv"></i> Smart TV</span>
-            </div>
+            @if (Model.RoomAmenities.Any())
+            {
+                <div class="hd-room-chips">
+                    @foreach (var amenity in Model.RoomAmenities.OrderBy(x => x.Name))
+                    {
+                        var iconClass = "bi bi-check-circle";
+
+                        if (!string.IsNullOrWhiteSpace(amenity.Icon))
+                        {
+                            iconClass = amenity.Icon.StartsWith("bi ")
+                            ? amenity.Icon
+                            : $"bi bi-{amenity.Icon}";
+                        }
+
+                        <span class="hd-room-chip"><i class="@iconClass"></i> @amenity.Name</span>
+                    }
+                </div>
+            }
 
             <div class="hd-room-perk">
                 <i class="bi bi-check-circle-fill"></i>
@@ -74,7 +112,4 @@
     </article>
 </div>
 
-@* _BookingModal partial cagrisi kaldirildi: "Rezervasyon Yap" butonu artik tam sayfa
-   /Booking/Create akisina yonlendiriyor, modal tetikleyici yok. Partial dosya repoda
-   kalmaya devam ediyor (ileride modal akisina donulmek istenirse kullanilabilir),
-   sadece her oda icin gereksiz olu DOM/JS render edilmesi engellendi. *@
+@* _BookingModal / bookingModal contract note: reservation now uses full page Booking/Create flow. *@

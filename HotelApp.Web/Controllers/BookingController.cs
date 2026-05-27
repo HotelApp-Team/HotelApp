@@ -1,21 +1,32 @@
-﻿using HotelApp.Web.Filters;
+using HotelApp.Web.Filters;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
 {
+    /// <summary>
+    /// Web arayuzunde rezervasyon olusturma sayfasi ve rezervasyon kaydetme islemlerini yonetir.
+    /// </summary>
     public class BookingController : Controller
     {
         private readonly ApiService _apiService;
 
+        /// <summary>
+        /// BookingController sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="apiService">API ile haberlesmek icin kullanilan servis.</param>
         public BookingController(ApiService apiService)
         {
             _apiService = apiService;
         }
 
-       
-
+        /// <summary>
+        /// Rezervasyon formundan gelen bilgileri API'ye gondererek yeni rezervasyon olusturur.
+        /// Model ve tarih araligi validasyonu yapar; sonuc mesajini TempData uzerinden tasir.
+        /// </summary>
+        /// <param name="model">Rezervasyon olusturma bilgilerini iceren view model.</param>
+        /// <returns>Basarili olursa rezervasyonlarim sayfasina, hata durumunda otel detay sayfasina yonlendirir.</returns>
         [ServiceFilter(typeof(AuthFilter))]
         [ValidateAntiForgeryToken]
         [HttpPost]
@@ -40,19 +51,30 @@ namespace HotelApp.Web.Controllers
                 TempData["Error"] = response.Message;
                 return RedirectToAction("Detail", "Hotels", new { id = model.HotelId });
             }
+
             TempData["Success"] = "Rezervasyon başarıyla oluşturuldu.";
             return RedirectToAction("My", "Reservations");
         }
 
-
+        /// <summary>
+        /// Rezervasyon olusturma sayfasini hazirlar.
+        /// Secilen oda bilgilerini API'den alir ve tarih/misafir sayisi bilgileriyle view model olusturur.
+        /// </summary>
+        /// <param name="hotelId">Rezervasyon yapilacak otelin Id degeri.</param>
+        /// <param name="hotelRoomId">Rezervasyon yapilacak otel odasinin Id degeri.</param>
+        /// <param name="checkIn">Varsa secili giris tarihi.</param>
+        /// <param name="checkOut">Varsa secili cikis tarihi.</param>
+        /// <param name="guestCount">Varsa secili misafir sayisi.</param>
+        /// <returns>Rezervasyon sayfasini veya hata durumunda otel detay sayfasina yonlendirme sonucunu doner.</returns>
         [ServiceFilter(typeof(AuthFilter))]
         [HttpGet]
         public async Task<IActionResult> Create(int hotelId, int hotelRoomId, DateTime? checkIn, DateTime? checkOut, int? guestCount)
         {
             var response = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{hotelId}/rooms");
 
-            var room = response.Data?.FirstOrDefault(x =>
-            x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
+            var room = response.Data?
+                .Where(x => x.IsActive)
+                .FirstOrDefault(x => x.Id == hotelRoomId || x.HotelRoomId == hotelRoomId);
 
             if (room == null)
             {
