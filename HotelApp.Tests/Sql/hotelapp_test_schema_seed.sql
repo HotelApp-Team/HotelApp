@@ -1,12 +1,4 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 USE [master];
-=======
-﻿--git checkout mainUSE [master];
->>>>>>> Stashed changes
-=======
-﻿--git checkout mainUSE [master];
->>>>>>> Stashed changes
 GO
 
 -- QUOTED_IDENTIFIER ON: filtered unique index'lerin (UQ_HotelRooms_NoView, _WithView)
