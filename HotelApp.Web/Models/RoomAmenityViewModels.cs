@@ -38,6 +38,12 @@ public class AdminHotelRoomViewModel
     public int MaxGuests { get; set; }
     public int TotalRooms { get; set; }
     public bool IsActive { get; set; }
+
+    // Manzara bilgisi API'den gelir (NULL olabilir).
+    public int? RoomViewId { get; set; }
+    public string? RoomViewName { get; set; }
+    public string? RoomViewIcon { get; set; }
+
     public List<RoomAmenityViewModel> RoomAmenities { get; set; } = new();
     public string? MainImageUrl { get; set; }
     public List<RoomImageViewModel> Images { get; set; } = new();

@@ -29,9 +29,13 @@
     <div class="account-form-card-body">
         <form asp-action="UpdateProfile" asp-controller="Profile" method="post">
             @Html.AntiForgeryToken()
-            @if (ViewData["ProfileErrorMessage"] is string profileError)
+            @{
+                // PRG sonrasi TempData'dan, eski akis icin ViewData'dan oku.
+                var profileError = TempData["ProfileErrorMessage"] as string ?? ViewData["ProfileErrorMessage"] as string;
+            }
+            @if (!string.IsNullOrWhiteSpace(profileError))
             {
-                <div class="text-danger mb-3" role="alert">@profileError</div>
+                <div class="alert alert-danger" role="alert">@profileError</div>
             }
 
             <div class="row">
@@ -65,17 +69,22 @@
     </div>
 </div>
 
-@* E47: Sifre degisimi mevcut sifre, yeni sifre ve tekrar alanlariyla API'ye gonderilir. *@
-<div class="app-card account-form-card mb-4">
+@* E47: Sifre degisimi mevcut sifre, yeni sifre ve tekrar alanlariyla API'ye gonderilir.
+   id="change-password" - PRG sonrasi anchor scroll icin (controller'da Url.Action(..., "change-password") kullanir). *@
+<div class="app-card account-form-card mb-4" id="change-password">
     <div class="account-form-card-head">
         <h5 class="mb-0"><i class="bi bi-shield-lock"></i>Şifre Değiştir</h5>
     </div>
     <div class="account-form-card-body">
         <form asp-action="ChangePassword" asp-controller="Profile" method="post">
             @Html.AntiForgeryToken()
-            @if (ViewData["PasswordErrorMessage"] is string passwordError)
+            @{
+                // PRG sonrasi TempData'dan, eski akis icin ViewData'dan oku.
+                var passwordError = TempData["PasswordErrorMessage"] as string ?? ViewData["PasswordErrorMessage"] as string;
+            }
+            @if (!string.IsNullOrWhiteSpace(passwordError))
             {
-                <div class="text-danger mb-3" role="alert">@passwordError</div>
+                <div class="alert alert-danger" role="alert">@passwordError</div>
             }
 
             @* Guvenlik: Sifre alanlari password input olarak kalir ve autocomplete amaci net belirtilir. *@
@@ -107,5 +116,20 @@
         $.validator.methods.phone = function (value, element) {
             return this.optional(element) || /^[\d\s\+\-\(\)]{7,20}$/.test(value);
         };
+
+        // PRG sonrasi URL'de #change-password gibi anchor varsa o bolume scroll et.
+        // Tarayicinin native hash scroll'u POST-redirect-GET akisinda her zaman tetiklenmez,
+        // bu yuzden DOM hazir oldugunda elle scrollIntoView cagiriyoruz.
+        document.addEventListener('DOMContentLoaded', function () {
+            if (location.hash && location.hash.length > 1) {
+                var target = document.querySelector(location.hash);
+                if (target) {
+                    // Layout'taki sticky header altinda kalmasin diye block:'start' + ust bosluk.
+                    setTimeout(function () {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 50);
+                }
+            }
+        });
     </script>
 }

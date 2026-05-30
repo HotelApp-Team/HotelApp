@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers;
 
+// Oda olanaklari icin CRUD action'lari. Sayfa render'i artik
+// AmenityMgmtController/Index uzerinden tek sayfada yapiliyor.
+// Bu controller sadece form post hedefi olarak duruyor.
 [Route("Admin/RoomAmenities")]
 [ServiceFilter(typeof(AdminFilter))]
 public class RoomAmenityController : Controller
@@ -17,10 +20,10 @@ public class RoomAmenityController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var model = await BuildPageModelAsync();
-        return View("~/Views/Admin/RoomAmenities.cshtml", model);
+        // Eski URL'i hala yazan biri olursa yeni birlesik sayfaya gonder.
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Create")]
@@ -29,9 +32,8 @@ public class RoomAmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var pageModel = await BuildPageModelAsync();
-            pageModel.CreateForm = model;
-            return View("~/Views/Admin/RoomAmenities.cshtml", pageModel);
+            TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
+            return RedirectToAction("Index", "AmenityMgmt");
         }
 
         var response = await _apiService.PostAsync<object>("room-amenities", new
@@ -40,16 +42,10 @@ public class RoomAmenityController : Controller
             model.Icon
         });
 
-        if (!response.Success)
-        {
-            var pageModel = await BuildPageModelAsync();
-            pageModel.CreateForm = model;
-            TempData["ErrorMessage"] = response.Message ?? "Oda olanağı eklenemedi.";
-            return View("~/Views/Admin/RoomAmenities.cshtml", pageModel);
-        }
+        TempData[response.Success ? "Success" : "Error"] =
+            response.Success ? "Oda olanağı eklendi." : response.Message ?? "Oda olanağı eklenemedi.";
 
-        TempData["SuccessMessage"] = "Oda olanağı eklendi.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Edit/{id}")]
@@ -58,9 +54,8 @@ public class RoomAmenityController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var pageModel = await BuildPageModelAsync();
-            pageModel.EditForm = model;
-            return View("~/Views/Admin/RoomAmenities.cshtml", pageModel);
+            TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
+            return RedirectToAction("Index", "AmenityMgmt");
         }
 
         var response = await _apiService.PutAsync($"room-amenities/{id}", new
@@ -70,16 +65,10 @@ public class RoomAmenityController : Controller
             model.Icon
         });
 
-        if (!response.Success)
-        {
-            var pageModel = await BuildPageModelAsync();
-            pageModel.EditForm = model;
-            TempData["ErrorMessage"] = response.Message ?? "Oda olanağı güncellenemedi.";
-            return View("~/Views/Admin/RoomAmenities.cshtml", pageModel);
-        }
+        TempData[response.Success ? "Success" : "Error"] =
+            response.Success ? "Oda olanağı güncellendi." : response.Message ?? "Oda olanağı güncellenemedi.";
 
-        TempData["SuccessMessage"] = "Oda olanağı güncellendi.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 
     [HttpPost("Delete/{id}")]
@@ -88,24 +77,9 @@ public class RoomAmenityController : Controller
     {
         var response = await _apiService.DeleteAsync($"room-amenities/{id}");
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+        TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı silindi." : response.Message ?? "Oda olanağı silinemedi.";
 
-        return RedirectToAction(nameof(Index));
-    }
-
-    private async Task<AdminRoomAmenityPageViewModel> BuildPageModelAsync()
-    {
-        var response = await _apiService.GetAsync<List<RoomAmenityViewModel>>("room-amenities");
-
-        if (!response.Success)
-            TempData["ErrorMessage"] = response.Message ?? "Oda olanağı listesi alınamadı.";
-
-        return new AdminRoomAmenityPageViewModel
-        {
-            RoomAmenities = response.Success ? response.Data ?? new() : new(),
-            CreateForm = new AdminRoomAmenityFormViewModel(),
-            EditForm = new AdminRoomAmenityFormViewModel()
-        };
+        return RedirectToAction("Index", "AmenityMgmt");
     }
 }

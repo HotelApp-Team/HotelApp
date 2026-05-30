@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IAuthRepository AuthRepository { get; }
     IHotelRoomRepository HotelRoomRepository { get; }
     IRoomTypeRepository RoomTypeRepository { get; }
+    IRoomViewRepository RoomViewRepository { get; }
     IReservationRepository ReservationRepository { get; }
     IReviewRepository ReviewRepository { get; }
     IUserRepository UserRepository { get; }

@@ -24,4 +24,12 @@ public partial class VwRoomDetail
     public int TotalRooms { get; set; }
 
     public bool IsActive { get; set; }
+
+    // Manzara alanlari (vw_RoomDetails view'inden LEFT JOIN ile gelir).
+    // NULL olabilir; eski kayitlarda veya manzara secilmemis odalarda bos.
+    public int? RoomViewId { get; set; }
+
+    public string? RoomViewName { get; set; }
+
+    public string? RoomViewIcon { get; set; }
 }

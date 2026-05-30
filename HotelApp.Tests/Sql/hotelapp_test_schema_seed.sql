@@ -9,6 +9,11 @@ USE [master];
 >>>>>>> Stashed changes
 GO
 
+-- QUOTED_IDENTIFIER ON: filtered unique index'lerin (UQ_HotelRooms_NoView, _WithView)
+-- olusturulmasi icin gereklidir. sqlcmd default'unda OFF gelir.
+SET QUOTED_IDENTIFIER ON;
+GO
+
 IF DB_ID(N'$(DatabaseName)') IS NOT NULL
 BEGIN
     ALTER DATABASE [$(DatabaseName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -51,6 +56,17 @@ CREATE TABLE RoomTypes (
 );
 GO
 
+-- Oda manzara (RoomView) lookup tablosu - 2026-05-19 migration ile eklendi.
+CREATE TABLE RoomViews (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(50) NOT NULL,
+    Icon NVARCHAR(50) NULL,
+    DisplayOrder INT NOT NULL DEFAULT 0,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT UQ_RoomViews_Name UNIQUE (Name)
+);
+GO
+
 CREATE TABLE HotelRooms (
     Id INT PRIMARY KEY IDENTITY(1,1),
     HotelId INT NOT NULL,
@@ -59,11 +75,25 @@ CREATE TABLE HotelRooms (
     ExtraGuestPricePerNight DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (ExtraGuestPricePerNight >= 0),
     TotalRooms INT NOT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
+    -- Manzara FK (NULL'a izin var, mevcut kayit etkilenmesin).
+    RoomViewId INT NULL,
     CONSTRAINT CHK_HotelRooms_Total CHECK (TotalRooms > 0),
-    CONSTRAINT UQ_HotelRooms UNIQUE (HotelId, RoomTypeId),
     CONSTRAINT FK_HotelRooms_Hotels FOREIGN KEY(HotelId) REFERENCES Hotels(Id),
-    CONSTRAINT FK_HotelRooms_RoomTypes FOREIGN KEY(RoomTypeId) REFERENCES RoomTypes(Id)
+    CONSTRAINT FK_HotelRooms_RoomTypes FOREIGN KEY(RoomTypeId) REFERENCES RoomTypes(Id),
+    CONSTRAINT FK_HotelRooms_RoomViews FOREIGN KEY(RoomViewId) REFERENCES RoomViews(Id) ON DELETE SET NULL
 );
+GO
+
+-- Unique constraint manzara dahil ama NULL-aware: iki filtered index ile bolundu.
+-- NULL manzara icin (HotelId, RoomTypeId) tek olsun; NOT NULL manzara icin uclu kombinasyon tek.
+CREATE UNIQUE INDEX UQ_HotelRooms_NoView
+    ON HotelRooms(HotelId, RoomTypeId)
+    WHERE RoomViewId IS NULL;
+GO
+
+CREATE UNIQUE INDEX UQ_HotelRooms_WithView
+    ON HotelRooms(HotelId, RoomTypeId, RoomViewId)
+    WHERE RoomViewId IS NOT NULL;
 GO
 
 CREATE TABLE RoomAmenities (
@@ -196,6 +226,7 @@ GO
 CREATE INDEX IX_Hotels_City ON Hotels(City);
 CREATE INDEX IX_HotelRooms_HotelId ON HotelRooms(HotelId);
 CREATE INDEX IX_HotelRooms_RoomTypeId ON HotelRooms(RoomTypeId);
+CREATE INDEX IX_HotelRooms_RoomViewId ON HotelRooms(RoomViewId);
 CREATE INDEX IX_HotelRoomAmenities_RoomAmenityId ON HotelRoomAmenities(RoomAmenityId);
 CREATE INDEX IX_Reservations_Dates ON Reservations(CheckInDate, CheckOutDate);
 CREATE INDEX IX_Reservations_UserId ON Reservations(UserId);
@@ -234,10 +265,15 @@ SELECT
     hr.PricePerNight,
     hr.ExtraGuestPricePerNight,
     hr.TotalRooms,
-    hr.IsActive
+    hr.IsActive,
+    -- Manzara kolonlari (LEFT JOIN cunku RoomViewId NULL olabilir).
+    hr.RoomViewId,
+    rv.Name AS RoomViewName,
+    rv.Icon AS RoomViewIcon
 FROM HotelRooms hr
 INNER JOIN Hotels h ON h.Id = hr.HotelId
 INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
+LEFT JOIN RoomViews rv ON rv.Id = hr.RoomViewId
 WHERE hr.IsActive = 1 AND h.IsActive = 1;
 GO
 
@@ -290,6 +326,8 @@ BEGIN
         rd.PricePerNight,
         rd.ExtraGuestPricePerNight,
         rd.TotalRooms,
+        rd.RoomViewName,
+        rd.RoomViewIcon,
         ISNULL(booked.ReservedCount, 0) AS ReservedCount,
         rd.TotalRooms - ISNULL(booked.ReservedCount, 0) AS AvailableRooms
     FROM vw_RoomDetails rd
@@ -469,6 +507,17 @@ VALUES
 ('Deluxe', 'Deluxe test room', 3),
 ('Business', 'Business test room', 2),
 ('Kral', 'Kral test room', 4);
+GO
+
+-- RoomViews seed (production seed ile ayni - 6 manzara).
+INSERT INTO RoomViews (Name, Icon, DisplayOrder, IsActive)
+VALUES
+(N'Deniz Manzaralı', N'bi-water', 1, 1),
+(N'Şehir Manzaralı', N'bi-buildings', 2, 1),
+(N'Dağ Manzaralı', N'bi-tree', 3, 1),
+(N'Havuz Manzaralı', N'bi-droplet', 4, 1),
+(N'Bahçe Manzaralı', N'bi-flower2', 5, 1),
+(N'Manzara Yok', N'bi-dash-circle', 99, 1);
 GO
 
 DECLARE @hotelId INT;
