@@ -9,12 +9,24 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.Services
 {
+    /// <summary>
+    /// Oda tipleriyle ilgili is kurallarini yoneten servis sinifidir.
+    /// Oda tipi listeleme, detay getirme, ekleme, guncelleme ve silme islemlerini gerceklestirir.
+    /// </summary>
     public class RoomTypeService : IRoomTypeService
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        /// <summary>
+        /// RoomTypeService sinifinin yeni bir ornegini olusturur.
+        /// </summary>
+        /// <param name="unitOfWork">Repository islemlerine erisim icin kullanilan UnitOfWork nesnesi.</param>
         public RoomTypeService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
-
+        /// <summary>
+        /// Tum oda tiplerini getirir.
+        /// </summary>
+        /// <returns>Oda tipi DTO listesini doner.</returns>
         public async Task<IEnumerable<RoomTypeDto>> GetAllRoomTypesAsync()
         {
             var roomTypes = await _unitOfWork.RoomTypeRepository.GetAllAsync();
@@ -29,6 +41,11 @@ namespace HotelApp.Domain.Services
 
         }
 
+        /// <summary>
+        /// Verilen Id degerine sahip oda tipini getirir.
+        /// </summary>
+        /// <param name="id">Getirilecek oda tipinin Id degeri.</param>
+        /// <returns>Oda tipi DTO nesnesi; bulunamazsa null.</returns>
         public async Task<RoomTypeDto?> GetRoomTypeByIdAsync(int id)
         {
             var roomType = await _unitOfWork.RoomTypeRepository.GetByIdAsync(id);
@@ -44,19 +61,29 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        /// <summary>
+        /// Belirtilen maksimum misafir sayisina uygun oda tiplerini getirir.
+        /// </summary>
+        /// <param name="maxGuests">Filtreleme icin kullanilacak maksimum misafir sayisi.</param>
+        /// <returns>Maksimum misafir sayisina uygun oda tipi DTO listesini doner.</returns>
         public async Task<IEnumerable<RoomTypeDto>> GetRoomTypesByMaxGuestsAsync(int maxGuests)
         {
             var roomTypes = await _unitOfWork.RoomTypeRepository.GetByMaxGuestsAsync(maxGuests);
 
             return roomTypes.Select(x => new RoomTypeDto
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Description = x.Description,
-                    MaxGuests = x.MaxGuests,
-                });
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                MaxGuests = x.MaxGuests,
+            });
         }
 
+        /// <summary>
+        /// Belirtilen ada sahip oda tipini getirir.
+        /// </summary>
+        /// <param name="name">Aranacak oda tipi adi.</param>
+        /// <returns>Oda tipi DTO nesnesi; bulunamazsa null.</returns>
         public async Task<RoomTypeDto?> GetRoomTypeByNameAsync(string name)
         {
             var entity = await _unitOfWork.RoomTypeRepository.GetByNameAsync(name);
@@ -72,6 +99,12 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        /// <summary>
+        /// Yeni oda tipi kaydi olusturur.
+        /// Ayni isimde oda tipi varsa islem yapilmaz.
+        /// </summary>
+        /// <param name="dto">Olusturulacak oda tipi bilgilerini iceren DTO.</param>
+        /// <exception cref="InvalidOperationException">Ayni isimde oda tipi varsa firlatilir.</exception>
         public async Task AddRoomTypeAsync(CreateRoomTypeDto dto)
         {
             var existing = await _unitOfWork.RoomTypeRepository.GetByNameAsync(dto.Name);
@@ -89,11 +122,16 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Mevcut oda tipi kaydini gunceller.
+        /// </summary>
+        /// <param name="dto">Guncellenecek oda tipi bilgilerini iceren DTO.</param>
+        /// <exception cref="KeyNotFoundException">Oda tipi bulunamazsa firlatilir.</exception>
         public async Task UpdateRoomTypeAsync(UpdateRoomTypeDto dto)
         {
             var entity = await _unitOfWork.RoomTypeRepository.GetByIdAsync(dto.Id);
 
-            if(entity ==null) throw new KeyNotFoundException("Oda tipi bulunamadı.");
+            if (entity == null) throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
             entity.Name = dto.Name;
             entity.Description = dto.Description;
@@ -103,20 +141,24 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Belirtilen Id degerine sahip oda tipini siler.
+        /// Herhangi bir otel odasinda kullanilan oda tipi silinemez.
+        /// </summary>
+        /// <param name="id">Silinecek oda tipinin Id degeri.</param>
+        /// <exception cref="KeyNotFoundException">Oda tipi bulunamazsa firlatilir.</exception>
+        /// <exception cref="InvalidOperationException">Oda tipi kullanimdaysa firlatilir.</exception>
         public async Task DeleteRoomTypeAsync(int id)
         {
             var entity = await _unitOfWork.RoomTypeRepository.GetRoomTypeWithRoomsAsync(id);
-            if (entity == null) 
+            if (entity == null)
                 throw new KeyNotFoundException("Oda tipi bulunamadı.");
 
-            if(entity.HotelRooms.Any())
+            if (entity.HotelRooms.Any())
                 throw new InvalidOperationException("Kullanımda olan oda tipi silinemez.");
 
             _unitOfWork.RoomTypeRepository.Delete(entity);
             await _unitOfWork.SaveChangesAsync();
         }
-
-     
-
     }
 }

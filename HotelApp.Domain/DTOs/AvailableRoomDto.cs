@@ -32,5 +32,12 @@ namespace HotelApp.Domain.DTOs
 
         [NotMapped]
         public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
+
+        [NotMapped]
+        public string? MainImageUrl { get; set; }
+
+        [NotMapped]
+        public List<RoomImageDto> Images { get; set; } = new();
+
     }
 }

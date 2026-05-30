@@ -48,6 +48,13 @@ namespace HotelApp.API.Controllers
             return Ok();
         }
 
+
+        /// <summary>
+        /// Belirtilen otelde, tarih araligi ve misafir sayisina gore musait odalari arar.
+        /// </summary>
+        /// <param name="hotelId">Odalari aranacak otelin Id degeri.</param>
+        /// <param name="request">Arama kriterlerini iceren DTO.</param>
+        /// <returns>Musait oda listesini doner.</returns>
         [HttpPost("search")]
         public async Task<IActionResult> SearchAvailableRooms(int hotelId, [FromBody] SearchAvailableRoomsRequestDto request)
         {

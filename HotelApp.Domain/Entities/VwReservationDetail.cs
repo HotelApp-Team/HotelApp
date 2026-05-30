@@ -7,9 +7,9 @@ public partial class VwReservationDetail
 {
     public int ReservationId { get; set; }
 
-    public DateTime CheckInDate { get; set; }
+    public DateOnly CheckInDate { get; set; }
 
-    public DateTime CheckOutDate { get; set; }
+    public DateOnly CheckOutDate { get; set; }
 
     public int GuestCount { get; set; }
 

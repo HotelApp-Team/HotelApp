@@ -45,4 +45,6 @@ public class AdminHotelRoomViewModel
     public string? RoomViewIcon { get; set; }
 
     public List<RoomAmenityViewModel> RoomAmenities { get; set; } = new();
+    public string? MainImageUrl { get; set; }
+    public List<RoomImageViewModel> Images { get; set; } = new();
 }

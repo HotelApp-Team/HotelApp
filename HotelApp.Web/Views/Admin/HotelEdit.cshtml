@@ -647,6 +647,124 @@
                                         </form>
                                     </div>
                                 }
+
+                                @* ---- Oda gorselleri (RoomImages ozelligi - Sevde) ---- *@
+                                <div class="hp-room-images">
+                                    <div class="hp-ra-head">
+                                        <span class="hp-ra-title">
+                                            <i class="bi bi-images"></i>
+                                            Oda Görselleri · @room.Images.Count görsel
+                                        </span>
+                                    </div>
+
+                                    @* Yeni oda gorseli ekleme formu *@
+                                    <form asp-controller="HotelMgmt"
+                                          asp-action="AddRoomImage"
+                                          asp-route-hotelId="@Model.Id"
+                                          asp-route-roomId="@room.Id"
+                                          method="post"
+                                          class="row g-2 mb-3 align-items-end">
+                                        <div class="col-md-7">
+                                            <input name="ImageUrl"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Yeni oda görsel URL" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input name="DisplayOrder"
+                                                   type="number"
+                                                   class="form-control form-control-sm"
+                                                   value="0" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-check mt-1">
+                                                <input name="IsMain"
+                                                       type="checkbox"
+                                                       value="true"
+                                                       class="form-check-input" />
+                                                <label class="form-check-label">Ana</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                                Ekle
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    @* Mevcut oda gorselleri listesi *@
+                                    @if (room.Images.Any())
+                                    {
+                                        foreach (var image in room.Images.OrderBy(x => x.DisplayOrder))
+                                        {
+                                            <div class="row g-2 align-items-center mb-2">
+                                                <div class="col-md-2">
+                                                    <img src="@image.ImageUrl"
+                                                         class="admin-room-thumb"
+                                                         data-bs-toggle="modal"
+                                                         data-bs-target="#roomImageModal"
+                                                         data-image-url="@image.ImageUrl"
+                                                         style="width:100%;height:75px;object-fit:cover;cursor:pointer;border-radius:6px;" />
+                                                </div>
+                                                <div class="col-md-10">
+                                                    <form asp-controller="HotelMgmt"
+                                                          asp-action="UpdateRoomImage"
+                                                          asp-route-hotelId="@Model.Id"
+                                                          asp-route-roomId="@room.Id"
+                                                          asp-route-imageId="@image.Id"
+                                                          method="post"
+                                                          class="row g-2 align-items-center">
+                                                        <div class="col-md-6">
+                                                            <input name="ImageUrl"
+                                                                   value="@image.ImageUrl"
+                                                                   class="form-control form-control-sm" />
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input name="DisplayOrder"
+                                                                   value="@image.DisplayOrder"
+                                                                   type="number"
+                                                                   class="form-control form-control-sm" />
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="hidden" name="IsMain" value="false" />
+                                                            <div class="form-check">
+                                                                <input name="IsMain"
+                                                                       type="checkbox"
+                                                                       value="true"
+                                                                       class="form-check-input"
+                                                                       checked="@image.IsMain" />
+                                                                <label class="form-check-label">Ana</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                                Güncelle
+                                                            </button>
+                                                        </div>
+                                                    </form>
+
+                                                    <form asp-controller="HotelMgmt"
+                                                          asp-action="DeleteRoomImage"
+                                                          asp-route-hotelId="@Model.Id"
+                                                          asp-route-roomId="@room.Id"
+                                                          asp-route-imageId="@image.Id"
+                                                          method="post"
+                                                          class="mt-2"
+                                                          onsubmit="return confirm('Oda görseli silinsin mi?');">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            Sil
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted small">
+                                            Bu oda için henüz görsel eklenmemiş.
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         }
                     }
@@ -826,6 +944,19 @@
     </aside>
 </div>
 
+@* Oda gorseli buyutme modali (RoomImages ozelligi - Sevde) *@
+<div class="modal fade" id="roomImageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-body p-0">
+                <img id="roomImageModalImg"
+                     src=""
+                     style="width:100%;max-height:80vh;object-fit:contain;" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
@@ -864,6 +995,13 @@
                         window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
                     }
                 }
+            });
+        });
+
+        // ===== Oda gorseli buyutme modali (RoomImages - Sevde) =====
+        document.querySelectorAll('.admin-room-thumb').forEach(function (img) {
+            img.addEventListener('click', function () {
+                document.getElementById('roomImageModalImg').src = this.dataset.imageUrl;
             });
         });
     </script>
