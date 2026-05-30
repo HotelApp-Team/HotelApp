@@ -37,6 +37,12 @@ namespace HotelApp.Domain.DTOs
         public string? RoomViewIcon { get; set; }
 
         public List<RoomAmenityDto> RoomAmenities { get; set; } = new();
+
+
+        public string? MainImageUrl { get; set; }
+
+        public List<RoomImageDto> Images { get; set; } = new();
+
     }
 
     public class DetailHotelRoomDto

@@ -107,6 +107,14 @@ public class AdminHotelRoomFormViewModel
     [Range(1, int.MaxValue)]
     public int TotalRooms { get; set; }
 
+    // Oda eklerken isteğe bağlı oda görseli eklemek için kullanılır.
+    // Bu görsel RoomType'a değil, seçili otele ait HotelRoom kaydına bağlanır.
+    public string? ImageUrl { get; set; }
+
+    public bool IsMain { get; set; } = true;
+
+    public int DisplayOrder { get; set; }
+
     // Manzara opsiyoneldir; admin bos birakirsa NULL kalir.
     public int? RoomViewId { get; set; }
 }

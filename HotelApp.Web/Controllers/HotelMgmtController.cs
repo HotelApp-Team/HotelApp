@@ -336,11 +336,40 @@ public class HotelMgmtController : Controller
             model.RoomViewId
         });
 
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
-            response.Success
-                ? "Oda başarıyla eklendi."
-                : response.Message ?? "Oda eklenemedi.";
+        if (!response.Success)
+        {
+            TempData["ErrorMessage"] = response.Message ?? "Oda eklenemedi.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
 
+        if (!string.IsNullOrWhiteSpace(model.ImageUrl))
+        {
+            var roomsResponse=await _apiService.GetAsync<List<AdminHotelRoomViewModel>>($"hotels/{hotelId}/rooms");
+
+            var addedRoom = roomsResponse.Data?
+                .FirstOrDefault(x => x.HotelId == hotelId && x.RoomTypeId == model.RoomTypeId);
+
+            if (addedRoom == null)
+            {
+                TempData["ErrorMessage"] = "Oda eklendi fakat oda kaydı tekrar bulunamadığı için görsel eklenemedi.";
+                return RedirectToAction(nameof(Edit), new { id = hotelId });
+            }
+
+            var imageResponse = await _apiService.PostAsync<object>($"rooms/{addedRoom.Id}/images", new
+            {
+                ImageUrl = model.ImageUrl,
+                IsMain = model.IsMain,
+                DisplayOrder = model.DisplayOrder
+            });
+
+            if (!imageResponse.Success)
+            {
+                TempData["ErrorMessage"] = imageResponse.Message ?? "Oda eklendi fakat görsel eklenemedi.";
+                return RedirectToAction(nameof(Edit), new { id = hotelId });
+            }
+        }
+
+        TempData["SuccessMessage"] = "Oda başarıyla eklendi.";
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
@@ -384,6 +413,65 @@ public class HotelMgmtController : Controller
             response.Success
                 ? "Oda bilgileri güncellendi."
                 : response.Message ?? "Oda güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Rooms/{roomId}/Images")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddRoomImage(int hotelId, int roomId, HotelImageAdminFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Görsel bilgileri eksik veya hatalı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        var response = await _apiService.PostAsync<object>($"rooms/{roomId}/images", new
+        {
+            model.ImageUrl,
+            model.IsMain,
+            model.DisplayOrder
+        });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Oda görseli eklendi." : response.Message ?? "Oda görseli eklenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Rooms/{roomId}/Images/{imageId}/Update")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateRoomImage(int hotelId, int roomId, int imageId, HotelImageAdminFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Görsel bilgileri eksik veya hatalı.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        var response = await _apiService.PutAsync($"rooms/{roomId}/images/{imageId}", new
+        {
+            Id = imageId,
+            model.ImageUrl,
+            model.IsMain,
+            model.DisplayOrder
+        });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Oda görseli güncellendi." : response.Message ?? "Oda görseli güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Rooms/{roomId}/Images/{imageId}/Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteRoomImage(int hotelId, int roomId, int imageId)
+    {
+        var response = await _apiService.DeleteAsync($"rooms/{roomId}/images/{imageId}");
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Oda görseli silindi." : response.Message ?? "Oda görseli silinemedi.";
 
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
@@ -456,6 +544,21 @@ public class HotelMgmtController : Controller
             model.Rooms = roomResponse.Success
                 ? roomResponse.Data ?? new List<AdminHotelRoomViewModel>()
                 : new List<AdminHotelRoomViewModel>();
+
+            foreach(var room in model.Rooms)
+            {
+                var roomImagesResponse=await _apiService.GetAsync<List<RoomImageViewModel>>($"rooms/{room.Id}/images");
+
+                room.Images= roomImagesResponse.Success
+                    ? roomImagesResponse.Data ?? new()
+                    : new();
+
+                room.MainImageUrl = room.Images
+                    .OrderByDescending(x => x.IsMain)
+                    .ThenBy(x => x.DisplayOrder)
+                    .Select(x => x.ImageUrl)
+                    .FirstOrDefault();
+            }
 
             if (model.Images.Count == 0)
             {

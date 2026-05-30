@@ -28,10 +28,43 @@
     <article class="hd-room">
 
         <div class="hd-room-media">
-            <div class="hd-room-img-ph">
-                <i class="bi bi-door-open"></i>
-                <span>Oda görseli</span>
-            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.MainImageUrl))
+            {
+                <button type="button"
+                        class="hd-room-img-button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#roomImageModal-@roomId">
+                    <img src="@Model.MainImageUrl"
+                         alt="@Model.RoomTypeName"
+                         class="hd-room-img"
+                         loading="lazy" />
+                </button>
+
+                <div class="modal fade"
+                     id="roomImageModal-@roomId"
+                     tabindex="-1"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content bg-dark border-0">
+                            <div class="modal-body p-0">
+                                <img src="@Model.MainImageUrl"
+                                     alt="@Model.RoomTypeName"
+                                     class="d-block w-100"
+                                     style="max-height: 80vh; object-fit: contain; background: #fff;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="hd-room-img-ph">
+                    <i class="bi bi-door-open"></i>
+                    <span>Oda görseli</span>
+                </div>
+            }
+
         </div>
 
         <div class="hd-room-body">

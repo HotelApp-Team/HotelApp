@@ -56,6 +56,7 @@ builder.Services.AddScoped<IRoomViewRepository, RoomViewRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IRoomImageRepository, RoomImageRepository>();
 
 // Service kayitlari
 builder.Services.AddScoped<IAuthService>(sp =>
@@ -76,6 +77,7 @@ builder.Services.AddScoped<IRoomViewService, RoomViewService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IRoomImageService, RoomImageService>();
 
 // Hosted (background) service'ler: hosting katmaninda calisir, scoped service'leri scope factory ile cagirir.
 // ReservationCompletionWorker: check-out gecmis Confirmed rezervasyonlari saatlik tarayip Completed yapar.
