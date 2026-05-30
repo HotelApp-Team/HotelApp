@@ -183,6 +183,19 @@ CREATE TABLE HotelImages (
 );
 GO
 
+CREATE TABLE RoomImages (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    HotelRoomId INT NOT NULL,
+    ImageUrl NVARCHAR(500) NOT NULL,
+    IsMain BIT NOT NULL DEFAULT 0,
+    DisplayOrder INT NOT NULL DEFAULT 0,
+    CONSTRAINT FK_RoomImages_HotelRooms FOREIGN KEY (HotelRoomId) REFERENCES HotelRooms(Id) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX IX_RoomImages_HotelRoomId ON RoomImages(HotelRoomId);
+GO
+
 CREATE TABLE Amenities (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(100) NOT NULL,
