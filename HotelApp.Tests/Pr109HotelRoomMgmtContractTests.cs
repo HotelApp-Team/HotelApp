@@ -78,7 +78,7 @@ public class Pr109HotelRoomMgmtContractTests
         if (!Pr109CardGuards.Pr109_AddRoomImplemented())
             return;
 
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
 
         AssertContainsAny(source, "AddRoom");
         AssertContainsAny(source, "HttpPost(\"{hotelId}/Rooms\"", "{hotelId}/Rooms");
@@ -102,7 +102,7 @@ public class Pr109HotelRoomMgmtContractTests
         if (!Pr109CardGuards.Pr109_UpdateRoomImplemented())
             return;
 
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
 
         AssertContainsAny(source, "UpdateRoom");
         AssertContainsAny(source, "HttpPost(\"{hotelId}/Rooms/{roomId}/Update\"", "{hotelId}/Rooms/{roomId}", "Rooms/{roomId}");
@@ -125,7 +125,7 @@ public class Pr109HotelRoomMgmtContractTests
         if (!Pr109CardGuards.Pr109_LoadAmenitiesExtendedImplemented())
             return;
 
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
 
         AssertContainsAny(source, "roomtypes", "RoomType");
         AssertContainsAny(source, "model.RoomTypes", "Model.RoomTypes");
@@ -173,9 +173,9 @@ public class Pr109HotelRoomMgmtContractTests
         if (!Pr109CardGuards.Pr109_HotelEditRoomFormsImplemented())
             return;
 
-        var source = ReadOptionalProjectFile("HotelApp.Web", "Views", "Admin", "HotelEdit.cshtml");
+        var source = ReadOptionalProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
         if (string.IsNullOrEmpty(source))
-            source = ReadProjectFile("HotelApp.Web", "Views", "HotelMgmt", "Edit.cshtml");
+            source = ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
 
         AssertContainsAny(source, "asp-action=\"AddRoom\"", "AddRoom");
         AssertContainsAny(source, "asp-action=\"UpdateRoom\"", "UpdateRoom");
@@ -184,7 +184,7 @@ public class Pr109HotelRoomMgmtContractTests
         AssertContainsAny(source, "ExtraGuestPricePerNight");
         AssertContainsAny(source, "TotalRooms");
         AssertContainsAny(source, "IsActive", "Aktif", "Pasif");
-        AssertContainsAny(source, "asp-controller=\"HotelMgmt\"", "HotelMgmt");
+        AssertContainsAny(source, "asp-controller=\"AdminHotels\"", "AdminHotels");
         AssertContainsAny(source, "Model.Id == 0", "Once otel", "Once temel", "kaydedin");
     }
 

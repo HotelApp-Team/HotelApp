@@ -9,16 +9,17 @@ namespace HotelApp.Web.Controllers
     /// <summary>
     /// Admin panelinde oda tipi listeleme, ekleme, guncelleme ve silme islemlerini yonetir.
     /// </summary>
+    [Route("admin/room-types")]
     [ServiceFilter(typeof(AdminFilter))]
-    public class RoomTypeController : Controller
+    public class AdminRoomTypesController : Controller
     {
         private readonly ApiService _apiService;
 
         /// <summary>
-        /// RoomTypeController sinifinin yeni bir ornegini olusturur.
+        /// AdminRoomTypesController sinifinin yeni bir ornegini olusturur.
         /// </summary>
         /// <param name="apiService">API ile haberlesmek icin kullanilan servis.</param>
-        public RoomTypeController(ApiService apiService)
+        public AdminRoomTypesController(ApiService apiService)
         {
             _apiService = apiService;
         }
@@ -27,10 +28,11 @@ namespace HotelApp.Web.Controllers
         /// Admin panelinde tum oda tiplerini listeler.
         /// </summary>
         /// <returns>Oda tipleri yonetim view sonucunu doner.</returns>
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var response = await _apiService.GetAsync<List<RoomTypeAdminViewModel>>("roomtypes");
-            return View("~/Views/Admin/RoomTypes.cshtml", response.Data ?? new List<RoomTypeAdminViewModel>());
+            return View(response.Data ?? new List<RoomTypeAdminViewModel>());
         }
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace HotelApp.Web.Controllers
         /// </summary>
         /// <param name="model">Olusturulacak oda tipi bilgilerini iceren view model.</param>
         /// <returns>Oda tipi yonetim sayfasina yonlendirir.</returns>
-        [HttpPost]
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoomTypeAdminViewModel model)
         {
@@ -61,7 +63,7 @@ namespace HotelApp.Web.Controllers
         /// </summary>
         /// <param name="model">Guncellenecek oda tipi bilgilerini iceren view model.</param>
         /// <returns>Oda tipi yonetim sayfasina yonlendirir.</returns>
-        [HttpPost]
+        [HttpPost("update")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(RoomTypeAdminViewModel model)
         {
@@ -83,7 +85,7 @@ namespace HotelApp.Web.Controllers
         /// </summary>
         /// <param name="id">Silinecek oda tipinin Id degeri.</param>
         /// <returns>Oda tipi yonetim sayfasina yonlendirir.</returns>
-        [HttpPost]
+        [HttpPost("delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {

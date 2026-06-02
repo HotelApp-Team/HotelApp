@@ -8,13 +8,13 @@ namespace HotelApp.Web.Controllers;
 // Olanak Yonetimi tek sayfa: Otel Olanaklari + Oda Olanaklari iki tab.
 // Index sadece okuma yapar; ekleme/duzenleme/silme islemleri mevcut
 // AmenityController ve RoomAmenityController action'larina post edilir.
-[Route("Admin/AmenityMgmt")]
+[Route("admin/amenities")]
 [ServiceFilter(typeof(AdminFilter))]
-public class AmenityMgmtController : Controller
+public class AdminAmenitiesController : Controller
 {
     private readonly ApiService _apiService;
 
-    public AmenityMgmtController(ApiService apiService)
+    public AdminAmenitiesController(ApiService apiService)
     {
         _apiService = apiService;
     }
@@ -26,19 +26,19 @@ public class AmenityMgmtController : Controller
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
         var roomAmenityResponse = await _apiService.GetAsync<List<RoomAmenityViewModel>>("room-amenities");
 
-        var model = new AdminAmenityMgmtPageViewModel
+        var model = new AdminAmenitiesPageViewModel
         {
             Amenities = amenityResponse.Success ? amenityResponse.Data ?? new() : new(),
             RoomAmenities = roomAmenityResponse.Success ? roomAmenityResponse.Data ?? new() : new()
         };
 
         // TempData anahtarlari _AdminLayout ile uyumlu: "Success" / "Error".
-        // Bu anahtarlar admin controller standardi (RoomType, AdminUserMgmt vb. tum admin sayfalari ayni).
+        // Bu anahtarlar admin controller standardi (AdminRoomTypes, AdminUsers vb. tum admin sayfalari ayni).
         if (!amenityResponse.Success)
             TempData["Error"] = amenityResponse.Message ?? "Otel olanaklari listesi alinamadi.";
         else if (!roomAmenityResponse.Success)
             TempData["Error"] = roomAmenityResponse.Message ?? "Oda olanaklari listesi alinamadi.";
 
-        return View("~/Views/Admin/AmenityMgmt.cshtml", model);
+        return View(model);
     }
 }

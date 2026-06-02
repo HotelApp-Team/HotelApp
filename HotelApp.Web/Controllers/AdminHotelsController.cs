@@ -7,13 +7,13 @@ using System.Globalization;
 
 namespace HotelApp.Web.Controllers;
 
-[Route("Admin/Hotels")]
+[Route("admin/hotels")]
 [ServiceFilter(typeof(AdminFilter))]
-public class HotelMgmtController : Controller
+public class AdminHotelsController : Controller
 {
     private readonly ApiService _apiService;
 
-    public HotelMgmtController(ApiService apiService)
+    public AdminHotelsController(ApiService apiService)
     {
         _apiService = apiService;
     }
@@ -53,7 +53,7 @@ public class HotelMgmtController : Controller
         if (!response.Success)
             TempData["ErrorMessage"] = response.Message ?? "Otel listesi alınamadı.";
 
-        return View("~/Views/Admin/Hotels.cshtml", model);
+        return View(model);
     }
 
     [HttpGet("Create")]
@@ -62,7 +62,7 @@ public class HotelMgmtController : Controller
         var model = new AdminHotelFormViewModel();
         await LoadFormDependenciesAsync(model);
 
-        return View("~/Views/Admin/HotelEdit.cshtml", model);
+        return View("Edit", model);
     }
 
     [HttpPost("Create")]
@@ -72,7 +72,7 @@ public class HotelMgmtController : Controller
         if (!ModelState.IsValid)
         {
             await LoadFormDependenciesAsync(model);
-            return View("~/Views/Admin/HotelEdit.cshtml", model);
+            return View("Edit", model);
         }
 
         var dto = new
@@ -95,7 +95,7 @@ public class HotelMgmtController : Controller
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel eklenemedi.";
             await LoadFormDependenciesAsync(model);
-            return View("~/Views/Admin/HotelEdit.cshtml", model);
+            return View("Edit", model);
         }
 
         TempData["SuccessMessage"] = "Otel oluşturuldu. Şimdi olanak, görsel ve oda ekleyebilirsiniz.";
@@ -113,7 +113,7 @@ public class HotelMgmtController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        return View("~/Views/Admin/HotelEdit.cshtml", model);
+        return View("Edit", model);
     }
 
     [HttpPost("Edit/{id}")]
@@ -123,7 +123,7 @@ public class HotelMgmtController : Controller
         if (!ModelState.IsValid)
         {
             await LoadFormDependenciesAsync(model, id);
-            return View("~/Views/Admin/HotelEdit.cshtml", model);
+            return View("Edit", model);
         }
 
         var dto = new
@@ -148,7 +148,7 @@ public class HotelMgmtController : Controller
         {
             TempData["ErrorMessage"] = response.Message ?? "Otel güncellenemedi.";
             await LoadFormDependenciesAsync(model, id);
-            return View("~/Views/Admin/HotelEdit.cshtml", model);
+            return View("Edit", model);
         }
 
         TempData["SuccessMessage"] = "Otel bilgileri güncellendi.";

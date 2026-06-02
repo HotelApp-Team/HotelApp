@@ -43,7 +43,7 @@ public class Sprint5AdminRoomReservationFaqContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "RoomTypeController.cs", "RoomTypesController.cs", "AdminRoomTypesController.cs" },
-            viewNames: new[] { "RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml") });
+            viewNames: new[] { "RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml"), Path.Combine("AdminRoomTypes", "Index.cshtml") });
 
         AssertContainsAny(source, "AdminFilter", "ServiceFilter", "Authorize", "Roles = \"Admin\"", "Roles=\"Admin\"");
         AssertContainsAny(source, "ApiService", "GetAsync", "PostAsync", "PutAsync", "DeleteAsync");
@@ -94,7 +94,7 @@ public class Sprint5AdminRoomReservationFaqContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "ReservationMgmtController.cs", "ReservationsController.cs", "AdminReservationsController.cs" },
-            viewNames: new[] { "Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml") });
+            viewNames: new[] { "Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml"), Path.Combine("AdminReservations", "Index.cshtml") });
 
         AssertContainsAny(source, "AdminFilter", "ServiceFilter", "Authorize", "Roles = \"Admin\"", "Roles=\"Admin\"");
         AssertContainsAny(source, "ApiService", "GetAsync", "PutAsync");
@@ -146,10 +146,10 @@ public class Sprint5AdminRoomReservationFaqContractTests
             Sprint5CardGuards.CandidateAdminViewSources(
                 "RoomTypes.cshtml",
                 Path.Combine("RoomTypes", "Index.cshtml"),
-                Path.Combine("RoomType", "Index.cshtml"),
+                Path.Combine("RoomType", "Index.cshtml"), Path.Combine("AdminRoomTypes", "Index.cshtml"),
                 "Reservations.cshtml",
                 Path.Combine("Reservations", "Index.cshtml"),
-                Path.Combine("ReservationMgmt", "Index.cshtml")));
+                Path.Combine("ReservationMgmt", "Index.cshtml"), Path.Combine("AdminReservations", "Index.cshtml")));
 
         Assert.NotEmpty(source);
         AssertContainsAny(source, "_AdminLayout", "Layout =", "Admin");

@@ -20,7 +20,7 @@
     <div class="hp-breadcrumb">
         <a asp-controller="AdminDashboard" asp-action="Index"><i class="bi bi-speedometer2"></i></a>
         <span class="hp-bc-sep">/</span>
-        <a asp-controller="HotelMgmt" asp-action="Index">Oteller</a>
+        <a asp-controller="AdminHotels" asp-action="Index">Oteller</a>
         <span class="hp-bc-sep">/</span>
         <span class="hp-bc-current">@(isEdit ? Model.Name : "Yeni Otel")</span>
     </div>
@@ -54,7 +54,7 @@
             }
         </div>
         <div class="hp-head-actions">
-            <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">
+            <a asp-controller="AdminHotels" asp-action="Index" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Listeye Dön
             </a>
         </div>
@@ -91,7 +91,7 @@
            ============================================================ *@
         <form id="section-general"
               method="post"
-              asp-controller="HotelMgmt"
+              asp-controller="AdminHotels"
               asp-action="@(isEdit ? "Edit" : "Create")"
               asp-route-id="@Model.Id">
 
@@ -252,7 +252,7 @@
                     @(isEdit ? "Değişiklikleri kaydetmek için sağdaki butonu kullanın" : "Yeni otel kaydediliyor")
                 </div>
                 <div class="hp-sb-actions">
-                    <a asp-controller="HotelMgmt" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+                    <a asp-controller="AdminHotels" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check2-circle me-1"></i>
                         @(isEdit ? "Genel Bilgileri Kaydet" : "Oteli Kaydet")
@@ -292,7 +292,7 @@
                 <div class="hp-card-body">
 
                     @* ---- Yeni gorsel ekleme formu ---- *@
-                    <form asp-controller="HotelMgmt"
+                    <form asp-controller="AdminHotels"
                           asp-action="AddImage"
                           asp-route-hotelId="@Model.Id"
                           method="post"
@@ -339,7 +339,7 @@
                                             </span>
                                         }
                                     </div>
-                                    <form asp-controller="HotelMgmt"
+                                    <form asp-controller="AdminHotels"
                                           asp-action="UpdateImage"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-imageId="@image.Id"
@@ -377,7 +377,7 @@
                                         </div>
                                     </form>
 
-                                    <form asp-controller="HotelMgmt"
+                                    <form asp-controller="AdminHotels"
                                           asp-action="DeleteImage"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-imageId="@image.Id"
@@ -419,7 +419,7 @@
                 <div class="hp-card-body">
 
                     @* ---- Yeni oda ekleme composer ---- *@
-                    <form asp-controller="HotelMgmt"
+                    <form asp-controller="AdminHotels"
                           asp-action="AddRoom"
                           asp-route-hotelId="@Model.Id"
                           method="post"
@@ -508,7 +508,7 @@
                                 </div>
 
                                 @* ---- Oda guncelleme formu ---- *@
-                                <form asp-controller="HotelMgmt"
+                                <form asp-controller="AdminHotels"
                                       asp-action="UpdateRoom"
                                       asp-route-hotelId="@Model.Id"
                                       asp-route-roomId="@room.Id"
@@ -621,7 +621,7 @@
                                             </button>
                                         </div>
                                         <form id="room-amenities-@room.Id"
-                                              asp-controller="HotelMgmt"
+                                              asp-controller="AdminHotels"
                                               asp-action="AssignRoomAmenities"
                                               asp-route-hotelId="@Model.Id"
                                               asp-route-roomId="@room.Id"
@@ -658,7 +658,7 @@
                                     </div>
 
                                     @* Yeni oda gorseli ekleme formu *@
-                                    <form asp-controller="HotelMgmt"
+                                    <form asp-controller="AdminHotels"
                                           asp-action="AddRoomImage"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-roomId="@room.Id"
@@ -706,7 +706,7 @@
                                                          style="width:100%;height:75px;object-fit:cover;cursor:pointer;border-radius:6px;" />
                                                 </div>
                                                 <div class="col-md-10">
-                                                    <form asp-controller="HotelMgmt"
+                                                    <form asp-controller="AdminHotels"
                                                           asp-action="UpdateRoomImage"
                                                           asp-route-hotelId="@Model.Id"
                                                           asp-route-roomId="@room.Id"
@@ -742,7 +742,7 @@
                                                         </div>
                                                     </form>
 
-                                                    <form asp-controller="HotelMgmt"
+                                                    <form asp-controller="AdminHotels"
                                                           asp-action="DeleteRoomImage"
                                                           asp-route-hotelId="@Model.Id"
                                                           asp-route-roomId="@room.Id"
@@ -791,7 +791,7 @@
                     </div>
                 </div>
                 <div class="hp-card-body">
-                    <form asp-controller="HotelMgmt"
+                    <form asp-controller="AdminHotels"
                           asp-action="AssignAmenities"
                           asp-route-hotelId="@Model.Id"
                           method="post">
@@ -841,7 +841,7 @@
                             <div class="hp-removable-list">
                                 @foreach (var amenity in Model.AllAmenities.Where(x => x.IsAssigned).OrderBy(x => x.Name))
                                 {
-                                    <form asp-controller="HotelMgmt"
+                                    <form asp-controller="AdminHotels"
                                           asp-action="RemoveAmenity"
                                           asp-route-hotelId="@Model.Id"
                                           asp-route-amenityId="@amenity.Id"
@@ -930,7 +930,7 @@
                 <p class="hp-side-danger-text">
                     Otel silindiğinde tüm odalar, görseller ve geçmiş rezervasyon bağları kaybolur.
                 </p>
-                <form asp-controller="HotelMgmt"
+                <form asp-controller="AdminHotels"
                       asp-action="Delete"
                       asp-route-id="@Model.Id"
                       method="post"

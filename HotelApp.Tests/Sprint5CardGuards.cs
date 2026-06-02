@@ -27,7 +27,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs", "AdminUserMgmtController.cs")
                 .Any(source => ContainsAny(source, "admin/users", "api/admin/users", "UserMgmt", "UpdateUserStatus", "UpdateUserRoles"))
-            || CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml"))
+            || CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml"), Path.Combine("AdminUsers", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Kullanıcı", "Users", "IsActive", "Roles"));
     }
 
@@ -85,7 +85,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("HotelMgmtController.cs", "AdminHotelsController.cs")
                 .Any(source => ContainsAny(source, "HotelMgmt", "admin/hotels", "api/hotels", "DeleteAsync", "HotelEdit"))
-            || CandidateAdminViewSources("Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"))
+            || CandidateAdminViewSources("Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"), Path.Combine("AdminHotels", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Otel", "Hotels", "StarRating", "City", "Delete"));
     }
 
@@ -94,7 +94,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("HotelMgmtController.cs", "AdminHotelsController.cs")
                 .Any(source => ContainsAny(source, "HotelEdit", "Edit(", "images", "amenities", "HotelAmenities"))
-            || CandidateAdminViewSources("HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml"))
+            || CandidateAdminViewSources("HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml"), Path.Combine("AdminHotels", "Edit.cshtml"))
                 .Any(source => ContainsAny(source, "HotelEdit", "Görsel", "Gorsel", "Image", "Amenit", "Olanak"));
     }
 
@@ -105,7 +105,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs", "AmenityMgmtController.cs")
                 .Any(source => ContainsAny(source, "Amenity", "Amenities", "api/amenities", "DeleteAsync"))
-            || CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml")
+            || CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml", Path.Combine("AdminAmenities", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Olanak", "Amenity", "Amenities", "Icon"));
     }
 
@@ -197,7 +197,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("RoomTypeController.cs", "RoomTypesController.cs", "AdminRoomTypesController.cs")
                 .Any(source => ContainsAny(source, "api/roomtypes", "RoomTypes", "RoomType", "DeleteAsync"))
-            || CandidateAdminViewSources("RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml"))
+            || CandidateAdminViewSources("RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml"), Path.Combine("AdminRoomTypes", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "RoomTypes", "RoomType", "Oda tipi", "MaxGuests"));
     }
 
@@ -226,7 +226,7 @@ internal static class Sprint5CardGuards
     {
         return CandidateAdminControllerSources("ReservationMgmtController.cs", "ReservationsController.cs", "AdminReservationsController.cs")
                 .Any(source => ContainsAny(source, "admin/reservations", "ReservationMgmt", "UpdateStatus", "Confirm", "Reject"))
-            || CandidateAdminViewSources("Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml"))
+            || CandidateAdminViewSources("Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml"), Path.Combine("AdminReservations", "Index.cshtml"))
                 .Any(source => ContainsAny(source, "Rezervasyon", "Reservation", "Status", "dateFrom", "Confirm"));
     }
 

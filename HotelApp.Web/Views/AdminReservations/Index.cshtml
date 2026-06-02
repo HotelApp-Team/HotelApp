@@ -120,19 +120,31 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="action-group">
-                                            <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                            <form asp-controller="AdminReservations" asp-action="Confirm" method="post" class="d-inline">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@reservation.Id" />
                                                 <input type="hidden" name="confirm" value="true" />
+                                                @* Mevcut sayfa ve filtreleri koru: islem sonrasi ayni listeye don *@
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <input type="hidden" name="status" value="@ViewBag.Status" />
+                                                <input type="hidden" name="hotelId" value="@ViewBag.HotelId" />
+                                                <input type="hidden" name="from" value="@ViewBag.From" />
+                                                <input type="hidden" name="to" value="@ViewBag.To" />
                                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                                     <i class="bi bi-check-circle"></i> Onayla
                                                 </button>
                                             </form>
 
-                                            <form asp-controller="ReservationMgmt" asp-action="Confirm" method="post" class="d-inline">
+                                            <form asp-controller="AdminReservations" asp-action="Confirm" method="post" class="d-inline">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@reservation.Id" />
                                                 <input type="hidden" name="confirm" value="false" />
+                                                @* Mevcut sayfa ve filtreleri koru: islem sonrasi ayni listeye don *@
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <input type="hidden" name="status" value="@ViewBag.Status" />
+                                                <input type="hidden" name="hotelId" value="@ViewBag.HotelId" />
+                                                <input type="hidden" name="from" value="@ViewBag.From" />
+                                                <input type="hidden" name="to" value="@ViewBag.To" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                                     <i class="bi bi-x-circle"></i> Reddet
                                                 </button>
@@ -156,7 +168,7 @@
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
                                     <a class="page-link"
-                                       asp-controller="ReservationMgmt"
+                                       asp-controller="AdminReservations"
                                        asp-action="Index"
                                        asp-route-page="@(Model.Page - 1)"
                                        asp-route-status="@ViewBag.Status"
@@ -167,7 +179,7 @@
                                 </li>
                                 <li class="page-item @(Model.Page >= totalPages ? "disabled" : "")">
                                     <a class="page-link"
-                                       asp-controller="ReservationMgmt"
+                                       asp-controller="AdminReservations"
                                        asp-action="Index"
                                        asp-route-page="@(Model.Page + 1)"
                                        asp-route-status="@ViewBag.Status"
