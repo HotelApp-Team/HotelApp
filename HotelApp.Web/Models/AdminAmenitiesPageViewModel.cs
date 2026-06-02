@@ -4,7 +4,7 @@ namespace HotelApp.Web.Models
     // Tek sayfada hem Otel Olanaklari hem Oda Olanaklari listeleri bulunur.
     // Form post'lari mevcut AmenityController ve RoomAmenityController action'larina
     // gitmeye devam eder; bu VM sadece sayfayi render etmek icin kullanilir.
-    public class AdminAmenityMgmtPageViewModel
+    public class AdminAmenitiesPageViewModel
     {
         public List<AmenityViewModel> Amenities { get; set; } = new();
         public List<RoomAmenityViewModel> RoomAmenities { get; set; } = new();

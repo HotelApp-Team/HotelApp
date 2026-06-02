@@ -20,7 +20,11 @@ public static class CityImageHelper
         ["Antep"] = "gaziantep.jpg",
         ["Kayseri"] = "kayseri.jpg",
         ["Konya"] = "konya.jpg",
-        ["Trabzon"] = "trabzon.jpg"
+        ["Trabzon"] = "trabzon.jpg",
+        ["Fethiye"] = "fethiye.jpg",
+        ["Bodrum"] = "bodrum.jpg",
+        ["Mugla"] = "mugla.jpg",
+        ["Muğla"] = "mugla.jpg"
     };
 
     // Şehir adına göre wwwroot altındaki sabit görsel yolunu döndürür.

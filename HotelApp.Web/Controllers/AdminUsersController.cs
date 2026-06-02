@@ -5,18 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers;
 
-// AdminUserMgmtController sınıfının amacı, admin kullanıcı yönetimi sayfasını yönetmektir.
+// AdminUsersController sınıfının amacı, admin kullanıcı yönetimi sayfasını yönetmektir.
 // E37 kullanıcı listeleme, E38 aktif/pasif ve E39 rol güncelleme akışlarını MVC tarafında API'ye bağlar.
 // SOLID: SRP kullanır; sadece admin kullanıcı yönetimi sayfa akışından sorumludur.
 
 [Route("admin/users")]
 [ServiceFilter(typeof(AdminFilter))]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class AdminUserMgmtController : Controller
+public class AdminUsersController : Controller
 {
     private readonly ApiService _apiService;
 
-    public AdminUserMgmtController(ApiService apiService)
+    public AdminUsersController(ApiService apiService)
     {
         _apiService = apiService;
     }
