@@ -33,7 +33,7 @@ public class Sprint5AdminHotelAmenitiesContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "HotelMgmtController.cs", "AdminHotelsController.cs" },
-            viewNames: new[] { "Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml") });
+            viewNames: new[] { "Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"), Path.Combine("AdminHotels", "Index.cshtml") });
 
         AssertContainsAny(source, "api/hotels", "\"hotels", "'hotels");
         AssertContainsAny(source, "GetAsync", "GetTAsync");
@@ -61,7 +61,7 @@ public class Sprint5AdminHotelAmenitiesContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "HotelMgmtController.cs", "AdminHotelsController.cs" },
-            viewNames: new[] { "HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml") });
+            viewNames: new[] { "HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml"), Path.Combine("AdminHotels", "Edit.cshtml") });
 
         AssertContainsAny(source, "GetAsync", "GetTAsync");
         AssertContainsAny(source, "PutAsync", "Update", "Guncelle");
@@ -89,7 +89,7 @@ public class Sprint5AdminHotelAmenitiesContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "HotelMgmtController.cs", "AdminHotelsController.cs" },
-            viewNames: new[] { "HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml") });
+            viewNames: new[] { "HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml"), Path.Combine("AdminHotels", "Edit.cshtml") });
 
         AssertContainsAny(source, "amenities", "Amenity", "Olanak");
         AssertContainsAny(source, "api/amenities", "GetAsync", "GetTAsync");
@@ -112,7 +112,7 @@ public class Sprint5AdminHotelAmenitiesContractTests
         // Eski Amenity/RoomAmenity controller'lar CRUD endpoint olarak korundu, eski view'lar silindi.
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "AmenityController.cs", "AmenitiesController.cs", "AdminAmenitiesController.cs", "AmenityMgmtController.cs" },
-            viewNames: new[] { "Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml" });
+            viewNames: new[] { "Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml", Path.Combine("AdminAmenities", "Index.cshtml") });
 
         AssertContainsAny(source, "api/amenities", "\"amenities", "'amenities");
         AssertContainsAny(source, "GetAsync", "GetTAsync");
@@ -194,13 +194,13 @@ public class Sprint5AdminHotelAmenitiesContractTests
 
         // Hangi ekran basladiysa sadece onun view dosyalarini okuruz.
         if (Sprint5CardGuards.S503_HotelMgmtUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"), Path.Combine("AdminHotels", "Index.cshtml")));
 
         if (Sprint5CardGuards.S503_HotelEditUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("HotelEdit.cshtml", Path.Combine("Hotels", "Edit.cshtml"), Path.Combine("HotelMgmt", "Edit.cshtml"), Path.Combine("AdminHotels", "Edit.cshtml")));
 
         if (Sprint5CardGuards.S503_AmenityUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml"));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Amenities.cshtml", Path.Combine("Amenities", "Index.cshtml"), Path.Combine("Amenity", "Index.cshtml"), "AmenityMgmt.cshtml", Path.Combine("AdminAmenities", "Index.cshtml")));
 
         return sources.ToList();
     }

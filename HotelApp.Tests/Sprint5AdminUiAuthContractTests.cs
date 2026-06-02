@@ -52,7 +52,7 @@ public class Sprint5AdminUiAuthContractTests
 
         var source = ReadAdminFeatureSource(
             controllerNames: new[] { "UserMgmtController.cs", "UsersController.cs", "AdminUsersController.cs", "AdminUserMgmtController.cs" },
-            viewNames: new[] { "Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml") });
+            viewNames: new[] { "Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml"), Path.Combine("AdminUsers", "Index.cshtml") });
 
         AssertContainsAny(source, "admin/users", "api/admin/users");
         AssertContainsAny(source, "search", "Search");
@@ -154,7 +154,7 @@ public class Sprint5AdminUiAuthContractTests
             sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Dashboard.cshtml", Path.Combine("Dashboard", "Index.cshtml"), Path.Combine("AdminDashboard", "Index.cshtml")));
 
         if (Sprint5CardGuards.S501_UserMgmtUiImplemented())
-            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml")));
+            sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Users.cshtml", Path.Combine("Users", "Index.cshtml"), Path.Combine("UserMgmt", "Index.cshtml"), Path.Combine("AdminUserMgmt", "Index.cshtml"), Path.Combine("AdminUsers", "Index.cshtml")));
 
         if (Sprint5CardGuards.S501_LogUiImplemented())
             sources.AddRange(Sprint5CardGuards.CandidateAdminViewSources("Logs.cshtml", Path.Combine("Logs", "Index.cshtml"), Path.Combine("Log", "Index.cshtml"), Path.Combine("AdminLog", "Index.cshtml")));

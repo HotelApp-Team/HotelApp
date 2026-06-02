@@ -42,8 +42,8 @@ public class RoomAmenitiesContractTests
     [Fact]
     public void AdminHotelEdit_ShouldExposeRoomAmenityAssignment()
     {
-        var view = ReadProjectFile("HotelApp.Web", "Views", "Admin", "HotelEdit.cshtml");
-        var controller = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var view = ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
+        var controller = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
 
         Assert.Contains("AssignRoomAmenities", view, StringComparison.Ordinal);
         Assert.Contains("roomAmenityIds", view, StringComparison.Ordinal);
