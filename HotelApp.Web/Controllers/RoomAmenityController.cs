@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelApp.Web.Controllers;
 
 // Oda olanaklari icin CRUD action'lari. Sayfa render'i artik
-// AmenityMgmtController/Index uzerinden tek sayfada yapiliyor.
+// AdminAmenitiesController/Index uzerinden tek sayfada yapiliyor.
 // Bu controller sadece form post hedefi olarak duruyor.
 [Route("Admin/RoomAmenities")]
 [ServiceFilter(typeof(AdminFilter))]
@@ -19,13 +19,6 @@ public class RoomAmenityController : Controller
         _apiService = apiService;
     }
 
-    [HttpGet("")]
-    public IActionResult Index()
-    {
-        // Eski URL'i hala yazan biri olursa yeni birlesik sayfaya gonder.
-        return RedirectToAction("Index", "AmenityMgmt");
-    }
-
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind(Prefix = "CreateForm")] AdminRoomAmenityFormViewModel model)
@@ -33,7 +26,7 @@ public class RoomAmenityController : Controller
         if (!ModelState.IsValid)
         {
             TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
-            return RedirectToAction("Index", "AmenityMgmt");
+            return RedirectToAction("Index", "AdminAmenities");
         }
 
         var response = await _apiService.PostAsync<object>("room-amenities", new
@@ -45,7 +38,7 @@ public class RoomAmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı eklendi." : response.Message ?? "Oda olanağı eklenemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 
     [HttpPost("Edit/{id}")]
@@ -55,7 +48,7 @@ public class RoomAmenityController : Controller
         if (!ModelState.IsValid)
         {
             TempData["Error"] = "Oda olanağı bilgileri eksik veya hatalı.";
-            return RedirectToAction("Index", "AmenityMgmt");
+            return RedirectToAction("Index", "AdminAmenities");
         }
 
         var response = await _apiService.PutAsync($"room-amenities/{id}", new
@@ -68,7 +61,7 @@ public class RoomAmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı güncellendi." : response.Message ?? "Oda olanağı güncellenemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 
     [HttpPost("Delete/{id}")]
@@ -80,6 +73,6 @@ public class RoomAmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Oda olanağı silindi." : response.Message ?? "Oda olanağı silinemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 }

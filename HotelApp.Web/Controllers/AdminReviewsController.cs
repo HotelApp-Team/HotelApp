@@ -7,6 +7,7 @@ namespace HotelApp.Web.Controllers
 {
     // Admin yorum yonetim ekrani: tum yorumlari listeler ve admin'in yorum silmesine izin verir.
     // AdminFilter sayesinde sadece "Admin" rolundeki kullanicilar bu sayfayi gorebilir.
+    [Route("admin/reviews")]
     [ServiceFilter(typeof(AdminFilter))]
     public class AdminReviewsController : Controller
     {
@@ -17,6 +18,7 @@ namespace HotelApp.Web.Controllers
             _apiService = apiService;
         }
 
+        [HttpGet("")]
         public async Task<IActionResult> Index(int page = 1)
         {
             var endpoint = $"admin/reviews?page={page}&pageSize=10";
@@ -46,7 +48,7 @@ namespace HotelApp.Web.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost("delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {

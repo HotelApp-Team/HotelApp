@@ -47,7 +47,7 @@ internal static class Pr109CardGuards
     // HotelMgmtController icinde yeni AddRoom action'inin eklendigini kontrol eder.
     public static bool Pr109_AddRoomImplemented()
     {
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
         return source.Contains("AddRoom", StringComparison.Ordinal)
             && ContainsAny(source, "{hotelId}/Rooms", "/Rooms");
     }
@@ -55,7 +55,7 @@ internal static class Pr109CardGuards
     // HotelMgmtController icinde yeni UpdateRoom action'inin eklendigini kontrol eder.
     public static bool Pr109_UpdateRoomImplemented()
     {
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
         return source.Contains("UpdateRoom", StringComparison.Ordinal)
             && ContainsAny(source, "/Rooms/{roomId}/Update", "Rooms/{roomId}");
     }
@@ -63,7 +63,7 @@ internal static class Pr109CardGuards
     // HotelMgmtController.LoadAmenitiesAsync'in RoomTypes ve Rooms da yuklemeye basladigini kontrol eder.
     public static bool Pr109_LoadAmenitiesExtendedImplemented()
     {
-        var source = ReadProjectFile("HotelApp.Web", "Controllers", "HotelMgmtController.cs");
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
         return ContainsAny(source, "roomTypeResponse", "RoomTypes =", "model.RoomTypes")
             && ContainsAny(source, "roomResponse", "model.Rooms", "Model.Rooms");
     }
@@ -86,9 +86,9 @@ internal static class Pr109CardGuards
     // HotelEdit.cshtml view'inde oda ekleme/guncelleme formlarinin yer aldigini kontrol eder.
     public static bool Pr109_HotelEditRoomFormsImplemented()
     {
-        var source = ReadOptionalProjectFile("HotelApp.Web", "Views", "Admin", "HotelEdit.cshtml");
+        var source = ReadOptionalProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
         if (string.IsNullOrEmpty(source))
-            source = ReadOptionalProjectFile("HotelApp.Web", "Views", "HotelMgmt", "Edit.cshtml");
+            source = ReadOptionalProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
 
         return ContainsAll(source, "AddRoom", "UpdateRoom");
     }

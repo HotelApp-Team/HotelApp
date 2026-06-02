@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelApp.Web.Controllers;
 
 // Otel olanaklari icin CRUD action'lari. Sayfa render'i artik
-// AmenityMgmtController/Index uzerinden tek sayfada yapiliyor.
+// AdminAmenitiesController/Index uzerinden tek sayfada yapiliyor.
 // Bu controller sadece form post hedefi olarak duruyor.
 [Route("Admin/Amenities")]
 [ServiceFilter(typeof(AdminFilter))]
@@ -19,13 +19,6 @@ public class AmenityController : Controller
         _apiService = apiService;
     }
 
-    [HttpGet("")]
-    public IActionResult Index()
-    {
-        // Eski URL'i hala yazan biri olursa yeni birlesik sayfaya gonder.
-        return RedirectToAction("Index", "AmenityMgmt");
-    }
-
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind(Prefix = "CreateForm")] AdminAmenityFormViewModel model)
@@ -33,7 +26,7 @@ public class AmenityController : Controller
         if (!ModelState.IsValid)
         {
             TempData["Error"] = "Olanak bilgileri eksik veya hatalı.";
-            return RedirectToAction("Index", "AmenityMgmt");
+            return RedirectToAction("Index", "AdminAmenities");
         }
 
         var response = await _apiService.PostAsync<object>("amenities", new
@@ -45,7 +38,7 @@ public class AmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla eklendi." : response.Message ?? "Olanak eklenemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 
     [HttpPost("Edit/{id}")]
@@ -55,7 +48,7 @@ public class AmenityController : Controller
         if (!ModelState.IsValid)
         {
             TempData["Error"] = "Olanak bilgileri eksik veya hatalı.";
-            return RedirectToAction("Index", "AmenityMgmt");
+            return RedirectToAction("Index", "AdminAmenities");
         }
 
         var response = await _apiService.PutAsync($"amenities/{id}", new
@@ -68,7 +61,7 @@ public class AmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla güncellendi." : response.Message ?? "Olanak güncellenemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 
     [HttpPost("Delete/{id}")]
@@ -80,6 +73,6 @@ public class AmenityController : Controller
         TempData[response.Success ? "Success" : "Error"] =
             response.Success ? "Olanak başarıyla silindi." : response.Message ?? "Olanak silinemedi.";
 
-        return RedirectToAction("Index", "AmenityMgmt");
+        return RedirectToAction("Index", "AdminAmenities");
     }
 }
