@@ -1507,6 +1507,14 @@ footer ul li a:hover { color: white; }
     }
     .hd-g-big { grid-column: 1 / -1; grid-row: 1; border-radius: 12px; }
     .hd-g-1, .hd-g-2, .hd-g-3, .hd-g-4 { border-radius: 12px; }
+
+    /* Dar ekranda sticky barda 5 bolum sekmesi + fiyat tek satira sigmiyor ve
+       sayfayi yana kaydiriyordu (yatay scroll). Mobilde sekmeleri gizleyip
+       sadece fiyat ile Rezervasyon butonunu birakiyoruz. */
+    .hd-anchor-inner > a { display: none; }
+    .hd-anchor-spacer { display: none; }
+    .hd-anchor-price { flex: 1; }
+    .hd-anchor-price .hd-anchor-cta { margin-left: auto; }
 }
 
 /* -------- MAIN LAYOUT -------- */
