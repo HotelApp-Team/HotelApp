@@ -24,7 +24,9 @@ public static class CityImageHelper
         ["Fethiye"] = "fethiye.jpg",
         ["Bodrum"] = "bodrum.jpg",
         ["Mugla"] = "mugla.jpg",
-        ["Muğla"] = "mugla.jpg"
+        ["Muğla"] = "mugla.jpg",
+        ["Canakkale"] = "çanakkale.jpg",
+        ["Çanakkale"] = "çanakkale.jpg"
     };
 
     // Şehir adına göre wwwroot altındaki sabit görsel yolunu döndürür.

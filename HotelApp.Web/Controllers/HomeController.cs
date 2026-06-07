@@ -20,7 +20,7 @@ public class HomeController : Controller
     {
         var citiesResponse = await _apiService.GetAsync<List<string>>("hotels/cities");
         var heroStatsResponse = await _apiService.GetAsync<HeroStatsViewModel>("hotels/hero-stats");
-        var hotelsResponse = await _apiService.GetAsync<PagedHotelListResponse>("hotels?page=1&pageSize=6");
+        var hotelsResponse = await _apiService.GetAsync<PagedHotelListResponse>("hotels?page=1&pageSize=9");
         var featuredCitiesResponse = await _apiService.GetAsync<List<CityCardViewModel>>("hotels/featured-cities?count=5");
         var reviewsResponse = await _apiService.GetAsync<List<ReviewViewModel>>("reviews/featured?count=3");
 
