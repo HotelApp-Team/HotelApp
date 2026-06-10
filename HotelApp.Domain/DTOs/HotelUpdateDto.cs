@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.DTOs
 {
+    // Mevcut otel bilgilerini güncellemek için API'ye gönderilen verileri taşır.
+    // IsActive alanı ile otelin aktif veya pasif durumu da güncellenebilir.
     public class HotelUpdateDto
     {
         [Required(ErrorMessage = "Id zorunludur")]

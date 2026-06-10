@@ -7,11 +7,16 @@ namespace HotelApp.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+
+// Otel işlemleri için dışarıya açılan API endpointlerini yönetir.
+// Kullanıcı tarafı otel listeleme, detay görüntüleme ve arama işlemlerini buradan yapar.
+// Admin işlemleri için oluşturma, güncelleme ve silme endpointleri rol kontrolü ile korunur.
 public class HotelsController : ControllerBase
 {
     private readonly IHotelService _hotelService;
     private readonly ILoggerService _logger;
 
+    // HotelService ve LoggerService bağımlılıkları constructor ile alınır.
     public HotelsController(IHotelService hotelService, ILoggerService logger)
     {
         _hotelService = hotelService;
@@ -19,6 +24,9 @@ public class HotelsController : ControllerBase
     }
 
     // E04 - GET /api/hotels (Pagination)
+    // Otel listesini filtreleme, sıralama ve sayfalama desteğiyle getirir.
+    // Şehir, yıldız ve aktiflik filtreleri opsiyoneldir.
+    // Page ve pageSize değerleri geçersizse BadRequest döndürür.
     [HttpGet]
     public async Task<IActionResult> GetAll(
     [FromQuery] string? city,
@@ -42,6 +50,9 @@ public class HotelsController : ControllerBase
     }
 
     // E05 - GET /api/hotels/{id}
+    // Id değerine göre tek bir otelin detay bilgisini getirir.
+    // Servis null döndürürse otel bulunamadığı için 404 NotFound cevabı verilir.
+    // Otel bulunduğunda detay DTO'su 200 OK ile döndürülür.
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -54,6 +65,8 @@ public class HotelsController : ControllerBase
     }
 
     // E06 - GET /api/hotels/cities
+    // Sistemde aktif oteli bulunan şehirleri getirir.
+    // Arama formunda şehir seçeneği göstermek için kullanılabilir.
     [HttpGet("cities")]
     public async Task<IActionResult> GetCities()
     {
@@ -62,6 +75,7 @@ public class HotelsController : ControllerBase
     }
 
     // GET /api/hotels/hero-stats : Anasayfa hero alaninda gosterilecek otel ve sehir sayilarini getirir.
+    // Ana sayfada gösterilecek toplam otel ve şehir istatistiklerini döndürür.
     [HttpGet("hero-stats")]
     public async Task<IActionResult> GetHeroStats()
     {
@@ -70,6 +84,7 @@ public class HotelsController : ControllerBase
     }
 
     // E52 - GET /api/hotels/featured-cities : Anasayfada gosterilecek one cikan sehir kartlarini getirir.
+    // Count parametresine göre öne çıkan şehir kartlarını getirir.
     [HttpGet("featured-cities")]
     public async Task<IActionResult> GetFeaturedCities([FromQuery] int count = 5)
     {
@@ -78,6 +93,9 @@ public class HotelsController : ControllerBase
     }
 
     // E07 - GET /api/hotels/search
+    // Kullanıcının şehir, giriş-çıkış tarihi ve misafir sayısına göre otel araması yapar.
+    // Servis katmanı tarih, şehir ve sayfalama kontrollerini yapar.
+    // Geçersiz arama kriteri varsa BadRequest döndürülür.
     [HttpGet("search")]
     public async Task<IActionResult> Search(
     [FromQuery] HotelSearchRequestDto dto,
@@ -103,6 +121,9 @@ public class HotelsController : ControllerBase
     }
 
     // E08 - POST /api/hotels
+    // Yeni otel oluşturmak için kullanılır.
+    // Sadece Admin rolündeki kullanıcılar erişebilir.
+    // Oluşturma başarılı olursa yeni otelin Id bilgisiyle CreatedAtAction cevabı döner.
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] HotelCreateDto dto)
@@ -116,6 +137,9 @@ public class HotelsController : ControllerBase
     }
 
     // E09 - PUT /api/hotels
+    // Mevcut otel bilgilerini güncellemek için kullanılır.
+    // Route içindeki id ile body içindeki dto.Id eşleşmezse BadRequest döndürür.
+    // Sadece Admin rolündeki kullanıcılar erişebilir.
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] HotelUpdateDto dto)
@@ -135,6 +159,9 @@ public class HotelsController : ControllerBase
     }
 
     // E10 - DELETE /api/hotels/{id}
+    // Oteli fiziksel olarak silmek yerine servis katmanında pasif duruma alır.
+    // İşlem başarılı olursa 204 NoContent döndürülür.
+    // Sadece Admin rolündeki kullanıcılar erişebilir.
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)

@@ -4,21 +4,30 @@ using HotelApp.Domain.Interfaces;
 
 namespace HotelApp.Domain.Services
 {
+    // Olanak işlemlerinin servis katmanındaki iş kurallarını yönetir.
+    // Controller bu sınıfı kullanarak doğrudan repository veya veritabanı işlemi yapmadan
+    // olanak ekleme, silme, güncelleme ve otel-olanak atama işlemlerini gerçekleştirir.
     public class AmenityService : IAmenityService
     {
         private readonly IUnitOfWork _unitOfWork;
 
+        // UnitOfWork nesnesi constructor ile alınır.
+        // Tüm repository işlemleri bu nesne üzerinden yapılır.
         public AmenityService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
+        // Veritabanında kayıtlı tüm olanakları getirir.
+        // Gelen Amenity entity listesini, dış katmanlarda kullanılacak AmenityDto listesine dönüştürür.
         public async Task<List<AmenityDto>> GetAllAsync()
         {
             var amenities = await _unitOfWork.AmenityRepository.GetAllAsync();
             return amenities.Select(MapToDto).ToList();
         }
 
+        // Id değerine göre tek bir olanak kaydını getirir.
+        // Kayıt bulunamazsa null döndürür; bulunursa DTO formatına çevirir.
         public async Task<AmenityDto?> GetByIdAsync(int id)
         {
             var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(id);
@@ -31,6 +40,9 @@ namespace HotelApp.Domain.Services
             return MapToDto(amenity);
         }
 
+        // Yeni olanak kaydı oluşturur.
+        // Aynı isimde başka bir olanak olup olmadığını kontrol eder.
+        // Eğer aynı isimde kayıt varsa tekrar eklemeyi engelleyerek veri tekrarını önler.
         public async Task AddAsync(AmenityCreateDto dto)
         {
             var exists = await _unitOfWork.AmenityRepository
@@ -49,6 +61,9 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Mevcut olanak bilgisini günceller.
+        // Önce güncellenecek kaydın var olup olmadığı kontrol edilir.
+        // Daha sonra aynı isimde başka bir kayıt olup olmadığına bakılır.
         public async Task UpdateAsync(AmenityUpdateDto dto)
         {
             var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(dto.Id);
@@ -73,6 +88,9 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Olanak kaydını siler.
+        // Silmeden önce kaydın var olup olmadığını kontrol eder.
+        // Eğer olanak herhangi bir otele atanmışsa silmeye izin vermez.
         public async Task DeleteAsync(int id)
         {
             var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(id);
@@ -93,12 +111,18 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Belirtilen otele atanmış olanakları getirir.
+        // Otel detay sayfasında seçili olanakları göstermek için kullanılır.
+        // Gelen entity kayıtları AmenityDto listesine dönüştürülür.
         public async Task<List<AmenityDto>> GetAmenitiesByHotelIdAsync(int hotelId)
         {
             var amenities = await _unitOfWork.AmenityRepository.GetAmenitiesByHotelIdAsync(hotelId);
             return amenities.Select(MapToDto).ToList();
         }
 
+        // Bir otele birden fazla olanak atar.
+        // Önce otelin var olup olmadığını kontrol eder.
+        // Sonra gelen amenityIds listesindeki her Id için ilgili olanağı arar.
         public async Task<HotelAmenityAssignResponseDto> AddAmenitiesToHotelAsync(int hotelId, List<int> amenityIds)
         {
             var hotel = await _unitOfWork.HotelRepository
@@ -115,6 +139,8 @@ namespace HotelApp.Domain.Services
             {
                 var amenity = await _unitOfWork.AmenityRepository.GetByIdAsync(amenityId);
 
+                // Eğer verilen Id'ye ait olanak bulunamazsa sayaç artırılır
+                // ve bu Id response içinde NotFoundIds listesine eklenir.
                 if (amenity == null)
                 {
                     notFound++;
@@ -122,6 +148,8 @@ namespace HotelApp.Domain.Services
                     continue;
                 }
 
+                // Olanak daha önce bu otele eklenmemişse ilişki oluşturulur.
+                // Böylece aynı olanak aynı otele tekrar tekrar eklenmez.
                 if (!hotel.Amenities.Any(a => a.Id == amenityId))
                 {
                     hotel.Amenities.Add(amenity);
@@ -138,6 +166,10 @@ namespace HotelApp.Domain.Services
                 NotFoundIds = notFoundIds
             };
         }
+
+        // Belirtilen otelden seçilen olanağı kaldırır.
+        // Önce otel detaylarıyla birlikte getirilir.
+        // Sonra kaldırılacak olanağın gerçekten otele ait olup olmadığı kontrol edilir.
         public async Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId)
         {
             var hotel = await _unitOfWork.HotelRepository
@@ -156,6 +188,8 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Amenity entity nesnesini AmenityDto nesnesine dönüştürür.
+        // Servis dışına entity yerine DTO döndürmek için kullanılır.
         private static AmenityDto MapToDto(Amenity amenity)
         {
             return new AmenityDto

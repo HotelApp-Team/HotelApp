@@ -4,15 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApp.Web.Controllers
 {
+    // Kullanıcı tarafındaki otel arama ve otel detay sayfalarını yöneten controller'dır.
+    // Web katmanı API ile doğrudan değil, ApiService üzerinden haberleşir.
     public class HotelsController : Controller
     {
         private readonly ApiService _apiService;
 
+        // API isteklerini yapabilmek için ApiService constructor ile alınır.
         public HotelsController(ApiService apiService)
         {
             _apiService = apiService;
         }
         [HttpGet]
+        // Otel arama sayfasını yönetir.
+        // Kullanıcının şehir, tarih, misafir sayısı ve filtre bilgilerine göre API'den otel araması yapar.
         public async Task<IActionResult> Search(
             string? city,
             byte? starRating,
@@ -31,6 +36,8 @@ namespace HotelApp.Web.Controllers
                 checkOut.HasValue &&
                 guestCount.HasValue;
 
+            // Sayfaya geri gönderilecek arama modelini oluşturur.
+            // Kullanıcının girdiği filtreler modelde tutulur ki form değerleri kaybolmasın.
             var model = new HotelSearchPageViewModel
             {
                 City = city,
@@ -51,6 +58,7 @@ namespace HotelApp.Web.Controllers
                 return View(model);
             }
 
+            // Boş olmayan filtreleri query string formatına çevirmek için sözlük kullanılır.
             var queryParams = new Dictionary<string, string?>()
             {
                 ["city"] = city,
@@ -64,6 +72,8 @@ namespace HotelApp.Web.Controllers
                 ["pageSize"] = "9"
             };
 
+            // Query string oluşturulurken boş değerler gönderilmez.
+            // Uri.EscapeDataString özel karakterlerin URL içinde güvenli taşınmasını sağlar.
             var query = "hotels/search?" +
                         string.Join("&",
                             queryParams
@@ -89,6 +99,7 @@ namespace HotelApp.Web.Controllers
         }
         // Detail action: tarih ve misafir sayisi model binding ile sorgu parametrelerinden otomatik alinir.
         // Sevde'nin Request.Query[] ile manuel parse etmek istedigi davranis burada parametre binding ile saglaniyor.
+        // Otel detay sayfası için otel bilgisi, görseller, odalar ve yorumlar API'den alınır.
         public async Task<IActionResult> Detail(int id, DateTime? checkIn, DateTime? checkOut, int? guestCount)
         {
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
@@ -115,22 +126,26 @@ namespace HotelApp.Web.Controllers
 
             var model = hotelResponse.Data;
 
+            // API'den gelen modelin temel Id ve otel adı alanları garantiye alınır.
             model.Id = id;
             model.HotelId = id;
             model.HotelName = string.IsNullOrWhiteSpace(model.HotelName)
                 ? model.Name
                 : model.HotelName;
 
+            // Görseller başarılı geldiyse modele eklenir, hata durumunda boş liste kullanılır.
             model.Images = imagesResponse.Success
                 ? imagesResponse.Data ?? new List<HotelImageViewModel>()
                 : new List<HotelImageViewModel>();
 
+            // Sadece aktif odalar detay sayfasında gösterilir.
             model.Rooms = roomsResponse.Success
                 ? (roomsResponse.Data ?? new List<AvailableRoomViewModel>())
                     .Where(x => x.IsActive)
                     .ToList()
                 : new List<AvailableRoomViewModel>();
 
+            // Yorumlar alınamazsa sayfa tamamen kırılmasın diye boş liste atanır
             model.Reviews = reviewsResponse.Success
                 ? reviewsResponse.Data ?? new List<ReviewViewModel>()
                 : new List<ReviewViewModel>();
@@ -150,6 +165,8 @@ namespace HotelApp.Web.Controllers
                 defaultCheckOut = defaultCheckIn.AddDays(1);
             }
 
+            // Rezervasyon formu aramadan gelen tarih ve misafir bilgileriyle doldurulur.
+            // Bilgi gelmezse varsayılan olarak bugünden yarına ve 1 misafir seçilir.
             model.BookingForm = new CreateReservationViewModel
             {
                 HotelId = id,
@@ -158,8 +175,10 @@ namespace HotelApp.Web.Controllers
                 GuestCount = guestCount.GetValueOrDefault(1)
             };
 
+            // Kullanıcının giriş yapıp yapmadığı session içindeki JWT token ile kontrol edilir.
             model.IsAuthenticated = HttpContext.Session.GetString("JWToken") != null;
 
+            // Arama ekranından gelen değerler detay sayfasında korunur.
             model.SearchCheckIn = checkIn;
             model.SearchCheckOut = checkOut;
             model.SearchGuestCount = guestCount;
