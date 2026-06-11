@@ -415,6 +415,14 @@ internal class FakeHotelService : IHotelService
 
     public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
     => Task.FromResult(FilteredHotels);
+
+    public Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(
+    string searchTerm,
+    int page,
+    int pageSize)
+    {
+        return Task.FromResult(FilteredHotels);
+    }
 }
 
 internal class FakeAmenityService : IAmenityService
