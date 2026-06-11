@@ -216,4 +216,37 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
 
         return (data, totalCount);
     }
+
+
+    // Navbar aramasýndan gelen ifadeyi otel adý ve þehir alanlarýnda arar.
+    // Yalnýzca aktif otelleri getirir ve sonucu sayfalý olarak döndürür.
+    public async Task<(List<Hotel> Data, int TotalCount)> SearchCatalogPagedAsync(
+        string searchTerm,
+        int page,
+        int pageSize)
+    {
+        // Kullanýcýnýn girdiði baþtaki ve sondaki boþluklarý temizler.
+        var term = searchTerm.Trim();
+
+        // Otel kartlarýnda kullanýlacak görsel ve oda bilgilerini dahil eder.
+        var query = _context.Hotels
+            .AsNoTracking()
+            .Include(h => h.HotelImages)
+            .Include(h => h.HotelRooms)
+            .Where(h => h.IsActive &&
+            (EF.Functions.Like(h.Name, $"%{term}%") ||
+             EF.Functions.Like(h.City, $"%{term}%")));
+
+        // Sayfalama yapýlmadan önce toplam sonuç sayýsýný hesaplar.
+        var totalCount = await query.CountAsync();
+
+        //Ýstenen sayfadaki otelleri alfabetik sýrayla getirir.
+        var hotels = await query
+                        .OrderBy(h => h.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (hotels, totalCount);
+    }
 }

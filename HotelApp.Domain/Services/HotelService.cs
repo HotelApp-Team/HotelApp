@@ -259,6 +259,34 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        // Navbar üzerinden yapılan otel veya şehir aramasını yönetir.
+        // Sayfalama ve boş arama kontrollerini gerçekleştirir.
+        public async Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(string searchTerm, int page, int pageSize)
+        {
+            // Sayfa numarası ve sayfa boyutunu kontrol eder.
+            ValidatePaging(page, pageSize);
+
+            // Boş bir arama ifadesinin repository katmanına gitmesini engeller.
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                throw new ArgumentException("Otel veya şehir bilgisi zorunludur.");
+
+
+            // Repository üzerinden eşleşen aktif otelleri getirir.
+            var (hotels, totalCount) = await _unitOfWork.HotelRepository.SearchCatalogPagedAsync(
+                        searchTerm,
+                        page,
+                        pageSize);
+
+            // Hotel nesnelerini kullanıcıya gösterilecek DTO modeline dönüştürür.
+            return new PagedResponseDto<HotelListDto>
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = hotels.Select(MapToListDto).ToList()
+            };
+        }
+
         // Sayfa numarası ve sayfa boyutunun geçerli aralıkta olup olmadığını kontrol eder.
         private void ValidatePaging(int page, int pageSize)
         {

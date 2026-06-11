@@ -2250,3 +2250,28 @@ footer ul li a:hover { color: white; }
         background-color: rgba(17, 24, 39, 0.92);
         transform: scale(1.06);
     }
+
+/* Navbar içerisindeki otel ve şehir arama alanını düzenler. */
+.navbar-search {
+    width: 280px;
+}
+
+    /* Arama kutusunun sol tarafındaki köşeleri yuvarlatır. */
+    .navbar-search .form-control {
+        min-width: 0;
+        border-radius: 8px 0 0 8px;
+        font-size: 0.9rem;
+    }
+
+    /* Arama butonunun sağ tarafındaki köşeleri yuvarlatır. */
+    .navbar-search .btn {
+        border-radius: 0 8px 8px 0;
+    }
+
+/* Mobil ekranda arama alanının tam genişlikte görünmesini sağlar. */
+@media (max-width: 991.98px) {
+    .navbar-search {
+        width: 100%;
+        margin: 12px 0;
+    }
+}

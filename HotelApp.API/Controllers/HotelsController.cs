@@ -64,6 +64,45 @@ public class HotelsController : ControllerBase
         return Ok(hotel);
     }
 
+    // GET /api/hotels/catalog-search
+    // Otel adı veya şehir bilgisine göre aktif otelleri sayfalı olarak arar.
+    [HttpGet("catalog-search")]
+    public async Task<IActionResult> CatalogSearch([FromQuery] string? searchTerm, [FromQuery] int page = 1, [FromQuery] int pageSize = 9)
+    {
+        // Arama ifadesinin boş gönderilmesini engeller.
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return BadRequest(new
+            {
+                Message = "Otel veya şehir bilgisi zorunludur."
+            });
+        }
+
+        // Sayfa numarasının geçerli olmasını kontrol eder.
+        if (page < 1)
+        {
+            return BadRequest(new
+            {
+                Message = "Sayfa numarası 1 veya daha büyük olmalıdır."
+            });
+        }
+
+        // Sayfa boyutunun izin verilen aralıkta olmasını kontrol eder.
+        if (pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest(new
+            {
+                Message = "Sayfa boyutu 1 ile 100 arasında olmalıdır."
+            });
+        }
+        // Aramayı service katmanına gönderir.
+        var result = await _hotelService.SearchCatalogAsync(
+            searchTerm.Trim(), page, pageSize);
+
+        // Sayfalı arama sonucunu kullanıcıya döndürür.
+        return Ok(result);
+    }
+
     // E06 - GET /api/hotels/cities
     // Sistemde aktif oteli bulunan şehirleri getirir.
     // Arama formunda şehir seçeneği göstermek için kullanılabilir.
