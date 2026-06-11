@@ -1,4 +1,4 @@
-USE HotelAppDB;
+ï»¿USE HotelAppDB;
 GO
 
 SET QUOTED_IDENTIFIER ON;
@@ -37,25 +37,25 @@ GO
 INSERT INTO Amenities (Name, Icon)
 SELECT v.Name, v.Icon
 FROM (VALUES
-(N'Toplantý Salonu', N'briefcase'),
+(N'ToplantÄ± Salonu', N'briefcase'),
 (N'Konferans Salonu', N'briefcase'),
-(N'Kapalý Havuz', N'water'),
+(N'KapalÄ± Havuz', N'water'),
 (N'Otopark', N'p-square'),
 (N'Vale Servisi', N'car-front'),
 (N'Kuru Temizleme', N'washing-machine'),
 (N'24 Saat Resepsiyon', N'clock'),
-(N'Kütüphane', N'book'),
-(N'Asansör', N'arrow-up-square'),
+(N'KÃ¼tÃ¼phane', N'book'),
+(N'AsansÃ¶r', N'arrow-up-square'),
 (N'Teras', N'sun'),
 (N'Oda Servisi', N'bell'),
-(N'Bagaj Odasý', N'briefcase'),
-(N'Kahvaltý', N'cup-hot'),
-(N'Çocuk Parký', N'emoji-smile'),
+(N'Bagaj OdasÄ±', N'briefcase'),
+(N'KahvaltÄ±', N'cup-hot'),
+(N'Ã‡ocuk ParkÄ±', N'emoji-smile'),
 (N'Jakuzi', N'droplet-half'),
 (N'Evcil Hayvan Dostu', N'heart'),
-(N'Denize Sýfýr', N'water'),
+(N'Denize SÄ±fÄ±r', N'water'),
 (N'Termal', N'thermometer'),
-(N'Buhar Odasý', N'cloud'),
+(N'Buhar OdasÄ±', N'cloud'),
 (N'Tenis Kortu', N'trophy')
 ) v(Name, Icon)
 WHERE NOT EXISTS (SELECT 1 FROM Amenities a WHERE a.Name = v.Name);
@@ -65,28 +65,28 @@ INSERT INTO RoomAmenities (Name, Icon)
 SELECT v.Name, v.Icon
 FROM (VALUES
 (N'Oda Servisi', N'bell'),
-(N'Sigara Ýçilmez', N'slash-circle'),
+(N'Sigara Ä°Ã§ilmez', N'slash-circle'),
 (N'Balkon veya Teras', N'door-open'),
-(N'Buklet Banyo Ürünleri', N'basket'),
+(N'Buklet Banyo ÃœrÃ¼nleri', N'basket'),
 (N'Havlu', N'layers'),
-(N'Duþ veya Küvet', N'droplet'),
+(N'DuÅŸ veya KÃ¼vet', N'droplet'),
 (N'Merkezi Klima', N'snow'),
-(N'Uyandýrma Servisi', N'alarm'),
+(N'UyandÄ±rma Servisi', N'alarm'),
 (N'Telefon', N'telephone'),
-(N'Su Isýtýcýsý', N'cup-hot'),
+(N'Su IsÄ±tÄ±cÄ±sÄ±', N'cup-hot'),
 (N'Elektronik Anahtar Sistemi', N'key'),
-(N'Gardýrop', N'archive'),
-(N'Ücretsiz Þiþe Su', N'droplet'),
-(N'Oturma Alaný', N'chair'),
+(N'GardÄ±rop', N'archive'),
+(N'Ãœcretsiz ÅžiÅŸe Su', N'droplet'),
+(N'Oturma AlanÄ±', N'chair'),
 (N'Kahve Makinesi', N'cup-hot'),
 (N'Bornoz', N'shirt'),
 (N'Terlik', N'footprints'),
-(N'Yastýk Menüsü', N'layers'),
-(N'Executive Lounge Giriþi', N'star'),
+(N'YastÄ±k MenÃ¼sÃ¼', N'layers'),
+(N'Executive Lounge GiriÅŸi', N'star'),
 (N'Balkonda Jakuzi', N'droplet-half'),
-(N'2 Yatak Odasý', N'house'),
-(N'Oturma Odasý', N'chair'),
-(N'Buzdolabý', N'box')
+(N'2 Yatak OdasÄ±', N'house'),
+(N'Oturma OdasÄ±', N'chair'),
+(N'BuzdolabÄ±', N'box')
 ) v(Name, Icon)
 WHERE NOT EXISTS (SELECT 1 FROM RoomAmenities ra WHERE ra.Name = v.Name);
 GO
@@ -95,9 +95,9 @@ INSERT INTO RoomTypes (Name, Description, MaxGuests)
 SELECT v.Name, v.Description, v.MaxGuests
 FROM (VALUES
 (N'Dedeman - Superior Room', N'Dedeman Konya superior oda, 32 m2', 2),
-(N'Dedeman - Superior Twin Room', N'Dedeman Konya superior iki ayrý yataklý oda, 32 m2', 2),
+(N'Dedeman - Superior Twin Room', N'Dedeman Konya superior iki ayrÄ± yataklÄ± oda, 32 m2', 2),
 (N'Dedeman - Deluxe Room', N'Dedeman Konya deluxe oda, 38 m2', 3),
-(N'Dedeman - Family Room', N'Dedeman Konya aile odasý, 57 m2', 4),
+(N'Dedeman - Family Room', N'Dedeman Konya aile odasÄ±, 57 m2', 4),
 (N'Dedeman - Junior Suite', N'Dedeman Konya junior suite, 60 m2', 3),
 
 (N'Divan Ankara - Superior Room', N'Divan Ankara superior oda, 29 m2', 2),
@@ -116,35 +116,35 @@ FROM (VALUES
 
 (N'Novotel - Modern Room', N'Novotel Kayseri modern oda', 2),
 (N'Novotel - Family Room', N'Novotel Kayseri aile dostu modern oda', 4),
-(N'Novotel - Suite Room', N'Novotel Kayseri ayrý oturma alaný bulunan suite oda', 3),
+(N'Novotel - Suite Room', N'Novotel Kayseri ayrÄ± oturma alanÄ± bulunan suite oda', 3),
 
-(N'Trabzon - Deluxe City View Room', N'Ramada Plaza Trabzon þehir manzaralý balkonlu deluxe oda, 27 m2', 2),
-(N'Trabzon - Deluxe Sea View Room', N'Ramada Plaza Trabzon deniz manzaralý balkonlu deluxe oda, 27 m2', 2),
+(N'Trabzon - Deluxe City View Room', N'Ramada Plaza Trabzon ÅŸehir manzaralÄ± balkonlu deluxe oda, 27 m2', 2),
+(N'Trabzon - Deluxe Sea View Room', N'Ramada Plaza Trabzon deniz manzaralÄ± balkonlu deluxe oda, 27 m2', 2),
 (N'Trabzon - Corner Suite', N'Ramada Plaza Trabzon corner suite, 37 m2', 3),
 (N'Trabzon - Business Room', N'Ramada Plaza Trabzon business room, 46 m2', 3),
 (N'Trabzon - Family Connect Room', N'Ramada Plaza Trabzon family connect room, 54 m2', 4),
 (N'Trabzon - Suite', N'Ramada Plaza Trabzon suite, 54 m2', 4),
 
-(N'Kusadasi - Resort Room', N'Ramada Resort Kuþadasý balkon veya teraslý resort oda', 2),
-(N'Kusadasi - Family Room', N'Ramada Resort Kuþadasý aile konaklamasýna uygun oda', 4),
-(N'Kusadasi - Suite Room', N'Ramada Resort Kuþadasý oturma alanlý suite oda', 4),
+(N'Kusadasi - Resort Room', N'Ramada Resort KuÅŸadasÄ± balkon veya teraslÄ± resort oda', 2),
+(N'Kusadasi - Family Room', N'Ramada Resort KuÅŸadasÄ± aile konaklamasÄ±na uygun oda', 4),
+(N'Kusadasi - Suite Room', N'Ramada Resort KuÅŸadasÄ± oturma alanlÄ± suite oda', 4),
 
-(N'Swissotel - Bosphorus View Room', N'Swissotel The Bosphorus Boðaz manzaralý oda', 2),
+(N'Swissotel - Bosphorus View Room', N'Swissotel The Bosphorus BoÄŸaz manzaralÄ± oda', 2),
 (N'Swissotel - Residence Suite', N'Swissotel Living rezidans suite', 4),
-(N'Swissotel - Family Residence', N'Swissotel aileler için geniþ rezidans dairesi', 5),
+(N'Swissotel - Family Residence', N'Swissotel aileler iÃ§in geniÅŸ rezidans dairesi', 5),
 
-(N'Wyndham Izmir - Club Room', N'Wyndham Grand Ýzmir Özdilek kara manzaralý club room, 27 m2', 2),
-(N'Wyndham Izmir - Standard Sea View Room', N'Wyndham Grand Ýzmir Özdilek deniz manzaralý standart oda, 27 m2', 3),
-(N'Wyndham Izmir - Standard Triple Room', N'Wyndham Grand Ýzmir Özdilek standart üç kiþilik oda, 27 m2', 3),
-(N'Wyndham Izmir - Standard Single Room', N'Wyndham Grand Ýzmir Özdilek standart single oda, 27 m2', 1),
+(N'Wyndham Izmir - Club Room', N'Wyndham Grand Ä°zmir Ã–zdilek kara manzaralÄ± club room, 27 m2', 2),
+(N'Wyndham Izmir - Standard Sea View Room', N'Wyndham Grand Ä°zmir Ã–zdilek deniz manzaralÄ± standart oda, 27 m2', 3),
+(N'Wyndham Izmir - Standard Triple Room', N'Wyndham Grand Ä°zmir Ã–zdilek standart Ã¼Ã§ kiÅŸilik oda, 27 m2', 3),
+(N'Wyndham Izmir - Standard Single Room', N'Wyndham Grand Ä°zmir Ã–zdilek standart single oda, 27 m2', 1),
 
-(N'Yazz - Deluxe Room', N'Yazz Collective bahçe manzaralý teraslý deluxe oda, 36 m2', 2),
-(N'Yazz - Grand Deluxe Room', N'Yazz Collective bahçe manzaralý teraslý grand deluxe oda, 50 m2', 2),
+(N'Yazz - Deluxe Room', N'Yazz Collective bahÃ§e manzaralÄ± teraslÄ± deluxe oda, 36 m2', 2),
+(N'Yazz - Grand Deluxe Room', N'Yazz Collective bahÃ§e manzaralÄ± teraslÄ± grand deluxe oda, 50 m2', 2),
 (N'Yazz - Executive Suite', N'Yazz Collective executive suite, 55 m2', 3),
 (N'Yazz - King Suite', N'Yazz Collective king suite, 63 m2', 3),
 (N'Yazz - Bungalow', N'Yazz Collective bungalov, 45 m2', 3),
 (N'Yazz - Villa', N'Yazz Collective villa, 45 m2', 3),
-(N'Yazz - Connecting Room', N'Yazz Collective baðlantýlý oda, 90 m2', 4)
+(N'Yazz - Connecting Room', N'Yazz Collective baÄŸlantÄ±lÄ± oda, 90 m2', 4)
 ) v(Name, Description, MaxGuests)
 WHERE NOT EXISTS (SELECT 1 FROM RoomTypes rt WHERE rt.Name = v.Name);
 GO
@@ -152,81 +152,81 @@ GO
 INSERT INTO Hotels
 (Name, Description, Address, City, Country, Phone, Email, Latitude, Longitude, AvgRating, StarRating, IsActive, CreatedAt, UpdatedAt)
 VALUES
-(N'Dedeman Konya', N'Selçuklu’da yer alan Dedeman Konya; 206 oda, 12 toplantý salonu, 2 restoran, On8 Lounge Restaurant, Türk hamamý, fitness merkezi, 2 yüzme havuzu, squash ve SPA olanaklarýyla iþ ve turizm odaklý konaklama sunar.', N'Selçuklu, Konya Þehir Merkezi, Konya', N'Konya', N'Türkiye', N'+90 332 221 66 00', NULL, NULL, NULL, 8.9, 5, 1, GETDATE(), NULL),
+(N'Dedeman Konya', N'SelÃ§ukluâ€™da yer alan Dedeman Konya; 206 oda, 12 toplantÄ± salonu, 2 restoran, On8 Lounge Restaurant, TÃ¼rk hamamÄ±, fitness merkezi, 2 yÃ¼zme havuzu, squash ve SPA olanaklarÄ±yla iÅŸ ve turizm odaklÄ± konaklama sunar.', N'SelÃ§uklu, Konya Åžehir Merkezi, Konya', N'Konya', N'TÃ¼rkiye', N'+90 332 221 66 00', NULL, NULL, NULL, 8.9, 5, 1, GETDATE(), NULL),
 
-(N'Divan Ankara', N'Ankara Çankaya’da hizmet veren Divan Ankara; restoran, bar, 3000 m2 SPA alaný, 12 toplantý salonundan oluþan 1500 m2 etkinlik merkezi ve iþ-kongre odaklý konaklama olanaklarý sunar.', N'Ankara Çankaya, Ankara Merkez, Ankara', N'Ankara', N'Türkiye', N'+90 312 409 30 00', NULL, NULL, NULL, 9.3, 5, 1, GETDATE(), NULL),
+(N'Divan Ankara', N'Ankara Ã‡ankayaâ€™da hizmet veren Divan Ankara; restoran, bar, 3000 m2 SPA alanÄ±, 12 toplantÄ± salonundan oluÅŸan 1500 m2 etkinlik merkezi ve iÅŸ-kongre odaklÄ± konaklama olanaklarÄ± sunar.', N'Ankara Ã‡ankaya, Ankara Merkez, Ankara', N'Ankara', N'TÃ¼rkiye', N'+90 312 409 30 00', NULL, NULL, NULL, 9.3, 5, 1, GETDATE(), NULL),
 
-(N'DoubleTree by Hilton Gaziantep', N'Gaziantep þehir merkezinde yer alan DoubleTree by Hilton Gaziantep; konferans alaný, hýzlý giriþ, kuru temizleme, ücretsiz vale otopark, kütüphane ve fitness olanaklarýyla öne çýkar.', N'Gaziantep Þehir Merkezi, Gaziantep', N'Gaziantep', N'Türkiye', N'+90 342 999 41 11', N'reservation.gaziantep@hilton.com', NULL, NULL, 7.2, 4, 1, GETDATE(), NULL),
+(N'DoubleTree by Hilton Gaziantep', N'Gaziantep ÅŸehir merkezinde yer alan DoubleTree by Hilton Gaziantep; konferans alanÄ±, hÄ±zlÄ± giriÅŸ, kuru temizleme, Ã¼cretsiz vale otopark, kÃ¼tÃ¼phane ve fitness olanaklarÄ±yla Ã¶ne Ã§Ä±kar.', N'Gaziantep Åžehir Merkezi, Gaziantep', N'Gaziantep', N'TÃ¼rkiye', N'+90 342 999 41 11', N'reservation.gaziantep@hilton.com', NULL, NULL, 7.2, 4, 1, GETDATE(), NULL),
 
-(N'Hilton Bursa Convention Center', N'Bursa Osmangazi’deki Hilton Bursa Convention Center And Spa; merkezi konumu, kapalý havuzu, saunasý, tam donanýmlý fitness merkezi ve restoranýyla iþ ve turistik seyahatlere hitap eder.', N'Bursa Merkez - Osmangazi, Bursa', N'Bursa', N'Türkiye', N'+90 224 500 05 05', N'bursa.sales@hilton.com', NULL, NULL, 9.2, 5, 1, GETDATE(), NULL),
+(N'Hilton Bursa Convention Center', N'Bursa Osmangaziâ€™deki Hilton Bursa Convention Center And Spa; merkezi konumu, kapalÄ± havuzu, saunasÄ±, tam donanÄ±mlÄ± fitness merkezi ve restoranÄ±yla iÅŸ ve turistik seyahatlere hitap eder.', N'Bursa Merkez - Osmangazi, Bursa', N'Bursa', N'TÃ¼rkiye', N'+90 224 500 05 05', N'bursa.sales@hilton.com', NULL, NULL, 9.2, 5, 1, GETDATE(), NULL),
 
-(N'Novotel Kayseri', N'Yenipervane Mahallesi Kocasinan Bulvarý üzerindeki Novotel Kayseri; zengin açýk büfe kahvaltý, Erciyes Daðý manzaralý odalar, bahçe, teras, aile dostu odalar, restoran, bar, fitness ve merkezi konumuyla öne çýkar.', N'Yenipervane Mah, Kocasinan Blv. 161-1, 38110 Kayseri, Türkiye', N'Kayseri', N'Türkiye', N'+90 352 207 30 00', N'info@novotelkayseri.com', NULL, NULL, 8.7, 4, 1, GETDATE(), NULL),
+(N'Novotel Kayseri', N'Yenipervane Mahallesi Kocasinan BulvarÄ± Ã¼zerindeki Novotel Kayseri; zengin aÃ§Ä±k bÃ¼fe kahvaltÄ±, Erciyes DaÄŸÄ± manzaralÄ± odalar, bahÃ§e, teras, aile dostu odalar, restoran, bar, fitness ve merkezi konumuyla Ã¶ne Ã§Ä±kar.', N'Yenipervane Mah, Kocasinan Blv. 161-1, 38110 Kayseri, TÃ¼rkiye', N'Kayseri', N'TÃ¼rkiye', N'+90 352 207 30 00', N'info@novotelkayseri.com', NULL, NULL, 8.7, 4, 1, GETDATE(), NULL),
 
-(N'Ramada Plaza Trabzon', N'Ortahisar Trabzon’da denize sýfýr konumda yer alan Ramada Plaza; 350 odasý, deniz ve dað manzarasý, geniþ kumsalý, yetiþkin ve çocuk havuzlarý, SPA, fitness, toplantý salonlarý ve restoranlarýyla hizmet verir.', N'Ortahisar, Trabzon', N'Trabzon', N'Türkiye', N'+90 462 335 30 30', N'info@ramadaplazatrabzon.com', NULL, NULL, 8.8, 5, 1, GETDATE(), NULL),
+(N'Ramada Plaza Trabzon', N'Ortahisar Trabzonâ€™da denize sÄ±fÄ±r konumda yer alan Ramada Plaza; 350 odasÄ±, deniz ve daÄŸ manzarasÄ±, geniÅŸ kumsalÄ±, yetiÅŸkin ve Ã§ocuk havuzlarÄ±, SPA, fitness, toplantÄ± salonlarÄ± ve restoranlarÄ±yla hizmet verir.', N'Ortahisar, Trabzon', N'Trabzon', N'TÃ¼rkiye', N'+90 462 335 30 30', N'info@ramadaplazatrabzon.com', NULL, NULL, 8.8, 5, 1, GETDATE(), NULL),
 
-(N'Ramada Resort Kusadasi', N'Kuþadasý Aydýn’da yer alan Ramada Resort By Wyndham Kuþadasý & Golf; plajlara, Kuþadasý Kalesi’ne ve ulaþým noktalarýna yakýn konumu, balkon/teraslý odalarý ve resort olanaklarýyla öne çýkar.', N'Türkmen Mahallesi Selçuk Bulvarý No:9/3 Kuþadasý, Aydýn', N'Aydýn', N'Türkiye', N'+90 256 420 07 00', NULL, NULL, NULL, NULL, 5, 1, GETDATE(), NULL),
+(N'Ramada Resort Kusadasi', N'KuÅŸadasÄ± AydÄ±nâ€™da yer alan Ramada Resort By Wyndham KuÅŸadasÄ± & Golf; plajlara, KuÅŸadasÄ± Kalesiâ€™ne ve ulaÅŸÄ±m noktalarÄ±na yakÄ±n konumu, balkon/teraslÄ± odalarÄ± ve resort olanaklarÄ±yla Ã¶ne Ã§Ä±kar.', N'TÃ¼rkmen Mahallesi SelÃ§uk BulvarÄ± No:9/3 KuÅŸadasÄ±, AydÄ±n', N'AydÄ±n', N'TÃ¼rkiye', N'+90 256 420 07 00', NULL, NULL, NULL, NULL, 5, 1, GETDATE(), NULL),
 
-(N'Swissotel The Bosphorus', N'Ýstanbul Viþnezade’de yer alan Swissôtel The Bosphorus; Boðaz manzarasý, 16 ROOF, Swissotel Living rezidanslarý, Purovel Spa & Sport, kapalý-açýk havuz, fitness, tenis kortlarý ve merkezi konumuyla öne çýkar.', N'Viþnezade, Acýsu Sk. No:19, 34357 Ýstanbul', N'Ýstanbul', N'Türkiye', N'+90 212 326 11 00', N'istanbul@swissotel.com', NULL, NULL, 9.4, 5, 1, GETDATE(), NULL),
+(N'Swissotel The Bosphorus', N'Ä°stanbul ViÅŸnezadeâ€™de yer alan SwissÃ´tel The Bosphorus; BoÄŸaz manzarasÄ±, 16 ROOF, Swissotel Living rezidanslarÄ±, Purovel Spa & Sport, kapalÄ±-aÃ§Ä±k havuz, fitness, tenis kortlarÄ± ve merkezi konumuyla Ã¶ne Ã§Ä±kar.', N'ViÅŸnezade, AcÄ±su Sk. No:19, 34357 Ä°stanbul', N'Ä°stanbul', N'TÃ¼rkiye', N'+90 212 326 11 00', N'istanbul@swissotel.com', NULL, NULL, 9.4, 5, 1, GETDATE(), NULL),
 
-(N'Wyndham Grand Izmir Ozdilek', N'Balçova Ýzmir’de yer alan Wyndham Grand Ýzmir Özdilek Thermal & Spa; termal wellness merkezi, açýk-kapalý havuz, termal havuz, jakuzi, sauna, Türk hamamý, buhar odalarý, fitness ve 10 salonuyla hizmet verir.', N'Balçova, Ýzmir', N'Ýzmir', N'Türkiye', N'+90 232 292 13 00', NULL, NULL, NULL, 9.4, 5, 1, GETDATE(), NULL),
+(N'Wyndham Grand Izmir Ozdilek', N'BalÃ§ova Ä°zmirâ€™de yer alan Wyndham Grand Ä°zmir Ã–zdilek Thermal & Spa; termal wellness merkezi, aÃ§Ä±k-kapalÄ± havuz, termal havuz, jakuzi, sauna, TÃ¼rk hamamÄ±, buhar odalarÄ±, fitness ve 10 salonuyla hizmet verir.', N'BalÃ§ova, Ä°zmir', N'Ä°zmir', N'TÃ¼rkiye', N'+90 232 292 13 00', NULL, NULL, NULL, 9.4, 5, 1, GETDATE(), NULL),
 
-(N'Yazz Collective Fethiye', N'Fethiye Muðla’da doðayla iç içe, denize sýfýr konumda yer alan Yazz Collective; modern tasarýmý, bahçe manzaralý teraslý odalarý, bungalovlarý, villalarý ve lüks kaçýþ atmosferiyle öne çýkar.', N'Fethiye, Muðla', N'Fethiye', N'Türkiye', N'+90 530 972 92 99', N'reservation@yazzcollective.com', NULL, NULL, 9.1, 5, 1, GETDATE(), NULL);
+(N'Yazz Collective Fethiye', N'Fethiye MuÄŸlaâ€™da doÄŸayla iÃ§ iÃ§e, denize sÄ±fÄ±r konumda yer alan Yazz Collective; modern tasarÄ±mÄ±, bahÃ§e manzaralÄ± teraslÄ± odalarÄ±, bungalovlarÄ±, villalarÄ± ve lÃ¼ks kaÃ§Ä±ÅŸ atmosferiyle Ã¶ne Ã§Ä±kar.', N'Fethiye, MuÄŸla', N'Fethiye', N'TÃ¼rkiye', N'+90 530 972 92 99', N'reservation@yazzcollective.com', NULL, NULL, 9.1, 5, 1, GETDATE(), NULL);
 GO
 
 INSERT INTO HotelRooms (HotelId, RoomTypeId, PricePerNight, ExtraGuestPricePerNight, TotalRooms, IsActive, RoomViewId)
 SELECT h.Id, rt.Id, s.Price, s.Extra, s.TotalRooms, 1, rv.Id
 FROM (VALUES
-(N'Dedeman Konya', N'Dedeman - Superior Room', N'Þehir Manzaralý', 5200, 700, 72),
-(N'Dedeman Konya', N'Dedeman - Superior Twin Room', N'Þehir Manzaralý', 5400, 700, 60),
-(N'Dedeman Konya', N'Dedeman - Deluxe Room', N'Þehir Manzaralý', 6500, 900, 36),
-(N'Dedeman Konya', N'Dedeman - Family Room', N'Þehir Manzaralý', 7900, 1200, 18),
-(N'Dedeman Konya', N'Dedeman - Junior Suite', N'Þehir Manzaralý', 9800, 1500, 10),
+(N'Dedeman Konya', N'Dedeman - Superior Room', N'Åžehir ManzaralÄ±', 5200, 700, 72),
+(N'Dedeman Konya', N'Dedeman - Superior Twin Room', N'Åžehir ManzaralÄ±', 5400, 700, 60),
+(N'Dedeman Konya', N'Dedeman - Deluxe Room', N'Åžehir ManzaralÄ±', 6500, 900, 36),
+(N'Dedeman Konya', N'Dedeman - Family Room', N'Åžehir ManzaralÄ±', 7900, 1200, 18),
+(N'Dedeman Konya', N'Dedeman - Junior Suite', N'Åžehir ManzaralÄ±', 9800, 1500, 10),
 
-(N'Divan Ankara', N'Divan Ankara - Superior Room', N'Þehir Manzaralý', 7200, 1000, 70),
-(N'Divan Ankara', N'Divan Ankara - Executive Room', N'Þehir Manzaralý', 8500, 1200, 45),
-(N'Divan Ankara', N'Divan Ankara - Deluxe Room', N'Þehir Manzaralý', 9400, 1300, 30),
-(N'Divan Ankara', N'Divan Ankara - Junior Suite', N'Þehir Manzaralý', 13500, 1800, 12),
-(N'Divan Ankara', N'Divan Ankara - Executive Suite', N'Þehir Manzaralý', 22000, 2500, 4),
+(N'Divan Ankara', N'Divan Ankara - Superior Room', N'Åžehir ManzaralÄ±', 7200, 1000, 70),
+(N'Divan Ankara', N'Divan Ankara - Executive Room', N'Åžehir ManzaralÄ±', 8500, 1200, 45),
+(N'Divan Ankara', N'Divan Ankara - Deluxe Room', N'Åžehir ManzaralÄ±', 9400, 1300, 30),
+(N'Divan Ankara', N'Divan Ankara - Junior Suite', N'Åžehir ManzaralÄ±', 13500, 1800, 12),
+(N'Divan Ankara', N'Divan Ankara - Executive Suite', N'Åžehir ManzaralÄ±', 22000, 2500, 4),
 
-(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - Queen Guest Room', N'Þehir Manzaralý', 4300, 650, 45),
-(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - King Guest Room', N'Þehir Manzaralý', 4600, 650, 35),
-(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - King One Bedroom Suite', N'Þehir Manzaralý', 7600, 1100, 8),
+(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - Queen Guest Room', N'Åžehir ManzaralÄ±', 4300, 650, 45),
+(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - King Guest Room', N'Åžehir ManzaralÄ±', 4600, 650, 35),
+(N'DoubleTree by Hilton Gaziantep', N'Gaziantep - King One Bedroom Suite', N'Åžehir ManzaralÄ±', 7600, 1100, 8),
 
-(N'Hilton Bursa Convention Center', N'Bursa Hilton - Queen Guest Room', N'Þehir Manzaralý', 6800, 900, 65),
-(N'Hilton Bursa Convention Center', N'Bursa Hilton - Twin Guest Room', N'Þehir Manzaralý', 7000, 900, 50),
-(N'Hilton Bursa Convention Center', N'Bursa Hilton - Executive Room', N'Þehir Manzaralý', 9200, 1300, 28),
+(N'Hilton Bursa Convention Center', N'Bursa Hilton - Queen Guest Room', N'Åžehir ManzaralÄ±', 6800, 900, 65),
+(N'Hilton Bursa Convention Center', N'Bursa Hilton - Twin Guest Room', N'Åžehir ManzaralÄ±', 7000, 900, 50),
+(N'Hilton Bursa Convention Center', N'Bursa Hilton - Executive Room', N'Åžehir ManzaralÄ±', 9200, 1300, 28),
 
-(N'Novotel Kayseri', N'Novotel - Modern Room', N'Dað Manzaralý', 3600, 500, 60),
-(N'Novotel Kayseri', N'Novotel - Family Room', N'Dað Manzaralý', 4800, 700, 20),
-(N'Novotel Kayseri', N'Novotel - Suite Room', N'Dað Manzaralý', 6200, 900, 8),
+(N'Novotel Kayseri', N'Novotel - Modern Room', N'DaÄŸ ManzaralÄ±', 3600, 500, 60),
+(N'Novotel Kayseri', N'Novotel - Family Room', N'DaÄŸ ManzaralÄ±', 4800, 700, 20),
+(N'Novotel Kayseri', N'Novotel - Suite Room', N'DaÄŸ ManzaralÄ±', 6200, 900, 8),
 
-(N'Ramada Plaza Trabzon', N'Trabzon - Deluxe City View Room', N'Þehir Manzaralý', 6200, 900, 80),
-(N'Ramada Plaza Trabzon', N'Trabzon - Deluxe Sea View Room', N'Deniz Manzaralý', 7200, 1000, 90),
-(N'Ramada Plaza Trabzon', N'Trabzon - Corner Suite', N'Deniz Manzaralý', 9800, 1400, 25),
-(N'Ramada Plaza Trabzon', N'Trabzon - Business Room', N'Deniz Manzaralý', 11200, 1600, 18),
-(N'Ramada Plaza Trabzon', N'Trabzon - Family Connect Room', N'Deniz Manzaralý', 13500, 1900, 16),
-(N'Ramada Plaza Trabzon', N'Trabzon - Suite', N'Deniz Manzaralý', 15500, 2200, 12),
+(N'Ramada Plaza Trabzon', N'Trabzon - Deluxe City View Room', N'Åžehir ManzaralÄ±', 6200, 900, 80),
+(N'Ramada Plaza Trabzon', N'Trabzon - Deluxe Sea View Room', N'Deniz ManzaralÄ±', 7200, 1000, 90),
+(N'Ramada Plaza Trabzon', N'Trabzon - Corner Suite', N'Deniz ManzaralÄ±', 9800, 1400, 25),
+(N'Ramada Plaza Trabzon', N'Trabzon - Business Room', N'Deniz ManzaralÄ±', 11200, 1600, 18),
+(N'Ramada Plaza Trabzon', N'Trabzon - Family Connect Room', N'Deniz ManzaralÄ±', 13500, 1900, 16),
+(N'Ramada Plaza Trabzon', N'Trabzon - Suite', N'Deniz ManzaralÄ±', 15500, 2200, 12),
 
-(N'Ramada Resort Kusadasi', N'Kusadasi - Resort Room', N'Deniz Manzaralý', 8200, 1200, 90),
-(N'Ramada Resort Kusadasi', N'Kusadasi - Family Room', N'Deniz Manzaralý', 11800, 1700, 35),
-(N'Ramada Resort Kusadasi', N'Kusadasi - Suite Room', N'Deniz Manzaralý', 14500, 2100, 18),
+(N'Ramada Resort Kusadasi', N'Kusadasi - Resort Room', N'Deniz ManzaralÄ±', 8200, 1200, 90),
+(N'Ramada Resort Kusadasi', N'Kusadasi - Family Room', N'Deniz ManzaralÄ±', 11800, 1700, 35),
+(N'Ramada Resort Kusadasi', N'Kusadasi - Suite Room', N'Deniz ManzaralÄ±', 14500, 2100, 18),
 
-(N'Swissotel The Bosphorus', N'Swissotel - Bosphorus View Room', N'Deniz Manzaralý', 16500, 2500, 120),
-(N'Swissotel The Bosphorus', N'Swissotel - Residence Suite', N'Deniz Manzaralý', 28000, 4000, 45),
-(N'Swissotel The Bosphorus', N'Swissotel - Family Residence', N'Deniz Manzaralý', 42000, 6000, 18),
+(N'Swissotel The Bosphorus', N'Swissotel - Bosphorus View Room', N'Deniz ManzaralÄ±', 16500, 2500, 120),
+(N'Swissotel The Bosphorus', N'Swissotel - Residence Suite', N'Deniz ManzaralÄ±', 28000, 4000, 45),
+(N'Swissotel The Bosphorus', N'Swissotel - Family Residence', N'Deniz ManzaralÄ±', 42000, 6000, 18),
 
-(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Club Room', N'Þehir Manzaralý', 7800, 1100, 45),
-(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Sea View Room', N'Deniz Manzaralý', 8500, 1200, 80),
-(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Triple Room', N'Deniz Manzaralý', 9600, 1400, 30),
-(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Single Room', N'Deniz Manzaralý', 6900, 0, 25),
+(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Club Room', N'Åžehir ManzaralÄ±', 7800, 1100, 45),
+(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Sea View Room', N'Deniz ManzaralÄ±', 8500, 1200, 80),
+(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Triple Room', N'Deniz ManzaralÄ±', 9600, 1400, 30),
+(N'Wyndham Grand Izmir Ozdilek', N'Wyndham Izmir - Standard Single Room', N'Deniz ManzaralÄ±', 6900, 0, 25),
 
-(N'Yazz Collective Fethiye', N'Yazz - Deluxe Room', N'Bahçe Manzaralý', 9900, 1200, 12),
-(N'Yazz Collective Fethiye', N'Yazz - Grand Deluxe Room', N'Bahçe Manzaralý', 12900, 1500, 10),
-(N'Yazz Collective Fethiye', N'Yazz - Executive Suite', N'Bahçe Manzaralý', 15900, 1900, 6),
-(N'Yazz Collective Fethiye', N'Yazz - King Suite', N'Bahçe Manzaralý', 18900, 2300, 4),
-(N'Yazz Collective Fethiye', N'Yazz - Bungalow', N'Bahçe Manzaralý', 14900, 1800, 8),
-(N'Yazz Collective Fethiye', N'Yazz - Villa', N'Bahçe Manzaralý', 17500, 2200, 5),
-(N'Yazz Collective Fethiye', N'Yazz - Connecting Room', N'Bahçe Manzaralý', 24500, 3000, 3)
+(N'Yazz Collective Fethiye', N'Yazz - Deluxe Room', N'BahÃ§e ManzaralÄ±', 9900, 1200, 12),
+(N'Yazz Collective Fethiye', N'Yazz - Grand Deluxe Room', N'BahÃ§e ManzaralÄ±', 12900, 1500, 10),
+(N'Yazz Collective Fethiye', N'Yazz - Executive Suite', N'BahÃ§e ManzaralÄ±', 15900, 1900, 6),
+(N'Yazz Collective Fethiye', N'Yazz - King Suite', N'BahÃ§e ManzaralÄ±', 18900, 2300, 4),
+(N'Yazz Collective Fethiye', N'Yazz - Bungalow', N'BahÃ§e ManzaralÄ±', 14900, 1800, 8),
+(N'Yazz Collective Fethiye', N'Yazz - Villa', N'BahÃ§e ManzaralÄ±', 17500, 2200, 5),
+(N'Yazz Collective Fethiye', N'Yazz - Connecting Room', N'BahÃ§e ManzaralÄ±', 24500, 3000, 3)
 ) s(HotelName, RoomTypeName, ViewName, Price, Extra, TotalRooms)
 JOIN Hotels h ON h.Name = s.HotelName
 JOIN RoomTypes rt ON rt.Name = s.RoomTypeName
@@ -237,16 +237,16 @@ INSERT INTO HotelAmenities (HotelId, AmenityId)
 SELECT DISTINCT h.Id, a.Id
 FROM Hotels h
 JOIN (VALUES
-(N'Dedeman Konya', N'WiFi'), (N'Dedeman Konya', N'Havuz'), (N'Dedeman Konya', N'Kapalý Havuz'), (N'Dedeman Konya', N'Restoran'), (N'Dedeman Konya', N'Hamam'), (N'Dedeman Konya', N'Sauna'), (N'Dedeman Konya', N'Spa'), (N'Dedeman Konya', N'Fitness'), (N'Dedeman Konya', N'Toplantý Salonu'), (N'Dedeman Konya', N'Otopark'),
-(N'Divan Ankara', N'WiFi'), (N'Divan Ankara', N'Restoran'), (N'Divan Ankara', N'Bar'), (N'Divan Ankara', N'Spa'), (N'Divan Ankara', N'Fitness'), (N'Divan Ankara', N'Toplantý Salonu'),
-(N'DoubleTree by Hilton Gaziantep', N'Fitness'), (N'DoubleTree by Hilton Gaziantep', N'Konferans Salonu'), (N'DoubleTree by Hilton Gaziantep', N'Kuru Temizleme'), (N'DoubleTree by Hilton Gaziantep', N'Vale Servisi'), (N'DoubleTree by Hilton Gaziantep', N'Kütüphane'), (N'DoubleTree by Hilton Gaziantep', N'24 Saat Resepsiyon'),
-(N'Hilton Bursa Convention Center', N'WiFi'), (N'Hilton Bursa Convention Center', N'Restoran'), (N'Hilton Bursa Convention Center', N'Spa'), (N'Hilton Bursa Convention Center', N'Kapalý Havuz'), (N'Hilton Bursa Convention Center', N'Sauna'), (N'Hilton Bursa Convention Center', N'Fitness'), (N'Hilton Bursa Convention Center', N'Toplantý Salonu'),
-(N'Novotel Kayseri', N'WiFi'), (N'Novotel Kayseri', N'Restoran'), (N'Novotel Kayseri', N'Bar'), (N'Novotel Kayseri', N'Fitness'), (N'Novotel Kayseri', N'Teras'), (N'Novotel Kayseri', N'Konferans Salonu'), (N'Novotel Kayseri', N'Kahvaltý'), (N'Novotel Kayseri', N'Oda Servisi'),
-(N'Ramada Plaza Trabzon', N'WiFi'), (N'Ramada Plaza Trabzon', N'Havuz'), (N'Ramada Plaza Trabzon', N'Özel Plaj'), (N'Ramada Plaza Trabzon', N'Denize Sýfýr'), (N'Ramada Plaza Trabzon', N'Spa'), (N'Ramada Plaza Trabzon', N'Fitness'), (N'Ramada Plaza Trabzon', N'Toplantý Salonu'), (N'Ramada Plaza Trabzon', N'Restoran'), (N'Ramada Plaza Trabzon', N'Bar'), (N'Ramada Plaza Trabzon', N'Evcil Hayvan Dostu'),
-(N'Ramada Resort Kusadasi', N'WiFi'), (N'Ramada Resort Kusadasi', N'Havuz'), (N'Ramada Resort Kusadasi', N'Restoran'), (N'Ramada Resort Kusadasi', N'Bar'), (N'Ramada Resort Kusadasi', N'Spa'), (N'Ramada Resort Kusadasi', N'Fitness'), (N'Ramada Resort Kusadasi', N'Özel Plaj'),
-(N'Swissotel The Bosphorus', N'WiFi'), (N'Swissotel The Bosphorus', N'Havuz'), (N'Swissotel The Bosphorus', N'Kapalý Havuz'), (N'Swissotel The Bosphorus', N'Spa'), (N'Swissotel The Bosphorus', N'Restoran'), (N'Swissotel The Bosphorus', N'Bar'), (N'Swissotel The Bosphorus', N'Fitness'), (N'Swissotel The Bosphorus', N'Tenis Kortu'), (N'Swissotel The Bosphorus', N'Hamam'), (N'Swissotel The Bosphorus', N'Sauna'), (N'Swissotel The Bosphorus', N'Jakuzi'),
-(N'Wyndham Grand Izmir Ozdilek', N'WiFi'), (N'Wyndham Grand Izmir Ozdilek', N'Havuz'), (N'Wyndham Grand Izmir Ozdilek', N'Kapalý Havuz'), (N'Wyndham Grand Izmir Ozdilek', N'Termal'), (N'Wyndham Grand Izmir Ozdilek', N'Spa'), (N'Wyndham Grand Izmir Ozdilek', N'Sauna'), (N'Wyndham Grand Izmir Ozdilek', N'Hamam'), (N'Wyndham Grand Izmir Ozdilek', N'Jakuzi'), (N'Wyndham Grand Izmir Ozdilek', N'Fitness'), (N'Wyndham Grand Izmir Ozdilek', N'Toplantý Salonu'), (N'Wyndham Grand Izmir Ozdilek', N'Restoran'),
-(N'Yazz Collective Fethiye', N'WiFi'), (N'Yazz Collective Fethiye', N'Restoran'), (N'Yazz Collective Fethiye', N'Bar'), (N'Yazz Collective Fethiye', N'Denize Sýfýr'), (N'Yazz Collective Fethiye', N'Özel Plaj'), (N'Yazz Collective Fethiye', N'Oda Servisi')
+(N'Dedeman Konya', N'WiFi'), (N'Dedeman Konya', N'Havuz'), (N'Dedeman Konya', N'KapalÄ± Havuz'), (N'Dedeman Konya', N'Restoran'), (N'Dedeman Konya', N'Hamam'), (N'Dedeman Konya', N'Sauna'), (N'Dedeman Konya', N'Spa'), (N'Dedeman Konya', N'Fitness'), (N'Dedeman Konya', N'ToplantÄ± Salonu'), (N'Dedeman Konya', N'Otopark'),
+(N'Divan Ankara', N'WiFi'), (N'Divan Ankara', N'Restoran'), (N'Divan Ankara', N'Bar'), (N'Divan Ankara', N'Spa'), (N'Divan Ankara', N'Fitness'), (N'Divan Ankara', N'ToplantÄ± Salonu'),
+(N'DoubleTree by Hilton Gaziantep', N'Fitness'), (N'DoubleTree by Hilton Gaziantep', N'Konferans Salonu'), (N'DoubleTree by Hilton Gaziantep', N'Kuru Temizleme'), (N'DoubleTree by Hilton Gaziantep', N'Vale Servisi'), (N'DoubleTree by Hilton Gaziantep', N'KÃ¼tÃ¼phane'), (N'DoubleTree by Hilton Gaziantep', N'24 Saat Resepsiyon'),
+(N'Hilton Bursa Convention Center', N'WiFi'), (N'Hilton Bursa Convention Center', N'Restoran'), (N'Hilton Bursa Convention Center', N'Spa'), (N'Hilton Bursa Convention Center', N'KapalÄ± Havuz'), (N'Hilton Bursa Convention Center', N'Sauna'), (N'Hilton Bursa Convention Center', N'Fitness'), (N'Hilton Bursa Convention Center', N'ToplantÄ± Salonu'),
+(N'Novotel Kayseri', N'WiFi'), (N'Novotel Kayseri', N'Restoran'), (N'Novotel Kayseri', N'Bar'), (N'Novotel Kayseri', N'Fitness'), (N'Novotel Kayseri', N'Teras'), (N'Novotel Kayseri', N'Konferans Salonu'), (N'Novotel Kayseri', N'KahvaltÄ±'), (N'Novotel Kayseri', N'Oda Servisi'),
+(N'Ramada Plaza Trabzon', N'WiFi'), (N'Ramada Plaza Trabzon', N'Havuz'), (N'Ramada Plaza Trabzon', N'Ã–zel Plaj'), (N'Ramada Plaza Trabzon', N'Denize SÄ±fÄ±r'), (N'Ramada Plaza Trabzon', N'Spa'), (N'Ramada Plaza Trabzon', N'Fitness'), (N'Ramada Plaza Trabzon', N'ToplantÄ± Salonu'), (N'Ramada Plaza Trabzon', N'Restoran'), (N'Ramada Plaza Trabzon', N'Bar'), (N'Ramada Plaza Trabzon', N'Evcil Hayvan Dostu'),
+(N'Ramada Resort Kusadasi', N'WiFi'), (N'Ramada Resort Kusadasi', N'Havuz'), (N'Ramada Resort Kusadasi', N'Restoran'), (N'Ramada Resort Kusadasi', N'Bar'), (N'Ramada Resort Kusadasi', N'Spa'), (N'Ramada Resort Kusadasi', N'Fitness'), (N'Ramada Resort Kusadasi', N'Ã–zel Plaj'),
+(N'Swissotel The Bosphorus', N'WiFi'), (N'Swissotel The Bosphorus', N'Havuz'), (N'Swissotel The Bosphorus', N'KapalÄ± Havuz'), (N'Swissotel The Bosphorus', N'Spa'), (N'Swissotel The Bosphorus', N'Restoran'), (N'Swissotel The Bosphorus', N'Bar'), (N'Swissotel The Bosphorus', N'Fitness'), (N'Swissotel The Bosphorus', N'Tenis Kortu'), (N'Swissotel The Bosphorus', N'Hamam'), (N'Swissotel The Bosphorus', N'Sauna'), (N'Swissotel The Bosphorus', N'Jakuzi'),
+(N'Wyndham Grand Izmir Ozdilek', N'WiFi'), (N'Wyndham Grand Izmir Ozdilek', N'Havuz'), (N'Wyndham Grand Izmir Ozdilek', N'KapalÄ± Havuz'), (N'Wyndham Grand Izmir Ozdilek', N'Termal'), (N'Wyndham Grand Izmir Ozdilek', N'Spa'), (N'Wyndham Grand Izmir Ozdilek', N'Sauna'), (N'Wyndham Grand Izmir Ozdilek', N'Hamam'), (N'Wyndham Grand Izmir Ozdilek', N'Jakuzi'), (N'Wyndham Grand Izmir Ozdilek', N'Fitness'), (N'Wyndham Grand Izmir Ozdilek', N'ToplantÄ± Salonu'), (N'Wyndham Grand Izmir Ozdilek', N'Restoran'),
+(N'Yazz Collective Fethiye', N'WiFi'), (N'Yazz Collective Fethiye', N'Restoran'), (N'Yazz Collective Fethiye', N'Bar'), (N'Yazz Collective Fethiye', N'Denize SÄ±fÄ±r'), (N'Yazz Collective Fethiye', N'Ã–zel Plaj'), (N'Yazz Collective Fethiye', N'Oda Servisi')
 ) v(HotelName, AmenityName)
 ON v.HotelName = h.Name
 JOIN Amenities a ON a.Name = v.AmenityName
