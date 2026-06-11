@@ -21,6 +21,8 @@ public class AmenityController : Controller
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
+    // Admin olanak sayfasındaki oluşturma formundan gelen veriyi API'ye gönderir.
+    // Model geçersizse kullanıcı tekrar olanak yönetimi sayfasına yönlendirilir.
     public async Task<IActionResult> Create([Bind(Prefix = "CreateForm")] AdminAmenityFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -43,6 +45,8 @@ public class AmenityController : Controller
 
     [HttpPost("Edit/{id}")]
     [ValidateAntiForgeryToken]
+    // Seçilen olanağın adını ve ikon bilgisini güncellemek için kullanılır.
+    // İşlem sonucu TempData ile kullanıcıya başarı veya hata mesajı olarak gösterilir.
     public async Task<IActionResult> Edit(int id, AdminAmenityFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -66,6 +70,8 @@ public class AmenityController : Controller
 
     [HttpPost("Delete/{id}")]
     [ValidateAntiForgeryToken]
+    // Seçilen olanağı silmek için API'ye delete isteği gönderir.
+    // Olanak kullanımda ise API hata döndürebilir ve mesaj kullanıcıya gösterilir.
     public async Task<IActionResult> Delete(int id)
     {
         var response = await _apiService.DeleteAsync($"amenities/{id}");

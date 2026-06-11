@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Web.Models;
 
+// Admin otel listeleme sayfasında kullanılan filtre, sıralama,
+// sayfalama ve otel kartı listesini taşıyan view modeldir.
 public class AdminHotelListPageViewModel
 {
     public string? City { get; set; }
@@ -16,6 +18,9 @@ public class AdminHotelListPageViewModel
     public List<HotelCardViewModel> Hotels { get; set; } = new();
 }
 
+// Admin otel oluşturma ve düzenleme formunda kullanılan ana view modeldir.
+// Otelin temel bilgilerini, görsellerini, olanaklarını, oda tiplerini,
+// oda manzaralarını ve mevcut oda listesini tek modelde taşır.
 public class AdminHotelFormViewModel
 {
     public int Id { get; set; }
@@ -57,6 +62,8 @@ public class AdminHotelFormViewModel
     public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
 }
 
+// Admin panelinde otel veya oda görseli ekleme/güncelleme formlarında kullanılır.
+// Görsel URL, ana görsel durumu ve ekrandaki sıralama bilgisini taşır.
 public class HotelImageAdminFormViewModel
 {
     [Required(ErrorMessage = "Görsel URL alanı zorunludur.")]
@@ -66,11 +73,15 @@ public class HotelImageAdminFormViewModel
     public int DisplayOrder { get; set; }
 }
 
+// Olanak listesindeki her bir olanağın otele atanıp atanmadığını tutar.
+// Checkbox listesinde seçili olanakları göstermek için kullanılır.
 public class AdminAmenityItemViewModel : AmenityViewModel
 {
     public bool IsAssigned { get; set; }
 }
 
+// Admin olanak yönetimi sayfasında kullanılan view modeldir.
+// Mevcut olanak listesini, oluşturma formunu ve düzenleme formunu taşır.
 public class AdminAmenityPageViewModel
 {
     public List<AmenityViewModel> Amenities { get; set; } = new();
@@ -78,6 +89,8 @@ public class AdminAmenityPageViewModel
     public AdminAmenityFormViewModel EditForm { get; set; } = new();
 }
 
+// Admin panelinde olanak oluşturma ve güncelleme formlarında kullanılır.
+// Olanak adı zorunludur, ikon bilgisi isteğe bağlıdır.
 public class AdminAmenityFormViewModel
 {
     public int Id { get; set; }
@@ -88,11 +101,16 @@ public class AdminAmenityFormViewModel
     public string? Icon { get; set; }
 }
 
+// Otel oluşturulduktan sonra API'den dönen Id bilgisini taşır.
+// Create işleminden sonra Edit sayfasına yönlendirmek için kullanılır.
 public class CreatedHotelResponseViewModel
 {
     public int Id { get; set; }
 }
 
+// Admin panelinde otele yeni oda ekleme formunda kullanılır.
+// Oda tipi, fiyat, ek misafir ücreti, toplam oda sayısı,
+// isteğe bağlı görsel ve manzara bilgisini taşır.
 public class AdminHotelRoomFormViewModel
 {
     [Required(ErrorMessage = "Oda tipi seçiniz.")]

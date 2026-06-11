@@ -1,5 +1,9 @@
-﻿namespace HotelApp.Web.Models;
+﻿
+namespace HotelApp.Web.Models;
 
+// Otel detay sayfasında kullanılacak tüm verileri taşıyan view modeldir.
+// Otelin temel bilgileri, görselleri, odaları, yorumları, olanakları
+// ve rezervasyon formu bilgileri bu model üzerinden view'a gönderilir.
 public class HotelDetailPageVm
 {
     public int Id { get; set; }
@@ -33,6 +37,8 @@ public class HotelDetailPageVm
     public int? SearchGuestCount { get; set; }
 }
 
+// Otel görsellerini view tarafında göstermek için kullanılan modeldir.
+// Görsel URL'si, ana görsel bilgisi ve sıralama değerini taşır.
 public class HotelImageViewModel
 {
     public int Id { get; set; }
@@ -41,6 +47,8 @@ public class HotelImageViewModel
     public int DisplayOrder { get; set; }
 }
 
+// Otel olanaklarını view tarafında göstermek için kullanılan modeldir.
+// Örneğin Wi-Fi, otopark, havuz gibi olanak adını ve ikon bilgisini taşır.
 public class AmenityViewModel
 {
     public int Id { get; set; }
