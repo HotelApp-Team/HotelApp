@@ -1,0 +1,49 @@
+﻿@model HotelApp.Web.Models.CatalogSearchPageViewModel
+
+@{
+    ViewData["Title"] = "Otel Ara";
+}
+
+<div class="container py-4">
+
+    @* API isteği başarısız olduğunda hata mesajını gösterir. *@
+    @if (TempData["SearchError"] is string error)
+    {
+        <div class="alert alert-warning">@error</div>
+    }
+    @* Henüz bir arama yapılmadığında bilgilendirme gösterir. *@
+    else if (string.IsNullOrWhiteSpace(Model.SearchTerm))
+    {
+        <div class="alert alert-secondary">
+            Otel veya şehir adı yazın.
+        </div>
+    }
+    @* Arama yapıldığı halde eşleşen otel yoksa gösterilir. *@
+    else if (!Model.Hotels.Any())
+    {
+        <div class="alert alert-info">
+            “@Model.SearchTerm” için otel bulunamadı.
+        </div>
+    }
+    else
+    {
+        @* Bulunan otellerin sayısını ve arama ifadesini gösterir. *@
+        <h1 class="h4 mb-3">
+            “@Model.SearchTerm” sonuçları
+            <small class="text-muted">
+                (@Model.TotalCount otel)
+            </small>
+        </h1>
+
+        @* Arama sonucundaki otelleri mevcut otel kartıyla listeler. *@
+        <div class="row g-4">
+            @foreach (var hotel in Model.Hotels)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    @await Html.PartialAsync("_HotelCard", hotel)
+                </div>
+            }
+        </div>
+
+    }
+</div>

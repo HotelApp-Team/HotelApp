@@ -97,6 +97,61 @@ namespace HotelApp.Web.Controllers
 
             return View(model);
         }
+
+        // Navbar üzerinden yapılan otel veya şehir aramasını karşılar.
+        // API'den gelen sonuçları CatalogSearch view'ına gönderir.
+        [HttpGet]
+        public async Task<IActionResult> CatalogSearch(string? searchTerm, int page = 1)
+        {
+            // Her sayfada gösterilecek otel sayısıdır.
+            const int pageSize = 100;
+
+            // Kullanıcının arama ve sayfalama bilgilerini modele aktarır.
+            var model = new CatalogSearchPageViewModel
+            {
+                SearchTerm = searchTerm?.Trim() ?? string.Empty,
+                CurrentPage = page < 1 ? 1 : page,
+                PageSize = pageSize
+            };
+
+            // Arama alanı boşsa API isteği göndermeden sayfayı açar.
+            if (string.IsNullOrWhiteSpace(model.SearchTerm))
+            {
+                return View(model);
+            }
+
+            // Özel Türkçe karakterlerin query string içinde güvenli taşınmasını sağlar.
+            var encodedSearchTerm = Uri.EscapeDataString(model.SearchTerm);
+
+            // Katalog arama API adresini oluşturur.
+            var endpoint =
+                "hotels/catalog-search" +
+                $"?searchTerm={encodedSearchTerm}" +
+                $"&page={model.CurrentPage}" +
+                $"&pageSize={pageSize}";
+
+            // API üzerinden sayfalı otel listesini getirir.
+            var response = await _apiService.GetAsync<PagedHotelListResponse>(
+                endpoint);
+
+            // API başarısız olursa kullanıcıya hata mesajı gönderir.
+            if (!response.Success || response.Data == null)
+            {
+                TempData["SearchError"] =
+                    string.IsNullOrWhiteSpace(response.Message)
+                    ? "Arama yapılırken bir sorun oluştu."
+                    : response.Message;
+
+                return View(model);
+            }
+
+            // API sonucunu sayfada kullanılacak modele aktarır.
+            model.TotalCount = response.Data.TotalCount;
+            model.Hotels = response.Data.Data;
+
+            return View(model);
+        }
+
         // Detail action: tarih ve misafir sayisi model binding ile sorgu parametrelerinden otomatik alinir.
         // Sevde'nin Request.Query[] ile manuel parse etmek istedigi davranis burada parametre binding ile saglaniyor.
         // Otel detay sayfası için otel bilgisi, görseller, odalar ve yorumlar API'den alınır.

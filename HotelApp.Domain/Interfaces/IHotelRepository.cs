@@ -43,4 +43,6 @@ public interface IHotelRepository : IRepository<Hotel>
     // Tarih, şehir ve misafir sayısı bilgilerine göre arama yapılır.
     Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize);
 
+    // Aktif otelleri otel adına veya şehre göre sayfalı olarak arar.
+    Task<(List<Hotel> Data, int TotalCount)> SearchCatalogPagedAsync(string searchTerm, int page, int pageSize);
 }

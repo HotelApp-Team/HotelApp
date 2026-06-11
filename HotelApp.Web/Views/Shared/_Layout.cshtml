@@ -63,6 +63,29 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Faq">SSS</a>
                         </li>
                     </ul>
+
+                    @* Navbar üzerinden tarih ve misafir bilgisi istemeden otel adına veya şehre göre katalog araması yapar. *@
+                    <form method="get"
+                          asp-controller="Hotels"
+                          asp-action="CatalogSearch"
+                          class="navbar-search me-lg-3">
+
+                        <div class="input-group">
+                            <input type="search"
+                                   name="searchTerm"
+                                   class="form-control"
+                                   placeholder="Otel veya şehir ara"
+                                   aria-label="Otel veya şehir ara"
+                                   required />
+
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    aria-label="Ara">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
