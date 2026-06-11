@@ -7,8 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories;
 
+// Otel verilerine ait özel sorgularý yöneten repository sýnýfýdýr.
+// Listeleme, detay getirme, filtreleme ve müsait otel arama iþlemlerini yapar
 public class HotelRepository : Repository<Hotel>, IHotelRepository
 {
+    // DbContext base Repository sýnýfýna gönderilir.
     public HotelRepository(HotelAppDbContext context) : base(context)
     {
     }
@@ -23,6 +26,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
+    // Id deðerine göre oteli iliþkili verileriyle birlikte getirir.
     public async Task<Hotel?> GetWithDetailsAsync(int id)
     {
         return await _context.Hotels
@@ -33,6 +37,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
+    // Verilen þehir adýna göre otelleri getirir.
+    // Liste ekranýnda kapak görseli için HotelImages da dahil edilir.
     public async Task<IEnumerable<Hotel>> GetByCityAsync(string city)
     {
         return await _context.Hotels
@@ -42,6 +48,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
+    // Sadece aktif durumdaki otelleri getirir.
     public async Task<IEnumerable<Hotel>> GetActiveAsync()
     {
         return await _context.Hotels
@@ -51,6 +58,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
+    // Aktif otellerin bulunduðu þehirleri tekil olarak getirir.
     public async Task<List<string>> GetActiveCitiesAsync()
     {
         return await _context.Hotels
@@ -104,6 +112,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
+    // Aktif oteller için temel IQueryable sorgusu oluþturur.
     public IQueryable<Hotel> Query()
     {
         return _context.Hotels
@@ -112,6 +121,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .AsNoTracking();
     }
 
+    // Admin otel listesi için filtreleme, sýralama ve sayfalama yapar.
+    // Geriye hem ilgili sayfadaki veriyi hem de toplam kayýt sayýsýný döndürür.
     public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
     {
         var query = _context.Hotels
@@ -150,8 +161,11 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return (data, totalCount);
     }
 
+    // Arama kriterlerine göre müsait otelleri sayfalý olarak getirir.
+    // Önce stored procedure ile müsait odalar bulunur, sonra bu oteller filtrelenir.
     public async Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize)
     {
+        // Stored procedure ile müsait oda bilgileri alýnýr.
         var availableRooms = await _context.Database
         .SqlQueryRaw<AvailableRoomDto>(
             "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
@@ -162,6 +176,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             new SqlParameter("@GuestCount", guestCount))
         .ToListAsync();
 
+        // Müsait odalara sahip otel Id deðerleri tekilleþtirilir.
         var availableHotelIds = availableRooms
             .Select(x => x.HotelId)
             .Distinct()

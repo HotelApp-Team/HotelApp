@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.DTOs
 {
+    // Otel listeleme ekranında gösterilecek özet bilgileri taşır.
+    // Detay sayfasına göre daha az veri içerir.
     public class HotelListDto
     {
         public int Id { get; set; }

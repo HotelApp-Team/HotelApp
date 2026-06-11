@@ -1,11 +1,15 @@
 ﻿namespace HotelApp.Web.Models;
 
+// Otel arama API'sinden dönen sonucu web tarafında taşır.
+// Toplam kayıt sayısı ve bulunan otel kartlarını içerir.
 public class HotelSearchResponseViewModel
 {
     public int TotalCount { get; set; }
     public List<HotelCardViewModel> Hotels { get; set; } = new();
 }
 
+// Otel arama sayfasında kullanılan view modeldir.
+// Kullanıcının seçtiği filtreleri, sayfalama bilgisini ve arama sonucundaki otelleri taşır.
 public class HotelSearchPageViewModel
 {
     public string? City { get; set; }

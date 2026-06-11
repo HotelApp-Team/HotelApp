@@ -69,6 +69,7 @@ namespace HotelApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+
         /// <summary>
         /// Belirtilen kullanici ve otele ait yorumu getirir.
         /// </summary>

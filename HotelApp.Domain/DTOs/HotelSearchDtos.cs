@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HotelApp.Domain.DTOs;
 
-// Search Request DTO
+// Otel arama iþlemi için kullanýcýdan gelen filtreleri taþýr.
+// Þehir, tarih aralýðý, yýldýz ve misafir sayýsý gibi arama kriterlerini içerir.
 public class HotelSearchRequestDto
 {
     [Required(ErrorMessage = "Þehir zorunludur.")]
@@ -21,14 +22,17 @@ public class HotelSearchRequestDto
     [Range(1, 20, ErrorMessage = "Misafir sayýsý 1 ile 20 arasýnda olmalýdýr.")]
     public int GuestCount { get; set; }
 }
-// Search Response DTO
+
+// Otel arama sonucunda dönen liste bilgisini taþýr.
+// TotalCount toplam sonucu, Hotels ise bulunan otelleri içerir.
 public class HotelSearchResponseDto
 {
     public int TotalCount { get; set; }
     public List<HotelListDto> Hotels { get; set; } = new();
 }
 
-// Genel sayfalama cevabi - GetAllFilteredAsync gibi icin
+// Sayfalý listeleme iþlemlerinde ortak cevap modeli olarak kullanýlýr.
+// TotalCount, Page, PageSize ve Data alanlarýyla liste sonucunu taþýr.
 public class PagedResponseDto<T>
 {
     public int TotalCount { get; set; }
