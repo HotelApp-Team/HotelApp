@@ -117,6 +117,23 @@ public class Pr109HotelRoomMgmtContractTests
             "UpdateRoom admin filtre olmadan disariya acilmamali.");
     }
 
+    [Fact]
+    public void Pr109_HotelMgmtController_DeleteRoom_ShouldCallApiAndShowResult()
+    {
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
+
+        AssertContainsAny(source, "DeleteRoom");
+        AssertContainsAny(source, "HttpPost(\"{hotelId}/Rooms/{roomId}/Delete\"", "Rooms/{roomId}/Delete");
+        AssertContainsAny(source, "ValidateAntiForgeryToken");
+        AssertContainsAny(source, "DeleteAsync($\"hotels/{hotelId}/rooms/{roomId}\")");
+        AssertContainsAny(source, "Oda silindi.", "Oda silinemedi.");
+        AssertContainsAny(source, "RedirectToAction(nameof(Edit)");
+
+        Assert.True(
+            ClassLevelAdminFilterPresent(source),
+            "DeleteRoom admin filtre olmadan disariya acilmamali.");
+    }
+
     // HotelMgmtController.LoadAmenitiesAsync metodunun artik RoomTypes ve Rooms da yukledigini dogrular.
     [Fact]
     public void Pr109_HotelMgmtController_LoadAmenities_ShouldFetchRoomTypesAndRoomsWhenImplemented()
@@ -179,6 +196,8 @@ public class Pr109HotelRoomMgmtContractTests
 
         AssertContainsAny(source, "asp-action=\"AddRoom\"", "AddRoom");
         AssertContainsAny(source, "asp-action=\"UpdateRoom\"", "UpdateRoom");
+        AssertContainsAny(source, "asp-action=\"DeleteRoom\"", "DeleteRoom");
+        AssertContainsAny(source, "confirm", "Odayı Sil", "Odayi Sil");
         AssertContainsAny(source, "RoomTypeId");
         AssertContainsAny(source, "PricePerNight");
         AssertContainsAny(source, "ExtraGuestPricePerNight");

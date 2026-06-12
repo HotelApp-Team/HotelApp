@@ -380,7 +380,7 @@ BEGIN
             @ExtraGuestPricePerNight = hr.ExtraGuestPricePerNight,
             @TotalRooms = hr.TotalRooms,
             @MaxGuests = rt.MaxGuests
-        FROM HotelRooms hr
+        FROM HotelRooms hr WITH (UPDLOCK, HOLDLOCK)
         INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
         WHERE hr.Id = @HotelRoomId
           AND hr.IsActive = 1;
@@ -434,7 +434,7 @@ BEGIN
           AND CheckInDate < @CheckOutDate
           AND CheckOutDate > @CheckInDate;
 
-        IF (@TotalRooms - @ReservedCount) <= 0
+        IF @ReservedCount >= @TotalRooms
         BEGIN
             SET @ResultMessage = N'Bu tarih aralığında müsait oda yok.';
             SET @ReservationId = 0;

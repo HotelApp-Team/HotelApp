@@ -30,15 +30,18 @@ namespace HotelApp.Domain.DTOs
         public int DisplayOrder { get; set; }
     }
 
-    // Mevcut otel resmini güncellemek için kullanılır.
-    // Id ile hangi görselin güncelleneceği belirlenir.
+    // Otele ait tüm görsellerin sıralama ve ana görsel ayarlarını tek istekte günceller.
     public class HotelImageUpdateDto
     {
-        [Required(ErrorMessage = "Id zorunludur")]
-        public int Id { get; set; }
+        [Required]
+        [MinLength(1, ErrorMessage = "En az bir görsel gönderilmelidir")]
+        public List<HotelImageUpdateItemDto> Images { get; set; } = new();
+    }
 
-        [Required(ErrorMessage = "Resim URL zorunludur")]
-        public string ImageUrl { get; set; } = null!;
+    // Toplu güncelleme isteğindeki tek bir görselin kimlik ve ayar bilgilerini taşır.
+    public class HotelImageUpdateItemDto
+    {
+        public int Id { get; set; }
 
         public bool IsMain { get; set; }
 

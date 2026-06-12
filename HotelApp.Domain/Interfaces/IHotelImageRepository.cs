@@ -10,6 +10,9 @@ public interface IHotelImageRepository : IRepository<HotelImage>
     // Otel detay ve admin görsel listesi için kullanılır.
     Task<IEnumerable<HotelImage>> GetByHotelIdAsync(int hotelId);
 
+    // Toplu güncelleme ve silme işlemleri için otele ait görselleri change tracking açık şekilde getirir.
+    Task<List<HotelImage>> GetTrackedByHotelIdAsync(int hotelId);
+
     // Ana resmi getir (IsMain = true).
     // Otel kartında veya detay sayfasında kapak görseli olarak kullanılır.
     Task<HotelImage?> GetMainImageAsync(int hotelId);

@@ -73,6 +73,20 @@ public class HotelImageAdminFormViewModel
     public int DisplayOrder { get; set; }
 }
 
+// Admin otel düzenleme ekranındaki toplu görsel ayarlarını taşır.
+public class HotelImageUpdateViewModel
+{
+    public int MainImageId { get; set; }
+    public List<HotelImageUpdateItemViewModel> Images { get; set; } = new();
+}
+
+// Toplu görsel formundaki tek bir görselin sıra bilgisini taşır.
+public class HotelImageUpdateItemViewModel
+{
+    public int Id { get; set; }
+    public int DisplayOrder { get; set; }
+}
+
 // Olanak listesindeki her bir olanağın otele atanıp atanmadığını tutar.
 // Checkbox listesinde seçili olanakları göstermek için kullanılır.
 public class AdminAmenityItemViewModel : AmenityViewModel

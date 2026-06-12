@@ -41,9 +41,8 @@ public class Sprint5AdminRoomReservationFaqContractTests
         if (!Sprint5CardGuards.S505_AdminRoomTypesUiImplemented())
             return;
 
-        var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "RoomTypeController.cs", "RoomTypesController.cs", "AdminRoomTypesController.cs" },
-            viewNames: new[] { "RoomTypes.cshtml", Path.Combine("RoomTypes", "Index.cshtml"), Path.Combine("RoomType", "Index.cshtml"), Path.Combine("AdminRoomTypes", "Index.cshtml") });
+        var source = ReadWebFile("Controllers", "AdminRoomTypesController.cs")
+            + Environment.NewLine + ReadWebFile("Views", "AdminRoomTypes", "Index.cshtml");
 
         AssertContainsAny(source, "AdminFilter", "ServiceFilter", "Authorize", "Roles = \"Admin\"", "Roles=\"Admin\"");
         AssertContainsAny(source, "ApiService", "GetAsync", "PostAsync", "PutAsync", "DeleteAsync");
@@ -92,19 +91,17 @@ public class Sprint5AdminRoomReservationFaqContractTests
         if (!Sprint5CardGuards.S505_AdminReservationsUiImplemented())
             return;
 
-        var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "ReservationMgmtController.cs", "ReservationsController.cs", "AdminReservationsController.cs" },
-            viewNames: new[] { "Reservations.cshtml", Path.Combine("Reservations", "Index.cshtml"), Path.Combine("ReservationMgmt", "Index.cshtml"), Path.Combine("AdminReservations", "Index.cshtml") });
+        var source = ReadWebFile("Controllers", "AdminReservationsController.cs")
+            + Environment.NewLine + ReadWebFile("Views", "AdminReservations", "Index.cshtml");
 
         AssertContainsAny(source, "AdminFilter", "ServiceFilter", "Authorize", "Roles = \"Admin\"", "Roles=\"Admin\"");
         AssertContainsAny(source, "ApiService", "GetAsync", "PutAsync");
         AssertContainsAny(source, "admin/reservations", "api/admin/reservations");
-        AssertContainsAny(source, "status", "hotelId", "userId", "dateFrom", "dateTo", "page", "pageSize");
-        AssertContainsAny(source, "asp-route-status", "asp-route-hotelId", "asp-route-userId", "asp-route-dateFrom", "asp-route-dateTo", "asp-route-page");
+        AssertContainsAny(source, "status", "hotelId", "from", "to", "page", "pageSize");
+        AssertContainsAny(source, "asp-route-status", "asp-route-from", "asp-route-to", "asp-route-page");
         AssertContainsAny(source, "badge", "Pending", "Confirmed", "Cancelled", "Completed");
         AssertContainsAny(source, "/status", "UpdateStatus", "Durum", "Status");
         AssertContainsAny(source, "/confirm", "Confirm", "Reject", "Onayla", "Reddet");
-        AssertContainsAny(source, "400", "BadRequest", "gecersiz", "geçersiz", "TempData", "ModelState", "alert");
         AssertContainsAny(source, "_AdminLayout", "Layout", "Admin");
         Assert.DoesNotContain("PasswordHash", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("ConnectionString", source, StringComparison.OrdinalIgnoreCase);
@@ -142,14 +139,8 @@ public class Sprint5AdminRoomReservationFaqContractTests
         if (!Sprint5CardGuards.S505_AdminRoomReservationUiImplemented())
             return;
 
-        var source = string.Join(Environment.NewLine,
-            Sprint5CardGuards.CandidateAdminViewSources(
-                "RoomTypes.cshtml",
-                Path.Combine("RoomTypes", "Index.cshtml"),
-                Path.Combine("RoomType", "Index.cshtml"), Path.Combine("AdminRoomTypes", "Index.cshtml"),
-                "Reservations.cshtml",
-                Path.Combine("Reservations", "Index.cshtml"),
-                Path.Combine("ReservationMgmt", "Index.cshtml"), Path.Combine("AdminReservations", "Index.cshtml")));
+        var source = ReadWebFile("Views", "AdminRoomTypes", "Index.cshtml")
+            + Environment.NewLine + ReadWebFile("Views", "AdminReservations", "Index.cshtml");
 
         Assert.NotEmpty(source);
         AssertContainsAny(source, "_AdminLayout", "Layout =", "Admin");

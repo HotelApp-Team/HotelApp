@@ -31,15 +31,14 @@ public class Sprint5AdminHotelAmenitiesContractTests
         if (!Sprint5CardGuards.S503_HotelMgmtUiImplemented())
             return;
 
-        var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "HotelMgmtController.cs", "AdminHotelsController.cs" },
-            viewNames: new[] { "Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"), Path.Combine("AdminHotels", "Index.cshtml") });
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs")
+            + Environment.NewLine + ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Index.cshtml");
 
         AssertContainsAny(source, "api/hotels", "\"hotels", "'hotels");
         AssertContainsAny(source, "GetAsync", "GetTAsync");
         AssertContainsAny(source, "PostAsync", "Create", "Yeni Otel", "Otel Ekle");
         AssertContainsAny(source, "DeleteAsync", "Delete", "Sil");
-        AssertContainsAny(source, "search", "Search", "arama", "Arama");
+        AssertContainsAny(source, "asp-for=\"City\"", "string? city", "city=");
         AssertContainsAny(source, "city", "City", "Sehir");
         AssertContainsAny(source, "star", "StarRating", "Yildiz");
         AssertContainsAny(source, "sort", "Sort", "Siralama");
@@ -77,6 +76,28 @@ public class Sprint5AdminHotelAmenitiesContractTests
                 || source.Contains("cover/", StringComparison.OrdinalIgnoreCase),
             "S5-03 planina gore ana gorsel secimi E18 ile yapilmali; ayri cover route uydurulmamali.");
         AssertContainsAny(source, "TempData", "ModelState", "alert", "ErrorMessage", "SuccessMessage");
+    }
+
+    [Fact]
+    public void S503_HotelImages_ShouldUseSingleBulkUpdateFormAndRadioMainSelection()
+    {
+        if (!Sprint5CardGuards.S503_HotelEditUiImplemented())
+            return;
+
+        var controller = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
+        var view = ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
+        var api = ReadProjectFile("HotelApp.API", "Controllers", "HotelImagesController.cs");
+
+        AssertContainsAny(controller, "UpdateImage", "Görsel ayarları güncellendi.");
+        AssertContainsAny(controller, "hotels/{hotelId}/images", "PutAsync");
+        Assert.Contains("hotel-images-update-form", view, StringComparison.Ordinal);
+        Assert.Contains("type=\"radio\"", view, StringComparison.Ordinal);
+        Assert.Contains("name=\"MainImageId\"", view, StringComparison.Ordinal);
+        Assert.Contains("Görsel Ayarlarını Kaydet", view, StringComparison.Ordinal);
+        Assert.Contains("asp-action=\"UpdateImage\"", view, StringComparison.Ordinal);
+        Assert.Contains("asp-action=\"DeleteImage\"", view, StringComparison.Ordinal);
+        AssertContainsAny(api, "UpdateImage", "HotelImageUpdateDto");
+        Assert.DoesNotContain("HttpPut(\"{imageId}\")", api, StringComparison.Ordinal);
     }
 
     // S5-03 icin HotelEdit ekraninin E34-E35 otel-olanak atama/kaldirma akislarini icerdigini kontrol eder.
@@ -134,7 +155,10 @@ public class Sprint5AdminHotelAmenitiesContractTests
         if (!Sprint5CardGuards.S503_AdminHotelAmenitiesUiImplemented())
             return;
 
-        var viewSource = string.Join(Environment.NewLine, ReadStartedS503ViewSources());
+        var viewSource = string.Join(Environment.NewLine,
+            ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Index.cshtml"),
+            ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml"),
+            ReadProjectFile("HotelApp.Web", "Views", "AdminAmenities", "Index.cshtml"));
 
         Assert.NotEmpty(viewSource);
         AssertContainsAny(viewSource, "_AdminLayout", "Layout =", "Admin");

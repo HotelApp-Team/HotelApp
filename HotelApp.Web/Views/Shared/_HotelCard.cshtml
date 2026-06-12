@@ -50,11 +50,11 @@
             {
                 var avg = Model.AvgRating.Value;
                 var ratingClass = avg >= 9 ? "rating-excellent"
-                                  : avg >= 8 ? "rating-good"
-                                  : "rating-ok";
+                : avg >= 8 ? "rating-good"
+                : "rating-ok";
                 var ratingLabel = avg >= 9 ? "Mükemmel"
-                                  : avg >= 8 ? "Çok İyi"
-                                  : "İyi";
+                : avg >= 8 ? "Çok İyi"
+                : "İyi";
                 <span class="hotel-rating">
                     <span class="rating-pill @ratingClass">@avg.ToString("0.0")</span>
                     <span class="rating-label">@ratingLabel</span>
@@ -63,50 +63,42 @@
 
         </div>
 
-        @if (Model.MinPrice.HasValue)
-        {
-            <div class="hotel-price-row">
-                <div>
-                    <div class="price-label">Gecelik fiyat</div>
-                    <div class="price-amount">
-                        @Model.MinPrice.Value.ToString("N0", new System.Globalization.CultureInfo("tr-TR")) TL
+        <div class="hotel-card-footer">
+
+            @if (Model.MinPrice.HasValue)
+            {
+                <div class="hotel-card-price">
+                    <div class="price-label">
+                        Gecelik fiyat
                     </div>
+
+                    <div class="price-amount">
+                        @Model.MinPrice.Value.ToString(
+                        "N0",
+                                        new System.Globalization.CultureInfo("tr-TR")
+                                        ) TL
                 </div>
-                <a asp-controller="Hotels"
-                   asp-action="Detail"
-                   asp-route-id="@Model.Id"
-                   asp-route-checkIn="@checkIn"
-                   asp-route-checkOut="@checkOut"
-                   asp-route-guestCount="@guestCount"
-                   class="btn btn-outline-primary btn-detail">
-                    Detay <i class="bi bi-arrow-right"></i>
-                </a>
-                             
             </div>
-        }
-        else
-        {
+                        }
+
             <a asp-controller="Hotels"
                asp-action="Detail"
                asp-route-id="@Model.Id"
-               asp-route-checkIn="@checkIn"
-               asp-route-checkOut="@checkOut"
-               asp-route-guestCount="@guestCount"
                class="btn btn-outline-primary btn-detail">
-                Detay <i class="bi bi-arrow-right"></i>
+                Detay
+                <i class="bi bi-arrow-right"></i>
             </a>
 
             <a asp-controller="Hotels"
                asp-action="Detail"
                asp-route-id="@Model.Id"
-               asp-route-checkIn="@checkIn"
-               asp-route-checkOut="@checkOut"
-               asp-route-guestCount="@guestCount"
                asp-fragment="rooms-section"
-               class="btn btn-primary btn-detail mt-2">
-                <i class="bi bi-calendar-check"></i> Rezervasyon Yap
+               class="btn btn-primary btn-detail">
+                <i class="bi bi-calendar-check"></i>
+                Rezervasyon Yap
             </a>
-        }
+
+        </div>
 
     </div>
 
