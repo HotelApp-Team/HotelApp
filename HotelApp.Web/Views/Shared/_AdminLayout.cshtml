@@ -9,6 +9,12 @@
     var isAdmin = isLoggedIn && Context.Session.IsInRole(Configuration, "Admin");
     var userName = Context.Session.GetString("UserFullName") ?? "Yönetici";
     var userEmail = Context.Session.GetString("UserEmail") ?? "admin@hotel.com";
+
+    // Sidebar'da su an hangi sayfadaysak o menu maddesini isaretler: linkin
+    // controller'i aktif controller ile ayniysa "active" class'i doner.
+    // (Stil admin.css'te .nav-link.active olarak zaten hazir.)
+    string NavActive(string controller) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -34,43 +40,43 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminDashboard" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminDashboard")" asp-controller="AdminDashboard" asp-action="Index">
                         <i class="bi bi-speedometer2"></i> Panel
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminHotels" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminHotels")" asp-controller="AdminHotels" asp-action="Index">
                         <i class="bi bi-building"></i> Oteller
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminRoomTypes" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminRoomTypes")" asp-controller="AdminRoomTypes" asp-action="Index">
                         <i class="bi bi-door-open"></i> Oda Tipleri
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminAmenities" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminAmenities")" asp-controller="AdminAmenities" asp-action="Index">
                         <i class="bi bi-grid-3x3-gap-fill"></i> Olanak Yönetimi
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminReservations" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminReservations")" asp-controller="AdminReservations" asp-action="Index">
                         <i class="bi bi-calendar-check"></i> Rezervasyonlar
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminUsers" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminUsers")" asp-controller="AdminUsers" asp-action="Index">
                         <i class="bi bi-people-fill"></i> Kullanıcılar
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminReviews" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminReviews")" asp-controller="AdminReviews" asp-action="Index">
                         <i class="bi bi-chat-left-text"></i> Yorumlar
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="AdminLog" asp-action="Index">
+                    <a class="nav-link text-white @NavActive("AdminLog")" asp-controller="AdminLog" asp-action="Index">
                         <i class="bi bi-clock-history"></i> Sistem Kayıtları
                     </a>
                 </li>
