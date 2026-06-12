@@ -261,7 +261,8 @@ namespace HotelApp.Domain.Services
             // yoksa bir kez rezervasyon almis oda hicbir zaman satistan kaldirilamazdi.
             var today = DateOnly.FromDateTime(DateTime.Today);
             bool hasOngoingOrFutureReservation = entity.Reservations.Any(r =>
-                r.Status == "Confirmed" && r.CheckOutDate >= today);
+                string.Equals(r.Status, "Confirmed", StringComparison.OrdinalIgnoreCase)
+                 && r.CheckOutDate >= today);
 
             if (hasOngoingOrFutureReservation && !dto.IsActive)
                 throw new InvalidOperationException("Aktif rezervasyonu olan oda pasife çekilemez.");
