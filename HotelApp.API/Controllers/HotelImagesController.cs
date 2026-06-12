@@ -43,19 +43,15 @@ public class HotelImagesController : ControllerBase
         return StatusCode(201);
     }
 
-    // E18 - PUT: /api/hotels/{hotelId}/images/{imageId}
-    // Belirtilen otele ait mevcut görsel kaydını günceller.
-    // Route içindeki imageId ile body içindeki dto.Id aynı değilse istek hatalı kabul edilir.
+    // E18 - PUT: /api/hotels/{hotelId}/images
+    // Belirtilen otele ait tüm görsellerin sıralama ve ana görsel ayarlarını günceller.
+    // İstek mevcut tüm görselleri içermeli ve tam olarak bir ana görsel seçilmelidir.
     // Güncelleme başarılı olduğunda 204 NoContent cevabı döner.
-    [HttpPut("{imageId}")]
+    [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateImage(int hotelId, int imageId, [FromBody] HotelImageUpdateDto dto)
+    public async Task<IActionResult> UpdateImage(int hotelId, [FromBody] HotelImageUpdateDto dto)
     {
-        if (imageId != dto.Id)
-            return BadRequest("Id uyumsuz");
-
         await _service.UpdateAsync(hotelId, dto);
-
         return NoContent();
     }
 

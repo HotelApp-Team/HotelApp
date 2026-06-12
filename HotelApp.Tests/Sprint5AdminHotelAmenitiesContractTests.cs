@@ -78,6 +78,28 @@ public class Sprint5AdminHotelAmenitiesContractTests
         AssertContainsAny(source, "TempData", "ModelState", "alert", "ErrorMessage", "SuccessMessage");
     }
 
+    [Fact]
+    public void S503_HotelImages_ShouldUseSingleBulkUpdateFormAndRadioMainSelection()
+    {
+        if (!Sprint5CardGuards.S503_HotelEditUiImplemented())
+            return;
+
+        var controller = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs");
+        var view = ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml");
+        var api = ReadProjectFile("HotelApp.API", "Controllers", "HotelImagesController.cs");
+
+        AssertContainsAny(controller, "UpdateImage", "Görsel ayarları güncellendi.");
+        AssertContainsAny(controller, "hotels/{hotelId}/images", "PutAsync");
+        Assert.Contains("hotel-images-update-form", view, StringComparison.Ordinal);
+        Assert.Contains("type=\"radio\"", view, StringComparison.Ordinal);
+        Assert.Contains("name=\"MainImageId\"", view, StringComparison.Ordinal);
+        Assert.Contains("Görsel Ayarlarını Kaydet", view, StringComparison.Ordinal);
+        Assert.Contains("asp-action=\"UpdateImage\"", view, StringComparison.Ordinal);
+        Assert.Contains("asp-action=\"DeleteImage\"", view, StringComparison.Ordinal);
+        AssertContainsAny(api, "UpdateImage", "HotelImageUpdateDto");
+        Assert.DoesNotContain("HttpPut(\"{imageId}\")", api, StringComparison.Ordinal);
+    }
+
     // S5-03 icin HotelEdit ekraninin E34-E35 otel-olanak atama/kaldirma akislarini icerdigini kontrol eder.
     [Fact]
     public void S503_HotelEditUi_ShouldCallE34E35ForHotelAmenityAssignment()

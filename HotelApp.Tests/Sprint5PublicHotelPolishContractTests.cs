@@ -35,6 +35,22 @@ public class Sprint5PublicHotelPolishContractTests
         AssertContainsAny(source, "bool IsAuthenticated", "IsAuthenticated");
     }
 
+    [Fact]
+    public void S504_DetailAvailabilitySearch_ShouldUseExistingRoomSearchEndpoint()
+    {
+        if (!Sprint5CardGuards.S504_DetailPageImplemented())
+            return;
+
+        var controller = ReadWebFile("Controllers", "HotelsController.cs");
+
+        AssertContainsAny(controller, "checkIn", "checkOut", "guestCount");
+        AssertContainsAny(controller, "validAvailabilitySearch", "availabilitySearchRequested");
+        AssertContainsAny(controller, "hotels/{id}/rooms/search", "rooms/search");
+        AssertContainsAny(controller, "PostAsync<List<AvailableRoomViewModel>>", "PostAsync");
+        AssertContainsAny(controller, "City = model.City", "model.City");
+        AssertContainsAny(controller, "SearchError", "Uygun odalar aranırken");
+    }
+
     // S5-04 icin Detail view'in galeri, olanak, oda, yorum ve rezervasyon akislarini birlikte render ettigini kontrol eder.
     [Fact]
     public void S504_DetailView_ShouldRenderGalleryAmenitiesRoomsReviewsAndBookingStates()
@@ -62,6 +78,27 @@ public class Sprint5PublicHotelPolishContractTests
         AssertContainsAny(detail, "Login", "Giriş", "Giris", "returnUrl");
         AssertContainsAny(detail, "container", "row", "col-lg-8", "col-lg-4", "card-box");
         AssertContainsAny(detail, "carousel", "lightbox", "gallery-grid", "hotel-hero");
+    }
+
+    [Fact]
+    public void S504_DetailBookingCard_ShouldSubmitAvailabilityCriteriaToRoomsSection()
+    {
+        if (!Sprint5CardGuards.S504_DetailPageImplemented())
+            return;
+
+        var detail = ReadWebFile("Views", "Hotels", "Detail.cshtml");
+
+        AssertContainsAny(detail, "method=\"get\"", "method='get'");
+        AssertContainsAny(detail, "asp-action=\"Detail\"", "asp-action='Detail'");
+        AssertContainsAny(detail, "asp-fragment=\"rooms-section\"", "rooms-section");
+        AssertContainsAny(detail, "name=\"checkIn\"", "name='checkIn'");
+        AssertContainsAny(detail, "name=\"checkOut\"", "name='checkOut'");
+        AssertContainsAny(detail, "name=\"guestCount\"", "name='guestCount'");
+        AssertContainsAny(detail, "type=\"date\"", "type='date'");
+        AssertContainsAny(detail, "min=\"1\"", "max=\"20\"");
+        AssertContainsAny(detail, "'den başlayan / gecelik", "'den başlayan toplam");
+        AssertContainsAny(detail, "hd-anchor-nights", "'den başlayan");
+        AssertContainsAny(detail, "Seçilen kriterlere uygun oda bulunamadı.", "uygun oda bulunamadı");
     }
 
     // S5-04 icin rezervasyon ve yorum partial'larinin dogru model ve form sozlesmesiyle calistigini kontrol eder.

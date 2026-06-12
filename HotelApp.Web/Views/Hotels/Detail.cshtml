@@ -116,11 +116,13 @@
             {
                 <span class="hd-anchor-nights">@nights gece için</span>
                 <b>@totalEstimate.Value.ToString("N0", trCulture) TL</b>
+                <span class="hd-anchor-nights">'den başlayan</span>
             }
             else if (minPrice.HasValue)
             {
                 <span class="hd-anchor-nights">geceden</span>
                 <b>@minPrice.Value.ToString("N0", trCulture) TL</b>
+                <span class="hd-anchor-nights">'den başlayan</span>
             }
 
             <a class="hd-anchor-cta" href="#rooms-section">Rezervasyon</a>
@@ -279,6 +281,14 @@
                 }
             </div>
 
+            @if (TempData["SearchError"] is string searchError)
+            {
+                <div class="alert alert-warning hd-alert" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    @searchError
+                </div>
+            }
+
             @if (Model.Rooms != null && Model.Rooms.Any())
             {
                 if (!Model.IsAuthenticated)
@@ -309,7 +319,11 @@
             else
             {
                 <div class="card-box">
-                    <p class="text-muted mb-0">Bu otel için henüz oda bilgisi bulunmuyor.</p>
+                    <p class="text-muted mb-0">
+                        @(Model.SearchCheckIn.HasValue && Model.SearchCheckOut.HasValue && Model.SearchGuestCount.HasValue
+                            ? "Seçilen kriterlere uygun oda bulunamadı."
+                            : "Bu otel için henüz oda bilgisi bulunmuyor.")
+                    </p>
                 </div>
             }
         </section>
@@ -462,60 +476,90 @@
                 {
                     <div class="hd-booking-from">
                         Fiyatlar
-                        <b>@minPrice.Value.ToString("N0", trCulture) TL <span class="hd-booking-pernight">/ gecelik</span></b>
+                        <b>
+                            @minPrice.Value.ToString("N0", trCulture) TL
+                            <span class="hd-booking-pernight">'den başlayan / gecelik</span>
+                        </b>
                     </div>
                 }
 
-                <div class="hd-booking-field">
-                    <div class="hd-booking-lbl">Giriş</div>
-                    <div class="hd-booking-val">
-                        <i class="bi bi-calendar-event"></i>
-                        @Model.BookingForm.CheckInDate.ToString("dd MMMM yyyy", trCulture)
+                <form method="get"
+                      asp-controller="Hotels"
+                      asp-action="Detail"
+                      asp-route-id="@Model.Id"
+                      asp-fragment="rooms-section">
+                    <div class="hd-booking-field">
+                        <label class="hd-booking-lbl" for="detailCheckIn">Giriş</label>
+                        <input id="detailCheckIn"
+                               name="checkIn"
+                               type="date"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               value="@Model.BookingForm.CheckInDate.ToString("yyyy-MM-dd")"
+                               class="hd-booking-input"
+                               required />
                     </div>
-                </div>
 
-                <div class="hd-booking-field">
-                    <div class="hd-booking-lbl">Çıkış</div>
-                    <div class="hd-booking-val">
-                        <i class="bi bi-calendar-check"></i>
-                        @Model.BookingForm.CheckOutDate.ToString("dd MMMM yyyy", trCulture)
-                        <span class="hd-booking-nights">(@nights gece)</span>
+                    <div class="hd-booking-field">
+                        <label class="hd-booking-lbl" for="detailCheckOut">Çıkış</label>
+                        <input id="detailCheckOut"
+                               name="checkOut"
+                               type="date"
+                               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                               value="@Model.BookingForm.CheckOutDate.ToString("yyyy-MM-dd")"
+                               class="hd-booking-input"
+                               required />
                     </div>
-                </div>
 
-                <div class="hd-booking-field">
-                    <div class="hd-booking-lbl">Misafir</div>
-                    <div class="hd-booking-val">
-                        <i class="bi bi-people-fill"></i>
-                        @(Model.BookingForm.GuestCount <= 0 ? 1 : Model.BookingForm.GuestCount) misafir
+                    <div class="hd-booking-field">
+                        <label class="hd-booking-lbl" for="detailGuestCount">Misafir</label>
+                        <input id="detailGuestCount"
+                               name="guestCount"
+                               type="number"
+                               min="1"
+                               max="20"
+                               value="@(Model.BookingForm.GuestCount <= 0 ? 1 : Model.BookingForm.GuestCount)"
+                               class="hd-booking-input"
+                               required />
                     </div>
-                </div>
 
-                @if (totalEstimate.HasValue)
-                {
-                    <div class="hd-booking-total">
-                        <span>Tahmini toplam</span>
-                        <span class="hd-booking-total-amt">@totalEstimate.Value.ToString("N0", trCulture) TL</span>
-                    </div>
-                }
+                    @if (totalEstimate.HasValue)
+                    {
+                        <div class="hd-booking-total">
+                            <span class="hd-booking-total-amt">
+                                @totalEstimate.Value.ToString("N0", trCulture) TL
+                                <span class="hd-booking-pernight">'den başlayan toplam</span>
+                            </span>
+                        </div>
+                    }
 
-                @if (Model.IsAuthenticated)
-                {
-                    <a class="hd-booking-cta" href="#rooms-section">
+                    <button type="submit" class="hd-booking-cta">
                         <i class="bi bi-calendar2-check"></i> Uygun Odaları Gör
-                    </a>
+                    </button>
                     <small class="hd-booking-note">Şimdi ödeme yok · Ücretsiz iptal</small>
-                }
-                else
-                {
-                    <a class="hd-booking-cta hd-booking-cta-outline"
-                       asp-controller="Auth"
-                       asp-action="Login"
-                       asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
-                        <i class="bi bi-person"></i> Giriş Yap ve Devam Et
-                    </a>
-                    <small class="hd-booking-note">Rezervasyon için giriş gerekli</small>
-                }
+                </form>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const checkIn = document.getElementById("detailCheckIn");
+                        const checkOut = document.getElementById("detailCheckOut");
+
+                        function updateDetailCheckOut() {
+                            if (!checkIn.value) return;
+
+                            const nextDay = new Date(checkIn.value + "T00:00:00");
+                            nextDay.setDate(nextDay.getDate() + 1);
+                            const nextDayIso = nextDay.toISOString().split("T")[0];
+
+                            checkOut.min = nextDayIso;
+                            if (!checkOut.value || checkOut.value < nextDayIso) {
+                                checkOut.value = nextDayIso;
+                            }
+                        }
+
+                        updateDetailCheckOut();
+                        checkIn.addEventListener("change", updateDetailCheckOut);
+                    });
+                </script>
             </div>
 
             <!-- AMENITIES -->

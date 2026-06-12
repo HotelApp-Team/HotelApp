@@ -327,9 +327,17 @@
                     @* ---- Mevcut gorseller grid ---- *@
                     @if (Model.Images.Any())
                     {
+                        var orderedImages = Model.Images.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id).ToList();
+                        <form id="hotel-images-update-form"
+                              asp-controller="AdminHotels"
+                              asp-action="UpdateImage"
+                              asp-route-hotelId="@Model.Id"
+                              method="post"></form>
+
                         <div class="hp-img-grid">
-                            @foreach (var image in Model.Images.OrderBy(x => x.DisplayOrder))
+                            @for (var imageIndex = 0; imageIndex < orderedImages.Count; imageIndex++)
                             {
+                                var image = orderedImages[imageIndex];
                                 <div class="hp-img-tile">
                                     <div class="hp-img-thumb" style="background-image:url('@image.ImageUrl')">
                                         @if (image.IsMain)
@@ -339,43 +347,35 @@
                                             </span>
                                         }
                                     </div>
-                                    <form asp-controller="AdminHotels"
-                                          asp-action="UpdateImage"
-                                          asp-route-hotelId="@Model.Id"
-                                          asp-route-imageId="@image.Id"
-                                          method="post"
-                                          class="hp-img-form">
-
-                                        <input name="ImageUrl" type="hidden" value="@image.ImageUrl" />
-
+                                    <div class="hp-img-form">
+                                        <input name="Images[@imageIndex].Id"
+                                               type="hidden"
+                                               value="@image.Id"
+                                               form="hotel-images-update-form" />
                                         <div class="hp-img-row">
                                             <div class="hp-img-field">
                                                 <label class="form-label small">Sıra</label>
-                                                <input name="DisplayOrder"
+                                                <input name="Images[@imageIndex].DisplayOrder"
                                                        value="@image.DisplayOrder"
                                                        type="number"
+                                                       min="0"
+                                                       form="hotel-images-update-form"
                                                        class="form-control form-control-sm" />
                                             </div>
                                             <div class="hp-img-field">
                                                 <label class="form-label small d-block">Ana</label>
-                                                <div class="form-check form-switch m-0">
-                                                    <input type="hidden" name="IsMain" value="false" />
-                                                    <input name="IsMain"
-                                                           type="checkbox"
-                                                           value="true"
+                                                <div class="form-check m-0">
+                                                    <input name="MainImageId"
+                                                           type="radio"
+                                                           value="@image.Id"
+                                                           form="hotel-images-update-form"
+                                                           required
                                                            class="form-check-input"
-                                                           role="switch"
                                                            checked="@image.IsMain" />
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="hp-img-actions">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning flex-grow-1">
-                                                <i class="bi bi-check2"></i> Güncelle
-                                            </button>
-                                        </div>
-                                    </form>
+                                    </div>
 
                                     <form asp-controller="AdminHotels"
                                           asp-action="DeleteImage"
@@ -390,6 +390,13 @@
                                     </form>
                                 </div>
                             }
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit"
+                                    form="hotel-images-update-form"
+                                    class="btn btn-primary">
+                                <i class="bi bi-check2-circle me-1"></i>Görsel Ayarlarını Kaydet
+                            </button>
                         </div>
                     }
                     else

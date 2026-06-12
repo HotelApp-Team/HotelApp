@@ -33,6 +33,16 @@ public class HotelImageRepository : Repository<HotelImage>, IHotelImageRepositor
             .ToListAsync();
     }
 
+    // Toplu değişikliklerin tek SaveChanges çağrısıyla kaydedilebilmesi için görselleri tracked getirir.
+    public async Task<List<HotelImage>> GetTrackedByHotelIdAsync(int hotelId)
+    {
+        return await _dbSet
+            .Where(x => x.HotelId == hotelId)
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.Id)
+            .ToListAsync();
+    }
+
     // Belirtilen otelin ana görselini getirir.
     // IsMain değeri true olan ilk görsel döndürülür.
     public async Task<HotelImage?> GetMainImageAsync(int hotelId)

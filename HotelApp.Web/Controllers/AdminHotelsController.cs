@@ -220,39 +220,6 @@ public class AdminHotelsController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
-    [HttpPost("{hotelId}/Images/{imageId}/Update")]
-    [ValidateAntiForgeryToken]
-    // Mevcut otel görselini günceller.
-    // URL, ana görsel durumu ve sıralama bilgileri API'ye gönderilir.
-    public async Task<IActionResult> UpdateImage(
-        int hotelId,
-        int imageId,
-        HotelImageAdminFormViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = "Görsel bilgileri eksik veya hatalı.";
-            return RedirectToAction(nameof(Edit), new { id = hotelId });
-        }
-
-        var response = await _apiService.PutAsync(
-            $"hotels/{hotelId}/images/{imageId}",
-            new
-            {
-                Id = imageId,
-                model.ImageUrl,
-                model.IsMain,
-                model.DisplayOrder
-            });
-
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
-            response.Success
-                ? "Görsel güncellendi."
-                : response.Message ?? "Görsel güncellenemedi.";
-
-        return RedirectToAction(nameof(Edit), new { id = hotelId });
-    }
-
     [HttpPost("{hotelId}/Amenities")]
     [ValidateAntiForgeryToken]
     // Otelin olanaklarını checkbox seçimlerine göre günceller.
@@ -442,6 +409,35 @@ public class AdminHotelsController : Controller
             response.Success
                 ? "Oda bilgileri güncellendi."
                 : response.Message ?? "Oda güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Images/Update")]
+    [ValidateAntiForgeryToken]
+    // Görsel sıralamalarını ve seçilen ana görseli tek API isteğiyle günceller.
+    public async Task<IActionResult> UpdateImage(int hotelId, HotelImageUpdateViewModel model)
+    {
+        if (model.Images.Count == 0 || model.MainImageId <= 0)
+        {
+            TempData["ErrorMessage"] = "Tam olarak bir ana görsel seçilmelidir.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        var response = await _apiService.PutAsync($"hotels/{hotelId}/images", new
+        {
+            Images = model.Images.Select(x => new
+            {
+                x.Id,
+                x.DisplayOrder,
+                IsMain = x.Id == model.MainImageId
+            })
+        });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Görsel ayarları güncellendi."
+                : response.Message ?? "Görsel ayarları güncellenemedi.";
 
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }

@@ -70,6 +70,148 @@ public class ServiceIntegrationTests
     }
 
     [Fact]
+    public async Task HotelImageService_UpdateBulk_SiralariVeTekAnaGorseliGunceller()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelWithImagesAsync("Bulk Image Test Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+        var images = await service.GetByHotelIdAsync(hotelId);
+
+        await service.UpdateAsync(hotelId, new HotelImageUpdateDto
+        {
+            Images = images.Select((image, index) => new HotelImageUpdateItemDto
+            {
+                Id = image.Id,
+                DisplayOrder = images.Count - index,
+                IsMain = index == 1
+            }).ToList()
+        });
+
+        var updated = await service.GetByHotelIdAsync(hotelId);
+        Assert.Single(updated.Where(x => x.IsMain));
+        Assert.Equal(images[1].Id, updated.Single(x => x.IsMain).Id);
+        Assert.Equal(images.Count, updated.First(x => x.Id == images[0].Id).DisplayOrder);
+    }
+
+    [Fact]
+    public async Task HotelImageService_UpdateBulk_AnaGorselYoksaReddeder()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelWithImagesAsync("Bulk Image Validation Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+        var images = await service.GetByHotelIdAsync(hotelId);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateAsync(hotelId, new HotelImageUpdateDto
+        {
+            Images = images.Select(x => new HotelImageUpdateItemDto
+            {
+                Id = x.Id,
+                DisplayOrder = x.DisplayOrder,
+                IsMain = false
+            }).ToList()
+        }));
+    }
+
+    [Fact]
+    public async Task HotelImageService_UpdateBulk_BirdenFazlaAnaGorselVarsaReddeder()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelWithImagesAsync("Multiple Main Image Validation Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+        var images = await service.GetByHotelIdAsync(hotelId);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateAsync(hotelId, new HotelImageUpdateDto
+        {
+            Images = images.Select(x => new HotelImageUpdateItemDto
+            {
+                Id = x.Id,
+                DisplayOrder = x.DisplayOrder,
+                IsMain = true
+            }).ToList()
+        }));
+    }
+
+    [Fact]
+    public async Task HotelImageService_UpdateBulk_EksikVeyaBaskaOteleAitGorselVarsaReddeder()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelWithImagesAsync("Image Id Validation Hotel");
+        var otherHotelId = await InsertHotelWithImagesAsync("Other Image Id Validation Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+        var images = await service.GetByHotelIdAsync(hotelId);
+        var otherImage = (await service.GetByHotelIdAsync(otherHotelId)).First();
+
+        var requestImages = images.Select(x => new HotelImageUpdateItemDto
+        {
+            Id = x.Id,
+            DisplayOrder = x.DisplayOrder,
+            IsMain = x.IsMain
+        }).ToList();
+        requestImages[^1].Id = otherImage.Id;
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateAsync(hotelId, new HotelImageUpdateDto
+        {
+            Images = requestImages
+        }));
+    }
+
+    [Fact]
+    public async Task HotelImageService_Delete_AnaGorselSilininceSiradakiniAnaYapar()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelWithImagesAsync("Delete Main Image Test Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+        var images = await service.GetByHotelIdAsync(hotelId);
+
+        await service.DeleteAsync(hotelId, images.Single(x => x.IsMain).Id);
+
+        var remaining = await service.GetByHotelIdAsync(hotelId);
+        Assert.Single(remaining.Where(x => x.IsMain));
+        Assert.Equal(remaining.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id).First().Id, remaining.Single(x => x.IsMain).Id);
+    }
+
+    [Fact]
+    public async Task HotelImageService_Add_IlkGorseliOtomatikAnaYapar()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var hotelId = await InsertHotelAsync("First Main Image Test Hotel");
+        await using var context = CreateContext();
+        using var unitOfWork = new UnitOfWork(context);
+        var service = new HotelImageService(unitOfWork);
+
+        await service.AddAsync(hotelId, new HotelImageCreateDto
+        {
+            ImageUrl = "https://example.com/first.jpg",
+            IsMain = false,
+            DisplayOrder = 0
+        });
+
+        Assert.True((await service.GetByHotelIdAsync(hotelId)).Single().IsMain);
+    }
+
+    [Fact]
     public async Task RoomTypeService_AddRoomType_YeniOdaTipiEkler()
     {
         if (!SqlServerDatabaseFixture.Enabled)
@@ -363,6 +505,22 @@ public class ServiceIntegrationTests
         return await _database.ExecuteScalarIntAsync(
             "SELECT Id FROM Hotels WHERE Name = @Name",
             parameters => parameters.AddWithValue("@Name", name));
+    }
+
+    private async Task<int> InsertHotelWithImagesAsync(string name)
+    {
+        var hotelId = await InsertHotelAsync(name);
+        await _database.ExecuteNonQueryAsync(
+            """
+            INSERT INTO HotelImages (HotelId, ImageUrl, IsMain, DisplayOrder)
+            VALUES
+            (@HotelId, 'https://example.com/main.jpg', 1, 0),
+            (@HotelId, 'https://example.com/second.jpg', 0, 1),
+            (@HotelId, 'https://example.com/third.jpg', 0, 2);
+            """,
+            parameters => parameters.AddWithValue("@HotelId", hotelId));
+
+        return hotelId;
     }
 
     private async Task<int> InsertUserAsync(string email, string password = "Password123!")

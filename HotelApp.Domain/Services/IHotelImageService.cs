@@ -28,16 +28,12 @@ namespace HotelApp.Domain.Services
         // Eğer eklenen görsel ana görsel olarak seçildiyse, servis diğer görsellerin ana görsel durumunu düzenler.
         Task AddAsync(int hotelId, HotelImageCreateDto dto);
 
-        // Belirtilen otele ait mevcut bir görselin bilgilerini günceller.
-        // Görsel URL'si, ana görsel durumu ve ekranda gösterilme sırası bu işlemle değiştirilebilir.
+        // Otelin tüm görsellerinin sıralama ve ana görsel ayarlarını tek işlemde günceller.
         Task UpdateAsync(int hotelId, HotelImageUpdateDto dto);
 
         // Belirtilen otele ait bir görseli siler.
         // hotelId kontrolü ile başka bir otele ait görselin yanlışlıkla silinmesi engellenir.
         Task DeleteAsync(int hotelId, int imageId);
 
-        // Belirtilen görseli otelin ana görseli olarak ayarlar.
-        // Böylece otel listeleme ve detay ekranlarında hangi görselin öne çıkacağı belirlenir.
-        Task SetMainImageAsync(int hotelId, int imageId);
     }
 }

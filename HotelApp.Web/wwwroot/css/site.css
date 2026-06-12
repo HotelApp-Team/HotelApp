@@ -2056,6 +2056,17 @@ footer ul li a:hover { color: white; }
 
 .hd-booking-val i { color: var(--primary); }
 
+.hd-booking-input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    padding: 2px 0 0;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
 .hd-booking-nights {
     font-size: 0.78rem;
     color: var(--text-secondary);
@@ -2065,7 +2076,7 @@ footer ul li a:hover { color: white; }
 
 .hd-booking-total {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 14px 0 6px;
     border-top: 1px dashed var(--border);

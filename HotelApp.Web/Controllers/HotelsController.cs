@@ -157,6 +157,18 @@ namespace HotelApp.Web.Controllers
         // Otel detay sayfası için otel bilgisi, görseller, odalar ve yorumlar API'den alınır.
         public async Task<IActionResult> Detail(int id, DateTime? checkIn, DateTime? checkOut, int? guestCount)
         {
+            var availabilitySearchRequested =
+                checkIn.HasValue ||
+                checkOut.HasValue ||
+                guestCount.HasValue;
+
+            var validAvailabilitySearch =
+                checkIn.HasValue &&
+                checkOut.HasValue &&
+                guestCount is >= 1 and <= 20 &&
+                checkIn.Value.Date >= DateTime.Today &&
+                checkOut.Value.Date > checkIn.Value.Date;
+
             var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"Hotels/{id}");
             var imagesResponse = await _apiService.GetAsync<List<HotelImageViewModel>>($"hotels/{id}/images");
             var roomsResponse = await _apiService.GetAsync<List<AvailableRoomViewModel>>($"hotels/{id}/rooms");
@@ -168,7 +180,7 @@ namespace HotelApp.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            if (!roomsResponse.Success)
+            if (!roomsResponse.Success && !validAvailabilitySearch)
             {
                 TempData["Error"] = roomsResponse.Message ?? "Otel odaları alınmadı.";
                 return RedirectToAction("Index", "Home");
@@ -194,11 +206,41 @@ namespace HotelApp.Web.Controllers
                 : new List<HotelImageViewModel>();
 
             // Sadece aktif odalar detay sayfasında gösterilir.
-            model.Rooms = roomsResponse.Success
-                ? (roomsResponse.Data ?? new List<AvailableRoomViewModel>())
-                    .Where(x => x.IsActive)
-                    .ToList()
-                : new List<AvailableRoomViewModel>();
+            if (availabilitySearchRequested && !validAvailabilitySearch)
+            {
+                TempData["SearchError"] = "Geçerli bir giriş tarihi, çıkış tarihi ve misafir sayısı giriniz.";
+                model.Rooms = new List<AvailableRoomViewModel>();
+            }
+            else if (validAvailabilitySearch)
+            {
+                var availableRoomsResponse = await _apiService.PostAsync<List<AvailableRoomViewModel>>(
+                    $"hotels/{id}/rooms/search",
+                    new
+                    {
+                        City = model.City,
+                        CheckIn = checkIn!.Value.Date,
+                        CheckOut = checkOut!.Value.Date,
+                        GuestCount = guestCount!.Value
+                    });
+
+                if (!availableRoomsResponse.Success)
+                {
+                    TempData["SearchError"] = availableRoomsResponse.Message ?? "Uygun odalar aranırken bir sorun oluştu.";
+                    model.Rooms = new List<AvailableRoomViewModel>();
+                }
+                else
+                {
+                    model.Rooms = availableRoomsResponse.Data ?? new List<AvailableRoomViewModel>();
+                }
+            }
+            else
+            {
+                model.Rooms = roomsResponse.Success
+                    ? (roomsResponse.Data ?? new List<AvailableRoomViewModel>())
+                        .Where(x => x.IsActive)
+                        .ToList()
+                    : new List<AvailableRoomViewModel>();
+            }
 
             // Yorumlar alınamazsa sayfa tamamen kırılmasın diye boş liste atanır
             model.Reviews = reviewsResponse.Success
@@ -215,7 +257,7 @@ namespace HotelApp.Web.Controllers
                 ? DateOnly.FromDateTime(checkOut.Value)
                 : defaultCheckIn.AddDays(1);
 
-            if (defaultCheckOut <= defaultCheckIn)
+            if (!availabilitySearchRequested && defaultCheckOut <= defaultCheckIn)
             {
                 defaultCheckOut = defaultCheckIn.AddDays(1);
             }
