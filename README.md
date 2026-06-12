@@ -180,5 +180,3 @@ Asagidakiler bilincli olarak kapsam disinda birakildi:
 - **Harita entegrasyonu yok** - otel koordinatlari DB'de tutulur ama harita gosterimi yoktur.
 - **Coklu dil destegi yok** - arayuz Turkce'dir.
 - **Anlik bildirim yok** - e-posta disinda push/realtime bildirim bulunmaz.
-
-Gelecek planlari: odeme (sanal POS), refresh token, caching, rate limiting, CI/CD.
