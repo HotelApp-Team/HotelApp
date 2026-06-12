@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.DTOs
 {
+    // Yeni otel oluşturma işlemi için API'ye gönderilen verileri taşır.
+    // Required ve Range validasyonları ile zorunlu alanları kontrol eder.
     public class HotelCreateDto
     {
         [Required(ErrorMessage = "Otel adı zorunludur")]

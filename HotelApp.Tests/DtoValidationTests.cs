@@ -123,10 +123,10 @@ public class DtoValidationTests
     {
         var dto = new HotelImageUpdateDto
         {
-            Id = 1,
-            ImageUrl = "https://example.com/hotel.jpg",
-            IsMain = true,
-            DisplayOrder = 0
+            Images = new List<HotelImageUpdateItemDto>
+            {
+                new() { Id = 1, IsMain = true, DisplayOrder = 0 }
+            }
         };
 
         Assert.True(IsValid(dto));

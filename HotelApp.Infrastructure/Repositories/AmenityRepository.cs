@@ -5,12 +5,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories;
 
+// Olanak verilerine ait özel veritabanı işlemlerini yönetir.
+// Otel ile olanak arasındaki ekleme, listeleme ve kaldırma işlemlerini yapar.
 public class AmenityRepository : Repository<Amenity>, IAmenityRepository
 {
+    // Repository sınıfına veritabanı context bilgisini gönderir.
     public AmenityRepository(HotelAppDbContext context) : base(context)
     {
     }
 
+    // Belirtilen otele atanmış olanakları getirir.
+    // Hotels ile Amenities ilişkisi üzerinden sorgu yapılır.
     public async Task<List<Amenity>> GetAmenitiesByHotelIdAsync(int hotelId)
     {
         return await _context.Hotels
@@ -20,6 +25,8 @@ public class AmenityRepository : Repository<Amenity>, IAmenityRepository
             .ToListAsync();
     }
 
+    // Belirtilen otele yeni bir olanak ekler.
+    // Önce otelin ve olanağın var olup olmadığını kontrol eder.
     public async Task AddAmenityToHotelAsync(int hotelId, int amenityId)
     {
         var hotel = await _context.Hotels
@@ -46,6 +53,8 @@ public class AmenityRepository : Repository<Amenity>, IAmenityRepository
         hotel.Amenities.Add(amenity);
     }
 
+    // Belirtilen otelden seçilen olanağı kaldırır.
+    // Otel bulunamazsa hata fırlatır, olanak ilişkisi varsa siler.
     public async Task RemoveAmenityFromHotelAsync(int hotelId, int amenityId)
     {
         var hotel = await _context.Hotels

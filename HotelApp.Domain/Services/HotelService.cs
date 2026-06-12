@@ -4,21 +4,29 @@ using HotelApp.Domain.Interfaces;
 
 namespace HotelApp.Domain.Services
 {
+    // Otel işlemlerinin servis katmanındaki iş kurallarını yönetir.
+    // Repository ile controller arasında köprü görevi görür.
     public class HotelService : IHotelService
     {
         private readonly IUnitOfWork _unitOfWork;
 
+        // UnitOfWork nesnesi constructor ile alınır.
+        // Tüm repository işlemleri bu nesne üzerinden yapılır.
         public HotelService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
+        // Tüm otelleri veritabanından getirir.
+        // Gelen otel kayıtlarını liste DTO'suna dönüştürür.
         public async Task<IEnumerable<HotelListDto>> GetAllAsync()
         {
             var hotels = await _unitOfWork.HotelRepository.GetAllAsync();
             return hotels.Select(MapToListDto);
         }
 
+        // Id değerine göre otel detayını getirir.
+        // Otel bulunamazsa veya pasifse null döndürür.
         public async Task<HotelDetailDto?> GetByIdAsync(int id)
         {
             var hotel = await _unitOfWork.HotelRepository.GetWithDetailsAsync(id);
@@ -52,18 +60,24 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        // Şehir adına göre otelleri getirir.
+        // Sonucu liste DTO'suna dönüştürür.
         public async Task<IEnumerable<HotelListDto>> GetByCityAsync(string city)
         {
             var hotels = await _unitOfWork.HotelRepository.GetByCityAsync(city);
             return hotels.Select(MapToListDto);
         }
 
+        // Sadece aktif durumdaki otelleri getirir.
+        // Pasif oteller listeye dahil edilmez.
         public async Task<IEnumerable<HotelListDto>> GetActiveAsync()
         {
             var hotels = await _unitOfWork.HotelRepository.GetActiveAsync();
             return hotels.Select(MapToListDto);
         }
 
+        // Yeni otel kaydı oluşturur.
+        // Otel varsayılan olarak aktif şekilde kaydedilir.
         public async Task<int> CreateAsync(HotelCreateDto dto)
         {
             var hotel = new Hotel
@@ -88,6 +102,8 @@ namespace HotelApp.Domain.Services
             return hotel.Id;
         }
 
+        // Mevcut otel kaydını günceller.
+        // Otel bulunamazsa KeyNotFoundException fırlatır.
         public async Task UpdateAsync(HotelUpdateDto dto)
         {
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(dto.Id);
@@ -114,6 +130,8 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Oteli veritabanından fiziksel olarak silmez.
+        // IsActive alanını false yaparak pasif duruma alır.
         public async Task DeleteAsync(int id)
         {
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(id);
@@ -131,6 +149,8 @@ namespace HotelApp.Domain.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // Hotel entity nesnesini HotelListDto nesnesine dönüştürür.
+        // Ana görseli ve aktif odalar arasındaki en düşük fiyatı hesaplar.
         private static HotelListDto MapToListDto(Hotel hotel)
         {
             return new HotelListDto
@@ -150,6 +170,7 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        // Aktif otellerin bulunduğu şehirleri getirir.
         public async Task<List<string>> GetCitiesAsync()
         {
             return await _unitOfWork.HotelRepository.GetActiveCitiesAsync();
@@ -186,6 +207,8 @@ namespace HotelApp.Domain.Services
                 .ToList();
         }
 
+        // Kullanıcının otel arama kriterlerine göre müsait otelleri getirir.
+        // Sayfalama, tarih, misafir sayısı ve şehir kontrollerini yapar.
         public async Task<HotelSearchResponseDto> SearchAsync(HotelSearchRequestDto dto, int page, int pageSize)
         {
             ValidatePaging(page, pageSize);
@@ -216,6 +239,8 @@ namespace HotelApp.Domain.Services
             };
         }
 
+        // Admin otel listesinde filtreleme, sıralama ve sayfalama işlemini yapar.
+        // Repository'den gelen kayıtları HotelListDto listesine dönüştürür.
         public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
         {
             var (data, totalCount) =
@@ -233,6 +258,36 @@ namespace HotelApp.Domain.Services
                 Data = mapped
             };
         }
+
+        // Navbar üzerinden yapılan otel veya şehir aramasını yönetir.
+        // Sayfalama ve boş arama kontrollerini gerçekleştirir.
+        public async Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(string searchTerm, int page, int pageSize)
+        {
+            // Sayfa numarası ve sayfa boyutunu kontrol eder.
+            ValidatePaging(page, pageSize);
+
+            // Boş bir arama ifadesinin repository katmanına gitmesini engeller.
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                throw new ArgumentException("Otel veya şehir bilgisi zorunludur.");
+
+
+            // Repository üzerinden eşleşen aktif otelleri getirir.
+            var (hotels, totalCount) = await _unitOfWork.HotelRepository.SearchCatalogPagedAsync(
+                        searchTerm,
+                        page,
+                        pageSize);
+
+            // Hotel nesnelerini kullanıcıya gösterilecek DTO modeline dönüştürür.
+            return new PagedResponseDto<HotelListDto>
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = hotels.Select(MapToListDto).ToList()
+            };
+        }
+
+        // Sayfa numarası ve sayfa boyutunun geçerli aralıkta olup olmadığını kontrol eder.
         private void ValidatePaging(int page, int pageSize)
         {
             if (page < 1)

@@ -9,6 +9,8 @@ namespace HotelApp.Web.Controllers;
 
 [Route("admin/hotels")]
 [ServiceFilter(typeof(AdminFilter))]
+// Admin panelinde otel yönetimi işlemlerini yapan controller'dır.
+// Otel listeleme, oluşturma, düzenleme, silme, görsel, olanak ve oda işlemlerini API üzerinden yönetir.
 public class AdminHotelsController : Controller
 {
     private readonly ApiService _apiService;
@@ -19,6 +21,8 @@ public class AdminHotelsController : Controller
     }
 
     [HttpGet("")]
+    // Admin otel listesini filtreleme, sıralama ve sayfalama bilgileriyle getirir.
+    // Kullanıcının seçtiği filtreler query string olarak API'ye gönderilir.
     public async Task<IActionResult> Index(
         string? city,
         byte? starRating,
@@ -57,6 +61,8 @@ public class AdminHotelsController : Controller
     }
 
     [HttpGet("Create")]
+    // Yeni otel oluşturma formunu açar.
+    // Formda kullanılacak olanak, oda tipi, oda manzarası gibi yardımcı listeleri yükler.
     public async Task<IActionResult> Create()
     {
         var model = new AdminHotelFormViewModel();
@@ -67,6 +73,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
+    // Yeni otel formundan gelen bilgileri doğrular.
+    // Bilgiler geçerliyse API'ye göndererek otel oluşturur.
     public async Task<IActionResult> Create(AdminHotelFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -103,6 +111,8 @@ public class AdminHotelsController : Controller
     }
 
     [HttpGet("Edit/{id}")]
+    // Seçilen otelin düzenleme sayfasını açar.
+    // Otel bilgileriyle birlikte görsel, oda ve olanak bilgilerini de yükler.
     public async Task<IActionResult> Edit(int id)
     {
         var model = await BuildHotelFormModelAsync(id);
@@ -118,6 +128,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("Edit/{id}")]
     [ValidateAntiForgeryToken]
+    // Otelin temel bilgilerini ve aktif/pasif durumunu günceller.
+    // Hata olursa form için gerekli listeleri tekrar yükleyerek aynı sayfaya döner.
     public async Task<IActionResult> Edit(int id, AdminHotelFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -157,6 +169,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("Delete/{id}")]
     [ValidateAntiForgeryToken]
+    // Seçilen oteli API üzerinden siler veya pasif duruma alır.
+    // İşlem sonucunu TempData ile kullanıcıya gösterir.
     public async Task<IActionResult> Delete(int id)
     {
         var response = await _apiService.DeleteAsync($"hotels/{id}");
@@ -169,6 +183,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Images")]
     [ValidateAntiForgeryToken]
+    // Seçilen otele yeni görsel ekler.
+    // Görsel URL, ana görsel bilgisi ve sıralama değeri API'ye gönderilir.
     public async Task<IActionResult> AddImage(int hotelId, HotelImageAdminFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -192,6 +208,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Images/{imageId}/Delete")]
     [ValidateAntiForgeryToken]
+    // Seçilen otel görselini siler.
+    // İşlemden sonra tekrar otel düzenleme sayfasına yönlendirir.
     public async Task<IActionResult> DeleteImage(int hotelId, int imageId)
     {
         var response = await _apiService.DeleteAsync($"hotels/{hotelId}/images/{imageId}");
@@ -202,39 +220,10 @@ public class AdminHotelsController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
-    [HttpPost("{hotelId}/Images/{imageId}/Update")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateImage(
-        int hotelId,
-        int imageId,
-        HotelImageAdminFormViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = "Görsel bilgileri eksik veya hatalı.";
-            return RedirectToAction(nameof(Edit), new { id = hotelId });
-        }
-
-        var response = await _apiService.PutAsync(
-            $"hotels/{hotelId}/images/{imageId}",
-            new
-            {
-                Id = imageId,
-                model.ImageUrl,
-                model.IsMain,
-                model.DisplayOrder
-            });
-
-        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
-            response.Success
-                ? "Görsel güncellendi."
-                : response.Message ?? "Görsel güncellenemedi.";
-
-        return RedirectToAction(nameof(Edit), new { id = hotelId });
-    }
-
     [HttpPost("{hotelId}/Amenities")]
     [ValidateAntiForgeryToken]
+    // Otelin olanaklarını checkbox seçimlerine göre günceller.
+    // Yeni seçilen olanakları ekler, kaldırılan seçimleri otelden siler.
     public async Task<IActionResult> AssignAmenities(int hotelId, List<int> amenityIds)
     {
         amenityIds ??= new List<int>();
@@ -281,6 +270,7 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Amenities/{amenityId}/Delete")]
     [ValidateAntiForgeryToken]
+    // Tek bir otel olanağını hızlı şekilde kaldırmak için kullanılır.
     public async Task<IActionResult> RemoveAmenity(int hotelId, int amenityId)
     {
         var response = await _apiService.DeleteAsync(
@@ -296,6 +286,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Rooms/{roomId}/Amenities")]
     [ValidateAntiForgeryToken]
+    // Seçilen odaya ait oda olanaklarını günceller.
+    // Tekrarlı Id gönderilmemesi için Distinct uygulanır.
     public async Task<IActionResult> AssignRoomAmenities(int hotelId, int roomId, List<int> roomAmenityIds)
     {
         roomAmenityIds ??= new List<int>();
@@ -314,6 +306,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Rooms")]
     [ValidateAntiForgeryToken]
+    // Otele yeni oda ekler.
+    // Fiyatları güvenli şekilde decimal'e çevirir, varsa oda görselini de ekler.
     public async Task<IActionResult> AddRoom(int hotelId, AdminHotelRoomFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -375,6 +369,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Rooms/{roomId}/Update")]
     [ValidateAntiForgeryToken]
+    // Mevcut oda bilgisini günceller.
+    // Fiyat, ek misafir ücreti, toplam oda, aktiflik ve manzara bilgileri gönderilir.
     public async Task<IActionResult> UpdateRoom(int hotelId, int roomId, AdminHotelRoomViewModel model)
     {
         if (!ModelState.IsValid)
@@ -417,8 +413,51 @@ public class AdminHotelsController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    [HttpPost("{hotelId}/Images/Update")]
+    [ValidateAntiForgeryToken]
+    // Görsel sıralamalarını ve seçilen ana görseli tek API isteğiyle günceller.
+    public async Task<IActionResult> UpdateImage(int hotelId, HotelImageUpdateViewModel model)
+    {
+        if (model.Images.Count == 0 || model.MainImageId <= 0)
+        {
+            TempData["ErrorMessage"] = "Tam olarak bir ana görsel seçilmelidir.";
+            return RedirectToAction(nameof(Edit), new { id = hotelId });
+        }
+
+        var response = await _apiService.PutAsync($"hotels/{hotelId}/images", new
+        {
+            Images = model.Images.Select(x => new
+            {
+                x.Id,
+                x.DisplayOrder,
+                IsMain = x.Id == model.MainImageId
+            })
+        });
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success
+                ? "Görsel ayarları güncellendi."
+                : response.Message ?? "Görsel ayarları güncellenemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
+    [HttpPost("{hotelId}/Rooms/{roomId}/Delete")]
+    [ValidateAntiForgeryToken]
+    // Rezervasyonu olmayan odayi API uzerinden siler.
+    public async Task<IActionResult> DeleteRoom(int hotelId, int roomId)
+    {
+        var response = await _apiService.DeleteAsync($"hotels/{hotelId}/rooms/{roomId}");
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Oda silindi." : response.Message ?? "Oda silinemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
     [HttpPost("{hotelId}/Rooms/{roomId}/Images")]
     [ValidateAntiForgeryToken]
+    // Seçilen odaya yeni görsel ekler.
     public async Task<IActionResult> AddRoomImage(int hotelId, int roomId, HotelImageAdminFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -442,6 +481,8 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Rooms/{roomId}/Images/{imageId}/Update")]
     [ValidateAntiForgeryToken]
+    // Seçilen oda görselini günceller.
+    // Görsel URL, ana görsel ve sıralama bilgileri API'ye gönderilir.
     public async Task<IActionResult> UpdateRoomImage(int hotelId, int roomId, int imageId, HotelImageAdminFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -466,6 +507,7 @@ public class AdminHotelsController : Controller
 
     [HttpPost("{hotelId}/Rooms/{roomId}/Images/{imageId}/Delete")]
     [ValidateAntiForgeryToken]
+    // Seçilen oda görselini siler.
     public async Task<IActionResult> DeleteRoomImage(int hotelId, int roomId, int imageId)
     {
         var response = await _apiService.DeleteAsync($"rooms/{roomId}/images/{imageId}");
@@ -476,6 +518,8 @@ public class AdminHotelsController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    // Edit ekranı için gerekli ana form modelini oluşturur.
+    // API'den otel detayını alıp AdminHotelFormViewModel'e dönüştürür.
     private async Task<AdminHotelFormViewModel?> BuildHotelFormModelAsync(int id)
     {
         var hotelResponse = await _apiService.GetAsync<HotelDetailPageVm>($"hotels/{id}");
@@ -506,6 +550,8 @@ public class AdminHotelsController : Controller
         return model;
     }
 
+    // Otel formunda kullanılacak yardımcı verileri yükler.
+    // Olanaklar, oda olanakları, oda tipleri, manzaralar, odalar ve görseller burada hazırlanır.
     private async Task LoadFormDependenciesAsync(AdminHotelFormViewModel model, int hotelId = 0)
     {
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
@@ -568,6 +614,8 @@ public class AdminHotelsController : Controller
         }
     }
 
+    // Fiyat alanlarını formdan alıp decimal tipe çevirir.
+    // Virgüllü fiyat girişlerinde sorun olmaması için InvariantCulture kullanır.
     private bool TryParsePrices(
         int hotelId,
         out decimal pricePerNight,

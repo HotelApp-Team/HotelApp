@@ -43,6 +43,15 @@ nav.bg-dark {
     padding: 1.25rem 0.85rem !important;
 }
 
+.admin-sidebar {
+    flex: 0 0 260px;
+    width: 260px !important;
+}
+
+.admin-content {
+    min-width: 0;
+}
+
     nav.bg-dark h5 {
         color: #FFFFFF;
         font-family: 'IBM Plex Serif', Georgia, serif;

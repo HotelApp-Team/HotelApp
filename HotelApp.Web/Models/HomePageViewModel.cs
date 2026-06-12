@@ -1,5 +1,8 @@
 namespace HotelApp.Web.Models;
 
+// Ana sayfada gösterilecek tüm verileri tek modelde taşır.
+// Şehir listesi, hero istatistikleri, öne çıkan oteller,
+// öne çıkan şehirler ve yorumlar bu model üzerinden view'a gönderilir.
 public class HomePageViewModel
 {
     public List<string> Cities { get; set; } = new();
@@ -17,6 +20,8 @@ public class HeroStatsViewModel
     public int CityCount { get; set; }
 }
 
+// Otel kartlarında gösterilecek özet otel bilgilerini taşır.
+// Ana sayfa, arama sonucu ve admin liste ekranlarında kullanılabilir.
 public class HotelCardViewModel
 {
     public int Id { get; set; }
@@ -31,6 +36,8 @@ public class HotelCardViewModel
     public bool IsActive { get; set; }
 }
 
+// Sayfalı otel listeleme API cevabını web tarafında karşılamak için kullanılır.
+// Toplam kayıt sayısı, sayfa bilgisi ve otel kartı listesini taşır.
 public class PagedHotelListResponse
 {
     public int TotalCount { get; set; }

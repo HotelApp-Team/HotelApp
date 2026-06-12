@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace HotelApp.Domain.DTOs
 {
-    // Otel resim bilgilerini listelemek için kullanılır
+    // Otel resim bilgilerini listelemek için kullanılır.
+    // ImageUrl görsel adresini, IsMain ana görseli, DisplayOrder ise sıralamayı belirtir.
     public class HotelImageDto
     {
         public int Id { get; set; }
@@ -16,7 +17,8 @@ namespace HotelApp.Domain.DTOs
         public int DisplayOrder { get; set; }
     }
 
-    // Yeni otel resmi eklemek için kullanılır
+    // Yeni otel resmi eklemek için kullanılır.
+    // Otel detay veya admin ekranından gönderilen görsel bilgilerini taşır.
     public class HotelImageCreateDto
     {
         [Required(ErrorMessage = "Resim URL zorunludur")]
@@ -28,14 +30,18 @@ namespace HotelApp.Domain.DTOs
         public int DisplayOrder { get; set; }
     }
 
-    // Mevcut otel resmini güncellemek için kullanılır
+    // Otele ait tüm görsellerin sıralama ve ana görsel ayarlarını tek istekte günceller.
     public class HotelImageUpdateDto
     {
-        [Required(ErrorMessage = "Id zorunludur")]
-        public int Id { get; set; }
+        [Required]
+        [MinLength(1, ErrorMessage = "En az bir görsel gönderilmelidir")]
+        public List<HotelImageUpdateItemDto> Images { get; set; } = new();
+    }
 
-        [Required(ErrorMessage = "Resim URL zorunludur")]
-        public string ImageUrl { get; set; } = null!;
+    // Toplu güncelleme isteğindeki tek bir görselin kimlik ve ayar bilgilerini taşır.
+    public class HotelImageUpdateItemDto
+    {
+        public int Id { get; set; }
 
         public bool IsMain { get; set; }
 

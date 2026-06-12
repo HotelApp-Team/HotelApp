@@ -146,19 +146,24 @@ public class ApiControllerTests
     }
 
     [Fact]
-    public async Task HotelImages_Update_UrlIdBodyIdUyusmazsa_BadRequestDoner()
+    public async Task HotelImages_UpdateImage_Basariliysa_NoContentDoner()
     {
-        var controller = new HotelImagesController(new FakeHotelImageService());
-
-        var result = await controller.UpdateImage(1, imageId: 5, new HotelImageUpdateDto
+        var service = new FakeHotelImageService();
+        var controller = new HotelImagesController(service);
+        var dto = new HotelImageUpdateDto
         {
-            Id = 6,
-            ImageUrl = "https://example.com/hotel-1.jpg",
-            IsMain = false,
-            DisplayOrder = 1
-        });
+            Images = new List<HotelImageUpdateItemDto>
+            {
+                new() { Id = 1, IsMain = false, DisplayOrder = 1 },
+                new() { Id = 2, IsMain = true, DisplayOrder = 0 }
+            }
+        };
 
-        Assert.IsType<BadRequestObjectResult>(result);
+        var result = await controller.UpdateImage(7, dto);
+
+        Assert.IsType<NoContentResult>(result);
+        Assert.Equal(7, service.LastUpdatedHotelId);
+        Assert.Same(dto, service.LastUpdate);
     }
 
     [Fact]
@@ -310,7 +315,7 @@ public class ApiControllerTests
         AssertAdminOnly<AmenitiesController>(nameof(AmenitiesController.Delete), typeof(int));
 
         AssertAdminOnly<HotelImagesController>(nameof(HotelImagesController.AddImage), typeof(int), typeof(HotelImageCreateDto));
-        AssertAdminOnly<HotelImagesController>(nameof(HotelImagesController.UpdateImage), typeof(int), typeof(int), typeof(HotelImageUpdateDto));
+        AssertAdminOnly<HotelImagesController>(nameof(HotelImagesController.UpdateImage), typeof(int), typeof(HotelImageUpdateDto));
         AssertAdminOnly<HotelImagesController>(nameof(HotelImagesController.DeleteImage), typeof(int), typeof(int));
 
         AssertAdminOnly<HotelAmenitiesController>(nameof(HotelAmenitiesController.AddAmenities), typeof(int), typeof(HotelAmenityAssignDto));
@@ -415,6 +420,14 @@ internal class FakeHotelService : IHotelService
 
     public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
     => Task.FromResult(FilteredHotels);
+
+    public Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(
+    string searchTerm,
+    int page,
+    int pageSize)
+    {
+        return Task.FromResult(FilteredHotels);
+    }
 }
 
 internal class FakeAmenityService : IAmenityService
@@ -435,6 +448,8 @@ internal class FakeHotelImageService : IHotelImageService
 {
     public List<HotelImageDto> Images { get; set; } = new();
     public int? LastAddedHotelId { get; private set; }
+    public int? LastUpdatedHotelId { get; private set; }
+    public HotelImageUpdateDto? LastUpdate { get; private set; }
 
     public Task<List<HotelImageDto>> GetByHotelIdAsync(int hotelId) => Task.FromResult(Images);
     public Task<HotelImageDto?> GetByIdAsync(int id) => Task.FromResult<HotelImageDto?>(null);
@@ -446,9 +461,13 @@ internal class FakeHotelImageService : IHotelImageService
         return Task.CompletedTask;
     }
 
-    public Task UpdateAsync(int hotelId, HotelImageUpdateDto dto) => Task.CompletedTask;
+    public Task UpdateAsync(int hotelId, HotelImageUpdateDto dto)
+    {
+        LastUpdatedHotelId = hotelId;
+        LastUpdate = dto;
+        return Task.CompletedTask;
+    }
     public Task DeleteAsync(int hotelId, int imageId) => Task.CompletedTask;
-    public Task SetMainImageAsync(int hotelId, int imageId) => Task.CompletedTask;
 }
 
 internal class FakeRoomTypeService : IRoomTypeService

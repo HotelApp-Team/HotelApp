@@ -2064,6 +2064,17 @@ footer ul li a:hover { color: white; }
 
 .hd-booking-val i { color: var(--primary); }
 
+.hd-booking-input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    padding: 2px 0 0;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
 .hd-booking-nights {
     font-size: 0.78rem;
     color: var(--text-secondary);
@@ -2073,7 +2084,7 @@ footer ul li a:hover { color: white; }
 
 .hd-booking-total {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 14px 0 6px;
     border-top: 1px dashed var(--border);
@@ -2258,3 +2269,53 @@ footer ul li a:hover { color: white; }
         background-color: rgba(17, 24, 39, 0.92);
         transform: scale(1.06);
     }
+
+/* Navbar içerisindeki otel ve şehir arama alanını düzenler. */
+.navbar-search {
+    width: 280px;
+}
+
+    /* Arama kutusunun sol tarafındaki köşeleri yuvarlatır. */
+    .navbar-search .form-control {
+        min-width: 0;
+        border-radius: 8px 0 0 8px;
+        font-size: 0.9rem;
+    }
+
+    /* Arama butonunun sağ tarafındaki köşeleri yuvarlatır. */
+    .navbar-search .btn {
+        border-radius: 0 8px 8px 0;
+    }
+
+/* Mobil ekranda arama alanının tam genişlikte görünmesini sağlar. */
+@media (max-width: 991.98px) {
+    .navbar-search {
+        width: 100%;
+        margin: 12px 0;
+    }
+}
+
+.hotel-card-footer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+}
+
+.hotel-card-price {
+    display: block;
+    width: 100%;
+}
+
+.hotel-card-footer .btn-detail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    margin: 0 !important;
+    border-radius: 10px;
+}
