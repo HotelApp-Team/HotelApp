@@ -53,8 +53,28 @@ namespace HotelApp.Web.Controllers
                 Hotels = new()
             };
 
+
+            // Zorunlu arama filtreleri girilmemişse navbar üzerinden sayfanın
+            // açıldığı kabul edilir ve tüm aktif oteller API'den getirilir.
             if (!hasRequiredFilters)
             {
+                // Tüm aktif otelleri sayfalı olarak API'den getirir.
+                var allHotelsResponse = await _apiService.GetAsync<PagedHotelListResponse>(
+                    $"hotels?isActive=true&page={page}&pageSize=9");
+
+                // API isteği başarısız olursa kullanıcıya hata mesajı gösterilir.
+                if (!allHotelsResponse.Success || allHotelsResponse.Data == null)
+                {
+                    TempData["SearchError"] = allHotelsResponse.Message ?? "Oteller yüklenirken bir sorun oluştu.";
+
+                    return View(model);
+                }
+
+                // API'den gelen toplam otel sayısı ve otel listesi sayfa modeline aktarılır.
+                model.TotalCount = allHotelsResponse.Data.TotalCount;
+                model.Hotels = allHotelsResponse.Data.Data;
+
+                // Doldurulan model Search view'ına gönderilir.
                 return View(model);
             }
 
