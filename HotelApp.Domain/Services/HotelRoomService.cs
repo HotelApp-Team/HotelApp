@@ -222,7 +222,8 @@ namespace HotelApp.Domain.Services
 
         /// <summary>
         /// Mevcut otel odasi kaydini gunceller.
-        /// Rezervasyonu olan odalarda oda sayisi degistirilemez ve oda pasife cekilemez.
+        /// Rezervasyonu olan odalarda oda sayisi degistirilemez;
+        /// devam eden veya gelecekteki rezervasyonu olan oda pasife cekilemez.
         /// </summary>
         /// <param name="dto">Guncellenecek oda bilgilerini iceren DTO.</param>
         /// <exception cref="KeyNotFoundException">Oda, hotel veya oda tipi bulunamazsa firlatilir.</exception>
@@ -255,7 +256,14 @@ namespace HotelApp.Domain.Services
             if (entity.Reservations.Any() && entity.TotalRooms != dto.TotalRooms)
                 throw new InvalidOperationException("Rezervasyon varken oda sayısı değiştirilemez.");
 
-            if (entity.Reservations.Any() && !dto.IsActive)
+            // Pasife cekmeyi sadece devam eden veya gelecekteki rezervasyonlar engeller.
+            // Gecmiste kalmis (Completed/Cancelled veya cikisi gecmis) rezervasyonlar engel degildir;
+            // yoksa bir kez rezervasyon almis oda hicbir zaman satistan kaldirilamazdi.
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            bool hasOngoingOrFutureReservation = entity.Reservations.Any(r =>
+                r.Status == "Confirmed" && r.CheckOutDate >= today);
+
+            if (hasOngoingOrFutureReservation && !dto.IsActive)
                 throw new InvalidOperationException("Aktif rezervasyonu olan oda pasife çekilemez.");
 
             entity.HotelId = dto.HotelId;

@@ -4,6 +4,9 @@
     ViewData["Title"] = "Rezervasyon Yönetimi";
     Layout = "_AdminLayout";
 
+    // Fiyatlar diger sayfalarla ayni bicimde gosterilsin: ₺800,00
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
+
     var totalPages = Model.PageSize > 0
         ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize)
         : 1;
@@ -112,7 +115,7 @@
                                     <td>@reservation.RoomTypeName</td>
                                     <td class="small text-nowrap">@reservation.CheckInDate.ToString("dd.MM.yyyy")</td>
                                     <td class="small text-nowrap">@reservation.CheckOutDate.ToString("dd.MM.yyyy")</td>
-                                    <td class="fw-semibold">@reservation.TotalPrice.ToString("N2") ₺</td>
+                                    <td class="fw-semibold">@reservation.TotalPrice.ToString("C", trCulture)</td>
                                     <td>
                                         <span class="badge @GetStatusBadgeClass(reservation.Status)">
                                             @GetStatusText(reservation.Status)
