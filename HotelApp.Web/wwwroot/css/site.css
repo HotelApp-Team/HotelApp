@@ -2286,3 +2286,28 @@ footer ul li a:hover { color: white; }
         margin: 12px 0;
     }
 }
+
+.hotel-card-footer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+}
+
+.hotel-card-price {
+    display: block;
+    width: 100%;
+}
+
+.hotel-card-footer .btn-detail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    margin: 0 !important;
+    border-radius: 10px;
+}
