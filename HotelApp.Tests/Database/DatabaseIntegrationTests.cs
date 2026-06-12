@@ -156,6 +156,106 @@ public class DatabaseIntegrationTests
     }
 
     [Fact]
+    public async Task SpMakeReservation_OdaStoguDolduysaSonrakiRezervasyonuOlusturmaz()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var first = await MakeReservationAsync(2, 7, new DateTime(2026, 12, 1), new DateTime(2026, 12, 3), 2);
+        var second = await MakeReservationAsync(2, 7, new DateTime(2026, 12, 1), new DateTime(2026, 12, 3), 2);
+        var third = await MakeReservationAsync(2, 7, new DateTime(2026, 12, 1), new DateTime(2026, 12, 3), 2);
+
+        Assert.True(first.ReservationId > 0);
+        Assert.True(second.ReservationId > 0);
+        Assert.Equal(0, third.ReservationId);
+        Assert.Equal("Bu tarih aralığında müsait oda yok.", third.Message);
+    }
+
+    [Fact]
+    public async Task SpMakeReservation_EszamanliIsteklerdeOdaStogunuAsmaz()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        var requests = Enumerable.Range(0, 3)
+            .Select(_ => MakeReservationAsync(
+                2,
+                7,
+                new DateTime(2026, 12, 5),
+                new DateTime(2026, 12, 7),
+                2));
+
+        var results = await Task.WhenAll(requests);
+
+        Assert.Equal(2, results.Count(x => x.ReservationId > 0));
+        Assert.Single(results, x =>
+            x.ReservationId == 0 &&
+            x.Message == "Bu tarih aralığında müsait oda yok.");
+
+        var confirmedCount = await _database.ExecuteScalarIntAsync(
+            """
+            SELECT COUNT(*)
+            FROM Reservations
+            WHERE HotelRoomId = 7
+              AND Status = 'Confirmed'
+              AND CheckInDate < '2026-12-07'
+              AND CheckOutDate > '2026-12-05'
+            """);
+
+        Assert.Equal(2, confirmedCount);
+    }
+
+    [Fact]
+    public async Task SpMakeReservation_IptalEdilmisRezervasyonuKapasitedenSaymaz()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await _database.ExecuteNonQueryAsync(
+            """
+            INSERT INTO Reservations (UserId, HotelRoomId, CheckInDate, CheckOutDate, GuestCount, TotalPrice, PaymentMethod, Status)
+            VALUES
+            (2, 7, '2026-12-10', '2026-12-12', 2, 10000, 'CreditCard', 'Confirmed'),
+            (2, 7, '2026-12-10', '2026-12-12', 2, 10000, 'CreditCard', 'Cancelled');
+            """);
+
+        var reservation = await MakeReservationAsync(
+            2,
+            7,
+            new DateTime(2026, 12, 10),
+            new DateTime(2026, 12, 12),
+            2);
+
+        Assert.True(reservation.ReservationId > 0);
+        Assert.Equal("Rezervasyon başarıyla oluşturuldu.", reservation.Message);
+    }
+
+    [Fact]
+    public async Task SpMakeReservation_CakismayanTarihAraligindaRezervasyonOlusturur()
+    {
+        if (!SqlServerDatabaseFixture.Enabled)
+            return;
+
+        await _database.ExecuteNonQueryAsync(
+            """
+            INSERT INTO Reservations (UserId, HotelRoomId, CheckInDate, CheckOutDate, GuestCount, TotalPrice, PaymentMethod, Status)
+            VALUES
+            (2, 7, '2026-12-15', '2026-12-17', 2, 10000, 'CreditCard', 'Confirmed'),
+            (2, 7, '2026-12-15', '2026-12-17', 2, 10000, 'CreditCard', 'Confirmed');
+            """);
+
+        var reservation = await MakeReservationAsync(
+            2,
+            7,
+            new DateTime(2026, 12, 17),
+            new DateTime(2026, 12, 19),
+            2);
+
+        Assert.True(reservation.ReservationId > 0);
+        Assert.Equal("Rezervasyon başarıyla oluşturuldu.", reservation.Message);
+    }
+
+    [Fact]
     public async Task ViewReservationDetails_RezervasyonOtelOdaVeKullaniciBilgisiniBirlestirir()
     {
         if (!SqlServerDatabaseFixture.Enabled)

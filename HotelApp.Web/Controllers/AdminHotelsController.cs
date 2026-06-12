@@ -446,6 +446,19 @@ public class AdminHotelsController : Controller
         return RedirectToAction(nameof(Edit), new { id = hotelId });
     }
 
+    [HttpPost("{hotelId}/Rooms/{roomId}/Delete")]
+    [ValidateAntiForgeryToken]
+    // Rezervasyonu olmayan odayi API uzerinden siler.
+    public async Task<IActionResult> DeleteRoom(int hotelId, int roomId)
+    {
+        var response = await _apiService.DeleteAsync($"hotels/{hotelId}/rooms/{roomId}");
+
+        TempData[response.Success ? "SuccessMessage" : "ErrorMessage"] =
+            response.Success ? "Oda silindi." : response.Message ?? "Oda silinemedi.";
+
+        return RedirectToAction(nameof(Edit), new { id = hotelId });
+    }
+
     [HttpPost("{hotelId}/Rooms/{roomId}/Images")]
     [ValidateAntiForgeryToken]
     // Seçilen odaya yeni görsel ekler.

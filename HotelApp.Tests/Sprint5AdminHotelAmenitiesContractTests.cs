@@ -31,15 +31,14 @@ public class Sprint5AdminHotelAmenitiesContractTests
         if (!Sprint5CardGuards.S503_HotelMgmtUiImplemented())
             return;
 
-        var source = ReadAdminFeatureSource(
-            controllerNames: new[] { "HotelMgmtController.cs", "AdminHotelsController.cs" },
-            viewNames: new[] { "Hotels.cshtml", Path.Combine("Hotels", "Index.cshtml"), Path.Combine("HotelMgmt", "Index.cshtml"), Path.Combine("AdminHotels", "Index.cshtml") });
+        var source = ReadProjectFile("HotelApp.Web", "Controllers", "AdminHotelsController.cs")
+            + Environment.NewLine + ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Index.cshtml");
 
         AssertContainsAny(source, "api/hotels", "\"hotels", "'hotels");
         AssertContainsAny(source, "GetAsync", "GetTAsync");
         AssertContainsAny(source, "PostAsync", "Create", "Yeni Otel", "Otel Ekle");
         AssertContainsAny(source, "DeleteAsync", "Delete", "Sil");
-        AssertContainsAny(source, "search", "Search", "arama", "Arama");
+        AssertContainsAny(source, "asp-for=\"City\"", "string? city", "city=");
         AssertContainsAny(source, "city", "City", "Sehir");
         AssertContainsAny(source, "star", "StarRating", "Yildiz");
         AssertContainsAny(source, "sort", "Sort", "Siralama");
@@ -134,7 +133,10 @@ public class Sprint5AdminHotelAmenitiesContractTests
         if (!Sprint5CardGuards.S503_AdminHotelAmenitiesUiImplemented())
             return;
 
-        var viewSource = string.Join(Environment.NewLine, ReadStartedS503ViewSources());
+        var viewSource = string.Join(Environment.NewLine,
+            ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Index.cshtml"),
+            ReadProjectFile("HotelApp.Web", "Views", "AdminHotels", "Edit.cshtml"),
+            ReadProjectFile("HotelApp.Web", "Views", "AdminAmenities", "Index.cshtml"));
 
         Assert.NotEmpty(viewSource);
         AssertContainsAny(viewSource, "_AdminLayout", "Layout =", "Admin");

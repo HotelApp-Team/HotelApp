@@ -288,7 +288,7 @@
                         Rezervasyon başlatmak için giriş yapmalısınız.
                         <a asp-controller="Auth"
                            asp-action="Login"
-                           asp-route-returnUrl="@Context.Request.Path">
+                           asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
                             Giriş Yap
                         </a>
                     </div>
@@ -511,7 +511,7 @@
                     <a class="hd-booking-cta hd-booking-cta-outline"
                        asp-controller="Auth"
                        asp-action="Login"
-                       asp-route-returnUrl="@Context.Request.Path">
+                       asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
                         <i class="bi bi-person"></i> Giriş Yap ve Devam Et
                     </a>
                     <small class="hd-booking-note">Rezervasyon için giriş gerekli</small>
