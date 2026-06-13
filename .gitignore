@@ -86,6 +86,12 @@ CLAUDE.md
 # =====================
 HotelAppDB.sql
 
+# Eski migration ve seed dosyalari: lokalde kalir, repoda tutulmaz.
+# Guncel kaynak: Scripts/schema/ + Scripts/seeds/2026-06-13_clean_seed.sql
+Scripts/migrations/
+Scripts/seeds/*.sql
+!Scripts/seeds/2026-06-13_clean_seed.sql
+
 # =====================
 # Misc
 # =====================
