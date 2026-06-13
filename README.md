@@ -79,9 +79,10 @@ Docker kullaniyorsan connection string'te `Server=localhost,1433;User Id=sa;Pass
 
 ### 3. Veritabanini olustur
 - `HotelAppDB` adinda bos bir veritabani olustur.
-- Sema script'ini calistir, ardindan `Scripts/migrations/` altindaki script'leri **tarih sirasiyla** uygula.
-- Ornek veri icin `Scripts/seeds/` altindaki seed script'lerini calistir.
-- Uygulama ilk acilista `Admin` ve `User` rollerini otomatik ekler (Program.cs role seed).
+- Semayi kur: `Scripts/schema/2026-06-13_full_schema.sql` calistir.
+- Ornek veri icin: `Scripts/seeds/2026-06-13_clean_seed.sql` calistir.
+- (sqlcmd kullaniyorsan Turkce karakterler icin `-f 65001` ekle.)
+- Seed icinde demo kullanicilar gelir; demo giris: `admin@hotelapp.com` / `Demo1234!`.
 
 ### 4. Connection string'i ayarla
 `HotelApp.API/appsettings.json` (veya `appsettings.Development.json`) icinde:
@@ -105,6 +106,61 @@ dotnet build
 > **Port notu:** Port cakismasi durumunda ilgili projenin `Properties/launchSettings.json`
 > dosyasindaki `applicationUrl` portunu degistir. API portunu degistirirsen
 > `HotelApp.Web/appsettings.json` icindeki `ApiSettings:BaseUrl` degerini de guncelle.
+
+## Docker ile Calistirma (Compose)
+
+Tum sistemi (SQL Server + API + Web) tek seferde ayaga kaldirmak icin Docker compose kullanilir.
+Komutlar `HotelApp/` klasorunde calistirilir.
+
+### 1. `.env` olustur
+Sirlar (parola, JWT secret, Mailtrap) repoya commit edilmez; herkes kendi makinesinde olusturur:
+```bash
+cp .env.example .env
+```
+Sonra `.env` icindeki degerleri kontrol et / doldur. `MAILTRAP_*` alanlari sadece e-posta
+dogrulama (Faz 2) icin gereklidir; Faz 1'de bos kalabilir.
+
+### 2. Veritabanini baslat ve kur
+```bash
+docker compose up -d sqlserver
+```
+`docker compose ps` ile durumun **(healthy)** olmasini bekle (~20-30 sn). Sonra konteynere girip
+semayi ve seed'i uygula:
+```bash
+docker compose exec sqlserver bash
+```
+Konteyner icinde (parola, compose'a `.env`'den gelen `$MSSQL_SA_PASSWORD` degiskeninden okunur):
+```bash
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -Q "IF DB_ID('HotelAppDB') IS NULL CREATE DATABASE [HotelAppDB];"
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -d HotelAppDB -f 65001 -i /scripts/schema/2026-06-13_full_schema.sql
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -d HotelAppDB -f 65001 -i /scripts/seeds/2026-06-13_clean_seed.sql
+exit
+```
+
+### 3. API + Web'i baslat
+```bash
+docker compose up -d --build
+```
+- **Web:** http://localhost:8081
+- **Swagger:** http://localhost:8080/swagger
+- **Demo giris:** `admin@hotelapp.com` / `Demo1234!`
+
+### Faz 1 / Faz 2 (e-posta dogrulama)
+`docker-compose.yml` icindeki `AuthSettings__UseEmailVerification`:
+- `"false"` -> Faz 1 (dogrulama kapali, mail gitmez)
+- `"true"`  -> Faz 2 (kayitta dogrulama maili gider; `.env`'de Mailtrap bilgileri dolu olmali)
+
+Degeri degistirdikten sonra rebuild gerekmez, sadece: `docker compose up -d`
+
+### Durdurma / sifirlama
+```bash
+docker compose stop      # durdur (veri kalir)
+docker compose down      # konteynerleri sil (DB verisi volume'da kalir)
+docker compose down -v   # her seyi sil (DB verisi DAHIL) -> adim 2'yi tekrarla
+```
+
+> Notlar: Konteynerler arasi iletisim HTTP uzerindendir (Web, API'yi `http://api:8080` ile bulur).
+> `Jwt__SecretKey` API ve Web'de ayni olmalidir (compose ikisine de `.env`'den verir).
 
 ## Swagger ve API Testi (JWT)
 
