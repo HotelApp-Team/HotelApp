@@ -76,6 +76,21 @@ else
                     </div>
                 </div>
 
+                <div class="mb-2">
+                    @if (r.IsApproved)
+                    {
+                        <span class="badge bg-success-subtle text-success-emphasis">
+                            <i class="bi bi-check-circle me-1"></i>Yayında
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning-subtle text-warning-emphasis">
+                            <i class="bi bi-hourglass-split me-1"></i>Admin onayı bekliyor
+                        </span>
+                    }
+                </div>
+
                 @if (!string.IsNullOrEmpty(r.Comment))
                 {
                     <p class="rev-card-comment">@r.Comment</p>

@@ -312,8 +312,8 @@ public class DatabaseIntegrationTests
 
         await _database.ExecuteNonQueryAsync(
             """
-            INSERT INTO Reviews (HotelId, UserId, Rating, Comment)
-            VALUES (@HotelId, @UserId, 4, 'Clean and comfortable.');
+            INSERT INTO Reviews (HotelId, UserId, Rating, Comment, IsApproved, ApprovedAt)
+            VALUES (@HotelId, @UserId, 4, 'Clean and comfortable.', 1, GETDATE());
             """,
             parameters =>
             {

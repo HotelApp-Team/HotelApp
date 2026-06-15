@@ -7,6 +7,7 @@
         // API DTO uzerinden tasiniyor (JSON deserialization otomatik map eder).
         public int HotelId { get; set; }
         public string HotelName { get; set; } = string.Empty;
+        public string? MainImageUrl { get; set; }
         public string RoomTypeName { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }

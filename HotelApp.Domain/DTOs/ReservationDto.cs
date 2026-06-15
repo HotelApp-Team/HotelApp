@@ -22,6 +22,7 @@ namespace HotelApp.Domain.DTOs
         // dogrudan bilebilmek icin tasinir; HotelRoom uzerinden tekrar sorgu gerekmez.
         public int HotelId { get; set; }
         public string HotelName { get; set; } = string.Empty;
+        public string? MainImageUrl { get; set; }
         public string RoomTypeName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
@@ -41,6 +42,7 @@ namespace HotelApp.Domain.DTOs
         // HotelId, "Yorum Yaz" formundan dogru otele POST atabilmek icin tasinir.
         public int HotelId { get; set; }
         public string HotelName { get; set; } = string.Empty;
+        public string? MainImageUrl { get; set; }
         public string RoomTypeName { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }

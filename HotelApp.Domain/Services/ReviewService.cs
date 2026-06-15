@@ -106,7 +106,10 @@ namespace HotelApp.Domain.Services
                 UserId = userId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                // Yeni yorumlar admin onayina kadar public alanlarda gosterilmez.
+                IsApproved = false,
+                ApprovedAt = null
             };
 
             await _unitOfWork.ReviewRepository.AddAsync(review);
@@ -170,6 +173,29 @@ namespace HotelApp.Domain.Services
         }
 
         /// <summary>
+        /// Admin tarafindan belirtilen yorumu onaylayarak public alanlarda yayina alir.
+        /// </summary>
+        public async Task<ReviewDto> ApproveReviewAsync(int id)
+        {
+            var review = await _unitOfWork.ReviewRepository.GetForApprovalAsync(id);
+
+            if (review == null)
+                throw new KeyNotFoundException("Yorum bulunamadı.");
+
+            // Daha once onaylanan yorum icin islemi tekrar calistirmak veri degistirmez.
+            if (!review.IsApproved)
+            {
+                review.IsApproved = true;
+                review.ApprovedAt = DateTime.UtcNow;
+
+                _unitOfWork.ReviewRepository.Update(review);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return MapToDto(review);
+        }
+
+        /// <summary>
         /// Review entity nesnesini ReviewDto nesnesine donusturur.
         /// </summary>
         /// <param name="review">Donusturulecek yorum entity nesnesi.</param>
@@ -184,6 +210,8 @@ namespace HotelApp.Domain.Services
                 Rating = review.Rating,
                 Comment = review.Comment,
                 CreatedAt = review.CreatedAt,
+                IsApproved = review.IsApproved,
+                ApprovedAt = review.ApprovedAt,
                 UserName = $"{review.User?.FirstName} {review.User?.LastName}".Trim(),
                 HotelName = review.Hotel?.Name ?? string.Empty
             };

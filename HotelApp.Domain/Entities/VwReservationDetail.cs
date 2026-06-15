@@ -33,6 +33,8 @@ public partial class VwReservationDetail
 
     public string HotelName { get; set; } = null!;
 
+    public string? MainImageUrl { get; set; }
+
     public string City { get; set; } = null!;
 
     public string Country { get; set; } = null!;

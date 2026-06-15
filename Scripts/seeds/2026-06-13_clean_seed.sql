@@ -3372,13 +3372,15 @@ C AS (
         (12, N'Genel olarak güzel bir deneyimdi, küçük aksaklıklar dışında sorun yoktu.')
     ) v(cn, txt)
 )
-INSERT INTO Reviews (HotelId, UserId, Rating, Comment, CreatedAt)
+INSERT INTO Reviews (HotelId, UserId, Rating, Comment, CreatedAt, IsApproved, ApprovedAt)
 SELECT
     Hn.HotelId,
     2 + ((Hn.rn - 1) % 9),
     CASE WHEN Hn.rn % 5 = 0 THEN 4 ELSE 5 END,
     c.txt,
-    DATEADD(DAY, -(15 + Hn.rn * 4), CAST(GETDATE() AS date))
+    DATEADD(DAY, -(15 + Hn.rn * 4), CAST(GETDATE() AS date)),
+    1,
+    GETDATE()
 FROM Hn
 INNER JOIN C ON c.cn = ((Hn.rn - 1) % 12) + 1
 GO

@@ -11,6 +11,7 @@
 
     // Greeting strip + sidebar meta'lari icin sayilar
     var today = DateTime.Today;
+    var trCulture = new System.Globalization.CultureInfo("tr-TR");
     var upcomingCount = Model.Count(r =>
         !string.Equals(r.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
      && !string.Equals(r.Status, "Completed", StringComparison.OrdinalIgnoreCase)
@@ -98,14 +99,29 @@ else
             var daysUntil = (r.CheckInDate.Date - today).Days;
 
             <article class="res-card">
-                @* Sol — otel gorseli placeholder; tiklayinca otelin detay sayfasina gider.
-                   Gerçek görsel modelde yok; CityImageHelper ile sonra eklenebilir. *@
+                @* Sol tarafta otelin ana gorseli gosterilir; gorsel yoksa mevcut placeholder korunur. *@
                 <div class="res-card-media">
                     <a asp-controller="Hotels" asp-action="Detail" asp-route-id="@r.HotelId"
                        class="res-card-thumb"
                        data-label="@r.HotelName"
                        title="@r.HotelName otel detayina git">
-                        <i class="bi bi-building"></i>
+                        @if (!string.IsNullOrWhiteSpace(r.MainImageUrl))
+                        {
+                            <img src="@r.MainImageUrl"
+                                 alt="@r.HotelName"
+                                 class="res-card-image"
+                                 loading="lazy"
+                                 onerror="this.hidden=true; this.nextElementSibling.hidden=false;" />
+                            <span class="res-card-image-fallback" hidden>
+                                <i class="bi bi-building"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="res-card-image-fallback">
+                                <i class="bi bi-building"></i>
+                            </span>
+                        }
                     </a>
                 </div>
 
@@ -155,7 +171,7 @@ else
                 @* Sag — fiyat + aksiyonlar. Cancel form ICERIDE, dokunulmadi. *@
                 <div class="res-card-actions">
                     <div class="res-card-total-label">TOPLAM</div>
-                    <div class="res-card-total">@r.TotalPrice.ToString("C")</div>
+                    <div class="res-card-total">@r.TotalPrice.ToString("N2", trCulture) TL</div>
 
                     <a asp-controller="Reservations"
                        asp-action="Invoice"

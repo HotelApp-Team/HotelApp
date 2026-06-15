@@ -48,5 +48,10 @@ namespace HotelApp.Domain.Interfaces
         /// <param name="pageSize">Sayfa basina getirilecek kayit sayisi.</param>
         /// <returns>Yorum listesi ve toplam kayit sayisini doner.</returns>
         Task<(IEnumerable<Review> Items, int TotalCount)> GetPagedWithDetailsAsync(int page, int pageSize);
+
+        /// <summary>
+        /// Belirtilen yorumu kullanici ve otel bilgileriyle birlikte getirir.
+        /// </summary>
+        Task<Review?> GetForApprovalAsync(int id);
     }
 }

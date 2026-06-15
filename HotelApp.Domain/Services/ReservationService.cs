@@ -55,6 +55,7 @@ namespace HotelApp.Domain.Services
                 // dogrudan tasiyoruz, ek sorgu yok.
                 HotelId = x.HotelId,
                 HotelName = x.HotelName,
+                MainImageUrl = x.MainImageUrl,
                 RoomTypeName = x.RoomTypeName,
                 CheckInDate = x.CheckInDate.ToDateTime(TimeOnly.MinValue),
                 CheckOutDate = x.CheckOutDate.ToDateTime(TimeOnly.MinValue),

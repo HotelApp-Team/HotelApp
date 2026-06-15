@@ -235,6 +235,7 @@ public partial class HotelAppDbContext : DbContext
 
             entity.Property(e => e.Comment).HasMaxLength(1000);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsApproved).HasDefaultValue(false);
 
             entity.HasOne(d => d.Hotel).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.HotelId)
@@ -362,6 +363,7 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.HotelName).HasMaxLength(200);
             entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.MainImageUrl).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.RoomTypeName).HasMaxLength(100);

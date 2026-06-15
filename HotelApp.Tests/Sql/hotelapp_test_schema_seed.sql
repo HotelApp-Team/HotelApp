@@ -167,6 +167,8 @@ CREATE TABLE Reviews (
     Rating TINYINT NOT NULL CHECK (Rating BETWEEN 1 AND 5),
     Comment NVARCHAR(1000),
     CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
+    IsApproved BIT NOT NULL DEFAULT 0,
+    ApprovedAt DATETIME2 NULL,
     CONSTRAINT UQ_Reviews_UserHotel UNIQUE (UserId, HotelId),
     CONSTRAINT FK_Reviews_Hotels FOREIGN KEY(HotelId) REFERENCES Hotels(Id),
     CONSTRAINT FK_Reviews_Users FOREIGN KEY(UserId) REFERENCES Users(Id)
@@ -264,6 +266,7 @@ SELECT
     hr.Id AS HotelRoomId,
     h.Id AS HotelId,
     h.Name AS HotelName,
+    hi.ImageUrl AS MainImageUrl,
     h.City,
     rt.Name AS RoomTypeName,
     rt.MaxGuests,
@@ -308,7 +311,13 @@ FROM Reservations r
 INNER JOIN Users u ON r.UserId = u.Id
 INNER JOIN HotelRooms hr ON r.HotelRoomId = hr.Id
 INNER JOIN Hotels h ON hr.HotelId = h.Id
-INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id;
+INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id
+OUTER APPLY (
+    SELECT TOP (1) himg.ImageUrl
+    FROM HotelImages himg
+    WHERE himg.HotelId = h.Id
+    ORDER BY himg.IsMain DESC, himg.DisplayOrder, himg.Id
+) hi;
 GO
 
 CREATE OR ALTER PROCEDURE sp_SearchAvailableRooms
@@ -491,6 +500,7 @@ BEGIN
         SELECT AVG(CAST(r.Rating AS DECIMAL(3,1)))
         FROM Reviews r
         WHERE r.HotelId = h.Id
+          AND r.IsApproved = 1
     ), 0)
     FROM Hotels h
     INNER JOIN @AffectedHotels ah ON ah.HotelId = h.Id;

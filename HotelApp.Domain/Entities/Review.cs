@@ -17,6 +17,10 @@ public partial class Review
 
     public DateTime CreatedAt { get; set; }
 
+    public bool IsApproved { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
     public virtual Hotel Hotel { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

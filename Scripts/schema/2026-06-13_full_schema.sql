@@ -316,6 +316,8 @@ CREATE TABLE [dbo].[Reviews](
 	[Rating] [tinyint] NOT NULL,
 	[Comment] [nvarchar](1000) COLLATE Turkish_CI_AS NULL,
 	[CreatedAt] [datetime2](7) NOT NULL,
+	[IsApproved] [bit] NOT NULL,
+	[ApprovedAt] [datetime2](7) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -334,6 +336,8 @@ CREATE NONCLUSTERED INDEX [IX_Reviews_HotelId] ON [dbo].[Reviews]
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[Reviews] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Reviews] ADD  DEFAULT ((0)) FOR [IsApproved]
 GO
 ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD CHECK  (([Rating]>=(1) AND [Rating]<=(5)))
 GO
@@ -679,6 +683,7 @@ SELECT
     u.Email,
     h.Id AS HotelId,
     h.Name AS HotelName,
+    hi.ImageUrl AS MainImageUrl,
     h.City,
     h.Country,
     rt.Id AS RoomTypeId,
@@ -689,7 +694,13 @@ FROM Reservations r
 INNER JOIN Users u ON r.UserId = u.Id
 INNER JOIN HotelRooms hr ON r.HotelRoomId = hr.Id
 INNER JOIN Hotels h ON hr.HotelId = h.Id
-INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id;
+INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id
+OUTER APPLY (
+    SELECT TOP (1) himg.ImageUrl
+    FROM HotelImages himg
+    WHERE himg.HotelId = h.Id
+    ORDER BY himg.IsMain DESC, himg.DisplayOrder, himg.Id
+) hi;
 GO
 
 -- View: dbo.vw_RoomDetails
@@ -934,9 +945,10 @@ SELECT DISTINCT HotelId FROM deleted;
 --- Ortalama puan� g��ncelleme
 UPDATE h
 SET h.AvgRating = ISNULL(
-(SELECT AVG(CAST(R.Rating AS DECIMAL(3,1)))
+(SELECT AVG(CAST(r.Rating AS DECIMAL(3,1)))
 FROM Reviews r
-WHERE r.HotelId = h.Id), 0)
+WHERE r.HotelId = h.Id
+  AND r.IsApproved = 1), 0)
 FROM Hotels h
 INNER JOIN @AffectedHotels ah ON ah.HotelId = h.Id;
 END;
