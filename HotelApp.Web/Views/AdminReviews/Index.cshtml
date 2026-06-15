@@ -81,11 +81,15 @@
                                     <td>
                                         @if (review.IsApproved)
                                         {
-                                            <span class="badge bg-success-subtle text-success-emphasis">Yayında</span>
+                                            <span class="review-status-pill review-status-approved">
+                                                <i class="bi bi-check-circle-fill"></i> Yayında
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-warning-subtle text-warning-emphasis">Onay Bekliyor</span>
+                                            <span class="review-status-pill review-status-pending">
+                                                <i class="bi bi-hourglass-split"></i> Onay Bekliyor
+                                            </span>
                                         }
                                     </td>
                                     <td class="text-end">

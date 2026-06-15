@@ -276,11 +276,36 @@ nav.bg-dark {
         border: 1px solid #BFDBFE;
     }
 
-    .d-flex > .flex-grow-1 .badge.bg-secondary {
+.d-flex > .flex-grow-1 .badge.bg-secondary {
         background: #F1F5F9 !important;
         color: #475569 !important;
         border: 1px solid var(--border);
     }
+
+/* Yorum onay durumu Bootstrap 5.1'de bulunmayan subtle class'lara bagli kalmaz. */
+.d-flex > .flex-grow-1 .review-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.d-flex > .flex-grow-1 .review-status-approved {
+    color: #166534;
+    background: #DCFCE7;
+    border: 1px solid #86EFAC;
+}
+
+.d-flex > .flex-grow-1 .review-status-pending {
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1px solid #FCD34D;
+}
 
 /* ============================================================
    ALERT'LAR  (TempData Success / Error)
