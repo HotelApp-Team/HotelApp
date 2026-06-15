@@ -7,6 +7,7 @@ namespace HotelApp.Web.Models;
 public class AdminHotelListPageViewModel
 {
     public string? City { get; set; }
+    public int? HotelId { get; set; }
     public byte? StarRating { get; set; }
     public bool? IsActive { get; set; }
     public string SortBy { get; set; } = "name";
@@ -16,6 +17,25 @@ public class AdminHotelListPageViewModel
 
     public int TotalCount { get; set; }
     public List<HotelCardViewModel> Hotels { get; set; } = new();
+
+    // Sehir ve otel dropdownlarini besleyen filtre secenekleri.
+    public List<string> CityOptions { get; set; } = new();
+    public List<HotelFilterOptionItemViewModel> HotelOptions { get; set; } = new();
+}
+
+// Admin otel listesi filtrelerinde sehir ve otel dropdownlarini besleyen secenekler.
+public class HotelFilterOptionsViewModel
+{
+    public List<string> Cities { get; set; } = new();
+    public List<HotelFilterOptionItemViewModel> Hotels { get; set; } = new();
+}
+
+// Otel dropdown'inda gosterilecek tek bir otelin ozet bilgisi.
+public class HotelFilterOptionItemViewModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
 }
 
 // Admin otel oluşturma ve düzenleme formunda kullanılan ana view modeldir.

@@ -37,7 +37,7 @@ public interface IHotelRepository : IRepository<Hotel>
 
     // Admin otel listesi için filtreleme, sıralama ve sayfalama yapar.
     // Toplam kayıt sayısı ile birlikte ilgili sayfadaki otelleri döndürür.
-    Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize);
+    Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, int? hotelId, string? sortBy, string? sortOrder, int page, int pageSize);
 
     // Otel arama ekranında müsait otelleri sayfalı olarak getirir.
     // Tarih, şehir ve misafir sayısı bilgilerine göre arama yapılır.

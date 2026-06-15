@@ -32,6 +32,7 @@ public class HotelsController : ControllerBase
     [FromQuery] string? city,
     [FromQuery] byte? star,
     [FromQuery] bool? isActive,
+    [FromQuery] int? hotelId,
     [FromQuery] string? sortBy = "name",
     [FromQuery] string? sortOrder = "asc",
     [FromQuery] int page = 1,
@@ -44,9 +45,19 @@ public class HotelsController : ControllerBase
             return BadRequest(new { Message = "PageSize 1 ile 100 arasında olmalıdır" });
 
         var result = await _hotelService.GetAllFilteredAsync(
-            city, star, isActive, sortBy, sortOrder, page, pageSize);
+            city, star, isActive, hotelId, sortBy, sortOrder, page, pageSize);
 
         return Ok(result);
+    }
+
+    // GET /api/hotels/filter-options
+    // Admin otel listesi filtrelerinde kullanilacak sehir ve otel seceneklerini getirir.
+    // Aktif + pasif tum oteller dahildir; sehir ve otel dropdownlarini tek istekte besler.
+    [HttpGet("filter-options")]
+    public async Task<IActionResult> GetFilterOptions()
+    {
+        var options = await _hotelService.GetFilterOptionsAsync();
+        return Ok(options);
     }
 
     // E05 - GET /api/hotels/{id}

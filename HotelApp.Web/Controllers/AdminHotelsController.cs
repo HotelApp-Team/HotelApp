@@ -25,6 +25,7 @@ public class AdminHotelsController : Controller
     // Kullanıcının seçtiği filtreler query string olarak API'ye gönderilir.
     public async Task<IActionResult> Index(
         string? city,
+        int? hotelId,
         byte? starRating,
         bool? isActive,
         string sortBy = "name",
@@ -33,6 +34,7 @@ public class AdminHotelsController : Controller
         int pageSize = 10)
     {
         var query = $"hotels?city={Uri.EscapeDataString(city ?? string.Empty)}" +
+            $"&hotelId={hotelId}" +
             $"&star={starRating}" +
             $"&isActive={isActive}" +
             $"&sortBy={Uri.EscapeDataString(sortBy)}" +
@@ -41,9 +43,13 @@ public class AdminHotelsController : Controller
 
         var response = await _apiService.GetAsync<PagedHotelListResponse>(query);
 
+        // Sehir ve otel dropdownlari icin filtre secenekleri (aktif + pasif tum oteller).
+        var optionsResponse = await _apiService.GetAsync<HotelFilterOptionsViewModel>("hotels/filter-options");
+
         var model = new AdminHotelListPageViewModel
         {
             City = city,
+            HotelId = hotelId,
             StarRating = starRating,
             IsActive = isActive,
             SortBy = sortBy,
@@ -51,7 +57,9 @@ public class AdminHotelsController : Controller
             Page = page,
             PageSize = pageSize,
             Hotels = response.Success ? response.Data?.Data ?? new() : new(),
-            TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0
+            TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0,
+            CityOptions = optionsResponse.Success ? optionsResponse.Data?.Cities ?? new() : new(),
+            HotelOptions = optionsResponse.Success ? optionsResponse.Data?.Hotels ?? new() : new()
         };
 
         if (!response.Success)

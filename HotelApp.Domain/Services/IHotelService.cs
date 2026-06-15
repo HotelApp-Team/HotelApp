@@ -58,9 +58,12 @@ namespace HotelApp.Domain.Services
 
         // Admin otel listesi icin filtreleme, siralama ve sayfalama yapar.
         // Sayfalanmis otel liste cevabini doner.
-        Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize);
+        Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, int? hotelId, string? sortBy, string? sortOrder, int page, int pageSize);
 
-        // Navbar katalog aramasýný çalýþtýrýr ve sayfalý otel listesini döndürür.
+        // Admin otel listesi filtrelerinde kullanilacak sehir ve otel seceneklerini getirir.
+        Task<HotelFilterOptionsDto> GetFilterOptionsAsync();
+
+        // Navbar katalog aramasï¿½nï¿½ ï¿½alï¿½ï¿½tï¿½rï¿½r ve sayfalï¿½ otel listesini dï¿½ndï¿½rï¿½r.
         Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(string searchTerm, int page, int pageSize);
     }
 }

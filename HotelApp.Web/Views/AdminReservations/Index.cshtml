@@ -53,7 +53,15 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label small text-muted">Durum</label>
-                    <input name="status" value="@ViewBag.Status" class="form-control" placeholder="Confirmed, Cancelled, Completed" />
+                    @{
+                        var currentStatus = (string?)ViewBag.Status ?? string.Empty;
+                    }
+                    <select name="status" class="form-select admin-filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(currentStatus))">Tümü</option>
+                        <option value="Confirmed" selected="@(currentStatus == "Confirmed")">Onaylandı</option>
+                        <option value="Cancelled" selected="@(currentStatus == "Cancelled")">İptal Edildi</option>
+                        <option value="Completed" selected="@(currentStatus == "Completed")">Tamamlandı</option>
+                    </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small text-muted">Başlangıç Tarihi</label>

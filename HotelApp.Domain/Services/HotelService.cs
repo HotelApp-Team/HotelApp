@@ -241,11 +241,11 @@ namespace HotelApp.Domain.Services
 
         // Admin otel listesinde filtreleme, sıralama ve sayfalama işlemini yapar.
         // Repository'den gelen kayıtları HotelListDto listesine dönüştürür.
-        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
+        public async Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, int? hotelId, string? sortBy, string? sortOrder, int page, int pageSize)
         {
             var (data, totalCount) =
                 await _unitOfWork.HotelRepository.GetPagedFilteredAsync(
-                    city, star, isActive, sortBy, sortOrder, page, pageSize);
+                    city, star, isActive, hotelId, sortBy, sortOrder, page, pageSize);
 
 
             var mapped = data.Select(MapToListDto).ToList();
@@ -256,6 +256,36 @@ namespace HotelApp.Domain.Services
                 Page = page,
                 PageSize = pageSize,
                 Data = mapped
+            };
+        }
+
+        // Admin otel listesi filtreleri icin sehir ve otel seceneklerini hazirlar.
+        // Aktif/pasif tum oteller dahil edilir; sehirler tekil ve sirali doner.
+        public async Task<HotelFilterOptionsDto> GetFilterOptionsAsync()
+        {
+            var hotels = await _unitOfWork.HotelRepository.GetAllAsync();
+
+            var hotelItems = hotels
+                .OrderBy(x => x.Name)
+                .Select(x => new HotelFilterOptionItemDto
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    City = x.City
+                })
+                .ToList();
+
+            var cities = hotelItems
+                .Select(x => x.City)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(c => c)
+                .ToList();
+
+            return new HotelFilterOptionsDto
+            {
+                Cities = cities,
+                Hotels = hotelItems
             };
         }
 
