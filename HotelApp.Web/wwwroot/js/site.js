@@ -2,12 +2,14 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Admin filtre dropdownlarini aranabilir, modern Tom Select bilesenine cevirir.
-// ".admin-filter-select" sinifi olan tum <select> ogeleri otomatik baslatilir.
+// ".admin-filter-select" sinifi olan tum <select> ogeleri baslatilir.
+// AJAX ile icerik degistiginde tekrar cagrilabilmesi icin global fonksiyon olarak tanimli.
 // TomSelect kutuphanesi yuklu degilse (ornegin public sayfalar) sessizce atlanir.
-document.addEventListener('DOMContentLoaded', function () {
+window.initAdminFilterSelects = function (root) {
     if (typeof TomSelect === 'undefined') return;
+    var scope = root || document;
 
-    document.querySelectorAll('.admin-filter-select').forEach(function (el) {
+    scope.querySelectorAll('.admin-filter-select').forEach(function (el) {
         if (el.tomselect) return; // ayni ogeyi iki kez baslatma
 
         // Sadece data-searchable="true" olan dropdownlarda arama kutusu olsun.
@@ -48,4 +50,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         new TomSelect(el, settings);
     });
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    window.initAdminFilterSelects(document);
 });

@@ -16,6 +16,7 @@ namespace HotelApp.Domain.DTOs
         public string? Description { get; set; }
 
         public string Address { get; set; } = null!;
+        public int CityId { get; set; }
         public string City { get; set; } = null!;
         public string Country { get; set; } = null!;
 

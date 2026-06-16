@@ -45,4 +45,10 @@ public interface IHotelRepository : IRepository<Hotel>
 
     // Aktif otelleri otel adına veya şehre göre sayfalı olarak arar.
     Task<(List<Hotel> Data, int TotalCount)> SearchCatalogPagedAsync(string searchTerm, int page, int pageSize);
+
+    // Otele ait herhangi bir rezervasyon kaydı var mı kontrol eder (kalıcı silme öncesi).
+    Task<bool> HasReservationsAsync(int hotelId);
+
+    // Oteli ve bağlı tüm alt kayıtlarını (oda, görsel, olanak, yorum) kalıcı olarak siler.
+    Task HardDeleteAsync(int hotelId);
 }

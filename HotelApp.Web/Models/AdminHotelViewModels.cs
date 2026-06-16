@@ -53,8 +53,11 @@ public class AdminHotelFormViewModel
     [Required(ErrorMessage = "Adres zorunludur.")]
     public string Address { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Şehir bilgisi zorunludur.")]
-    public string City { get; set; } = string.Empty;
+    [Range(1, int.MaxValue, ErrorMessage = "Şehir bilgisi zorunludur.")]
+    public int CityId { get; set; }
+
+    // Sadece gosterim icin (baslik/meta satiri). Forma post edilmez.
+    public string? CityName { get; set; }
 
     [Required(ErrorMessage = "Ülke bilgisi zorunludur.")]
     public string Country { get; set; } = string.Empty;
@@ -80,6 +83,17 @@ public class AdminHotelFormViewModel
     public List<RoomViewAdminViewModel> RoomViews { get; set; } = new();
     public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
     public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
+
+    // Sehir ve ulke dropdownlarini besleyen secenekler.
+    public List<CityOptionViewModel> CityOptions { get; set; } = new();
+    public List<string> CountryOptions { get; set; } = new();
+}
+
+// Sehir dropdown'i icin lookup ogesi (API'deki /api/cities cevabini karsilar).
+public class CityOptionViewModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 // Admin panelinde otel veya oda görseli ekleme/güncelleme formlarında kullanılır.

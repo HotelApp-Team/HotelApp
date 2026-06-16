@@ -22,8 +22,8 @@ namespace HotelApp.Domain.DTOs
         [Required(ErrorMessage = "Adres zorunludur")]
         public string Address { get; set; } = null!;
 
-        [Required(ErrorMessage = "Şehir zorunludur")]
-        public string City { get; set; } = null!;
+        [Range(1, int.MaxValue, ErrorMessage = "Şehir zorunludur")]
+        public int CityId { get; set; }
 
         [Required(ErrorMessage = "Ülke zorunludur")]
         public string Country { get; set; } = null!;

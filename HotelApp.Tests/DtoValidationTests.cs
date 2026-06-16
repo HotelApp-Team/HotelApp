@@ -138,7 +138,7 @@ public class DtoValidationTests
         {
             Name = "Test Hotel",
             Address = "Test Address",
-            City = "Istanbul",
+            CityId = 1,
             Country = "Turkiye",
             Phone = "5551112233",
             Email = "info@testhotel.com",

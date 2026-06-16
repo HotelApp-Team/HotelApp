@@ -96,7 +96,7 @@ public class AdminHotelsController : Controller
             model.Name,
             model.Description,
             model.Address,
-            model.City,
+            model.CityId,
             model.Country,
             model.Phone,
             model.Email,
@@ -115,7 +115,8 @@ public class AdminHotelsController : Controller
         }
 
         TempData["SuccessMessage"] = "Otel oluşturuldu. Şimdi olanak, görsel ve oda ekleyebilirsiniz.";
-        return RedirectToAction(nameof(Edit), new { id = response.Data.Id });
+        // Olusturulduktan sonra wizard'in 2. adimina (Gorseller) gec.
+        return RedirectToAction(nameof(Edit), "AdminHotels", new { id = response.Data.Id }, "step-images");
     }
 
     [HttpGet("Edit/{id}")]
@@ -152,7 +153,7 @@ public class AdminHotelsController : Controller
             model.Name,
             model.Description,
             model.Address,
-            model.City,
+            model.CityId,
             model.Country,
             model.Phone,
             model.Email,
@@ -542,7 +543,8 @@ public class AdminHotelsController : Controller
             Name = hotel.Name,
             Description = hotel.Description,
             Address = hotel.Address,
-            City = hotel.City,
+            CityId = hotel.CityId,
+            CityName = hotel.City,
             Country = hotel.Country,
             Phone = hotel.Phone,
             Email = hotel.Email,
@@ -562,6 +564,15 @@ public class AdminHotelsController : Controller
     // Olanaklar, oda olanakları, oda tipleri, manzaralar, odalar ve görseller burada hazırlanır.
     private async Task LoadFormDependenciesAsync(AdminHotelFormViewModel model, int hotelId = 0)
     {
+        // Sehir dropdown'i: iller artik DB'deki Cities tablosundan gelir.
+        var cityResponse = await _apiService.GetAsync<List<CityOptionViewModel>>("cities");
+        model.CityOptions = cityResponse.Success
+            ? cityResponse.Data ?? new List<CityOptionViewModel>()
+            : new List<CityOptionViewModel>();
+
+        // Ulke dropdown'i: uygulama Turkiye odakli oldugu icin tek secenek.
+        model.CountryOptions = new List<string> { "Türkiye" };
+
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
         model.AllAmenities = amenityResponse.Success

@@ -42,7 +42,8 @@ namespace HotelApp.Domain.Services
                 Name = hotel.Name,
                 Description = hotel.Description,
                 Address = hotel.Address,
-                City = hotel.City,
+                CityId = hotel.CityId,
+                City = hotel.City.Name,
                 Country = hotel.Country,
                 Phone = hotel.Phone,
                 Email = hotel.Email,
@@ -85,7 +86,7 @@ namespace HotelApp.Domain.Services
                 Name = dto.Name,
                 Description = dto.Description,
                 Address = dto.Address,
-                City = dto.City,
+                CityId = dto.CityId,
                 Country = dto.Country,
                 Phone = dto.Phone,
                 Email = dto.Email,
@@ -116,7 +117,7 @@ namespace HotelApp.Domain.Services
             hotel.Name = dto.Name;
             hotel.Description = dto.Description;
             hotel.Address = dto.Address;
-            hotel.City = dto.City;
+            hotel.CityId = dto.CityId;
             hotel.Country = dto.Country;
             hotel.Phone = dto.Phone;
             hotel.Email = dto.Email;
@@ -132,6 +133,9 @@ namespace HotelApp.Domain.Services
 
         // Oteli veritabanından fiziksel olarak silmez.
         // IsActive alanını false yaparak pasif duruma alır.
+        // Oteli kalici olarak siler (otel + bagli oda, gorsel, olanak, yorum).
+        // Yayinda/pasif olmasi fark etmez; pasife alma icin ayri IsActive akisi vardir.
+        // Rezervasyon gecmisi olan otel silinmez; once kullaniciya bilgi verilir.
         public async Task DeleteAsync(int id)
         {
             var hotel = await _unitOfWork.HotelRepository.GetByIdAsync(id);
@@ -139,14 +143,11 @@ namespace HotelApp.Domain.Services
             if (hotel == null)
                 throw new KeyNotFoundException("Otel bulunamadı");
 
-            if (!hotel.IsActive)
-                throw new InvalidOperationException("Otel zaten pasif");
+            if (await _unitOfWork.HotelRepository.HasReservationsAsync(id))
+                throw new InvalidOperationException(
+                    "Bu otele ait rezervasyon kayıtları olduğu için otel silinemez. Dilerseniz oteli pasife alabilirsiniz.");
 
-            hotel.IsActive = false;
-            hotel.UpdatedAt = DateTime.UtcNow;
-
-            _unitOfWork.HotelRepository.Update(hotel);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.HotelRepository.HardDeleteAsync(id);
         }
 
         // Hotel entity nesnesini HotelListDto nesnesine dönüştürür.
@@ -157,7 +158,7 @@ namespace HotelApp.Domain.Services
             {
                 Id = hotel.Id,
                 Name = hotel.Name,
-                City = hotel.City,
+                City = hotel.City.Name,
                 Country = hotel.Country,
                 StarRating = hotel.StarRating,
                 AvgRating = hotel.AvgRating,
@@ -271,7 +272,7 @@ namespace HotelApp.Domain.Services
                 {
                     Id = x.Id,
                     Name = x.Name,
-                    City = x.City
+                    City = x.City.Name
                 })
                 .ToList();
 

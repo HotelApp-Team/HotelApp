@@ -181,7 +181,7 @@ public class HotelsController : ControllerBase
         var hotelId = await _hotelService.CreateAsync(dto);
 
         await LogInfoAsync(
-            $"Yeni otel oluşturuldu: Hotel Adı:{dto.Name}, Şehir:{dto.City}");
+            $"Yeni otel oluşturuldu: Hotel Adı:{dto.Name}, ŞehirId:{dto.CityId}");
 
         return CreatedAtAction(nameof(GetById), new { id = hotelId }, new { id = hotelId });
     }

@@ -22,6 +22,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -34,6 +35,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .Include(x => x.HotelRooms)
             .Include(x => x.Reviews)
             .Include(x => x.Amenities)
+            .Include(x => x.City)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
@@ -43,7 +45,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .Include(x => x.HotelImages)
-            .Where(x => x.City.ToLower() == city.ToLower())
+            .Include(x => x.City)
+            .Where(x => x.City.Name.ToLower() == city.ToLower())
             .AsNoTracking()
             .ToListAsync();
     }
@@ -54,6 +57,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return await _context.Hotels
             .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -63,7 +67,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .Where(x => x.IsActive)
-            .Select(x => x.City)
+            .Select(x => x.City.Name)
             .Distinct()
             .OrderBy(x => x)
             .ToListAsync();
@@ -82,8 +86,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .AsNoTracking()
-            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
-            .Select(x => x.City.Trim())
+            .Where(x => x.IsActive && x.City.Name != null && x.City.Name.Trim() != "")
+            .Select(x => x.City.Name.Trim())
             .Distinct()
             .CountAsync();
     }
@@ -92,8 +96,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     public async Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count)
     {
         return await _context.Hotels
-            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
-            .GroupBy(x => x.City.Trim())
+            .Where(x => x.IsActive && x.City.Name != null && x.City.Name.Trim() != "")
+            .GroupBy(x => x.City.Name.Trim())
             .Select(g => new
             {
                 Name = g.Key,
@@ -118,6 +122,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return _context.Hotels
             .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking();
     }
 
@@ -129,13 +134,14 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         // tum otelleri kapsar; aktiflik yalnizca isActive filtresi geldiginde uygulanir.
         var query = _context.Hotels
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsQueryable();
 
         if (isActive.HasValue)
             query = query.Where(x => x.IsActive == isActive.Value);
 
         if (!string.IsNullOrEmpty(city))
-            query = query.Where(x => x.City.ToLower() == city.ToLower());
+            query = query.Where(x => x.City.Name.ToLower() == city.ToLower());
 
         if (hotelId.HasValue)
             query = query.Where(x => x.Id == hotelId.Value);
@@ -206,7 +212,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             {
                 Id = h.Id,
                 Name = h.Name,
-                City = h.City,
+                City = h.City.Name,
                 Country = h.Country,
                 StarRating = h.StarRating,
                 AvgRating = h.AvgRating,
@@ -237,9 +243,10 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .AsNoTracking()
             .Include(h => h.HotelImages)
             .Include(h => h.HotelRooms)
+            .Include(h => h.City)
             .Where(h => h.IsActive &&
             (EF.Functions.Like(h.Name, $"%{term}%") ||
-             EF.Functions.Like(h.City, $"%{term}%")));
+             EF.Functions.Like(h.City.Name, $"%{term}%")));
 
         // Sayfalama yap�lmadan �nce toplam sonu� say�s�n� hesaplar.
         var totalCount = await query.CountAsync();
@@ -252,5 +259,32 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
 
         return (hotels, totalCount);
+    }
+
+    // Otele ait (odalari uzerinden) herhangi bir rezervasyon var mi kontrol eder.
+    public async Task<bool> HasReservationsAsync(int hotelId)
+    {
+        return await _context.Reservations
+            .AnyAsync(r => r.HotelRoom.HotelId == hotelId);
+    }
+
+    // Oteli ve bagli tum alt kayitlarini bagimlilik sirasina gore kalici siler.
+    // XACT_ABORT ON + transaction: herhangi bir adim hata verirse tum silme geri alinir.
+    // Cagiran (service) once rezervasyon kontrolu yapar; burada rezervasyon silinmez.
+    public async Task HardDeleteAsync(int hotelId)
+    {
+        const string sql = @"
+SET XACT_ABORT ON;
+BEGIN TRAN;
+    DELETE FROM HotelRoomAmenities WHERE HotelRoomId IN (SELECT Id FROM HotelRooms WHERE HotelId = {0});
+    DELETE FROM RoomImages         WHERE HotelRoomId IN (SELECT Id FROM HotelRooms WHERE HotelId = {0});
+    DELETE FROM HotelRooms         WHERE HotelId = {0};
+    DELETE FROM HotelAmenities     WHERE HotelId = {0};
+    DELETE FROM HotelImages        WHERE HotelId = {0};
+    DELETE FROM Reviews            WHERE HotelId = {0};
+    DELETE FROM Hotels             WHERE Id = {0};
+COMMIT;";
+
+        await _context.Database.ExecuteSqlRawAsync(sql, hotelId);
     }
 }
