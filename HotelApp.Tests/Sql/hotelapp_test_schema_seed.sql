@@ -274,7 +274,6 @@ SELECT
     hr.Id AS HotelRoomId,
     h.Id AS HotelId,
     h.Name AS HotelName,
-    hi.ImageUrl AS MainImageUrl,
     c.Name AS City,
     rt.Name AS RoomTypeName,
     rt.MaxGuests,

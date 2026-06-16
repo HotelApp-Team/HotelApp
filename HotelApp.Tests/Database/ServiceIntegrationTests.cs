@@ -49,12 +49,12 @@ public class ServiceIntegrationTests
     }
 
     [Fact]
-    public async Task HotelService_Delete_OteliSoftDeleteYapar()
+    public async Task HotelService_Delete_OteliKaliciSiler()
     {
         if (!SqlServerDatabaseFixture.Enabled)
             return;
 
-        var hotelId = await InsertHotelAsync("Soft Delete Test Hotel");
+        var hotelId = await InsertHotelAsync("Delete Test Hotel");
 
         await using var context = CreateContext();
         using var unitOfWork = new UnitOfWork(context);
@@ -62,11 +62,12 @@ public class ServiceIntegrationTests
 
         await service.DeleteAsync(hotelId);
 
-        var isActive = await _database.ExecuteScalarIntAsync(
-            "SELECT CAST(IsActive AS INT) FROM Hotels WHERE Id = @HotelId",
+        // Delete artik kalici silme yapar (rezervasyonu olmayan otel tamamen kaldirilir).
+        var remaining = await _database.ExecuteScalarIntAsync(
+            "SELECT COUNT(*) FROM Hotels WHERE Id = @HotelId",
             parameters => parameters.AddWithValue("@HotelId", hotelId));
 
-        Assert.Equal(0, isActive);
+        Assert.Equal(0, remaining);
     }
 
     [Fact]
@@ -497,8 +498,8 @@ public class ServiceIntegrationTests
     {
         await _database.ExecuteNonQueryAsync(
             """
-            INSERT INTO Hotels (Name, Description, Address, City, Country, StarRating, Phone, Email)
-            VALUES (@Name, 'Service test hotel', 'Service Address', 'Service City', 'Turkiye', 4, '02121112233', 'service-hotel@test.com');
+            INSERT INTO Hotels (Name, Description, Address, CityId, Country, StarRating, Phone, Email)
+            VALUES (@Name, 'Service test hotel', 'Service Address', (SELECT Id FROM Cities WHERE Name = 'Istanbul'), 'Turkiye', 4, '02121112233', 'service-hotel@test.com');
             """,
             parameters => parameters.AddWithValue("@Name", name));
 

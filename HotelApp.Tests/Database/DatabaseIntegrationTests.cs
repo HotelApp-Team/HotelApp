@@ -294,8 +294,8 @@ public class DatabaseIntegrationTests
         // Test kendi otelini ve kullanicisini olusturur; seed yorumlardan etkilenmez.
         var hotelId = await _database.ExecuteScalarIntAsync(
             """
-            INSERT INTO Hotels (Name, Description, Address, City, Country, StarRating, Phone, Email)
-            VALUES (@HotelName, 'Trigger test hotel', 'Trigger Test Address', 'TestCity', 'Turkiye', 5, '5554444444', 'trigger-hotel@hotelapp.test');
+            INSERT INTO Hotels (Name, Description, Address, CityId, Country, StarRating, Phone, Email)
+            VALUES (@HotelName, 'Trigger test hotel', 'Trigger Test Address', (SELECT Id FROM Cities WHERE Name = 'Istanbul'), 'Turkiye', 5, '5554444444', 'trigger-hotel@hotelapp.test');
 
             SELECT CAST(SCOPE_IDENTITY() AS INT);
             """,
