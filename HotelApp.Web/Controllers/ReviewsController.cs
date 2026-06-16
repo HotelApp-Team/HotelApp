@@ -57,7 +57,9 @@ namespace HotelApp.Web.Controllers
             var response = await _apiService.PostAsync<object>("reviews", model);
 
             TempData[response.Success ? "Success" : "Error"] =
-                response.Success ? "Yorum basariyla eklendi." : response.Message;
+                response.Success
+                    ? "Yorumunuz alindi. Admin onayindan sonra yayina girecek."
+                    : response.Message;
 
             return RedirectToAction("Detail", "Hotels", new { id = hotelId });
         }

@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelApp.Infrastructure.Repositories;
 
-// Otel verilerine ait özel sorgularý yöneten repository sýnýfýdýr.
-// Listeleme, detay getirme, filtreleme ve müsait otel arama iþlemlerini yapar
+// Otel verilerine ait ï¿½zel sorgularï¿½ yï¿½neten repository sï¿½nï¿½fï¿½dï¿½r.
+// Listeleme, detay getirme, filtreleme ve mï¿½sait otel arama iï¿½lemlerini yapar
 public class HotelRepository : Repository<Hotel>, IHotelRepository
 {
-    // DbContext base Repository sýnýfýna gönderilir.
+    // DbContext base Repository sï¿½nï¿½fï¿½na gï¿½nderilir.
     public HotelRepository(HotelAppDbContext context) : base(context)
     {
     }
@@ -22,11 +22,12 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking()
             .ToListAsync();
     }
 
-    // Id deðerine göre oteli iliþkili verileriyle birlikte getirir.
+    // Id deï¿½erine gï¿½re oteli iliï¿½kili verileriyle birlikte getirir.
     public async Task<Hotel?> GetWithDetailsAsync(int id)
     {
         return await _context.Hotels
@@ -34,16 +35,18 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .Include(x => x.HotelRooms)
             .Include(x => x.Reviews)
             .Include(x => x.Amenities)
+            .Include(x => x.City)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    // Verilen þehir adýna göre otelleri getirir.
-    // Liste ekranýnda kapak görseli için HotelImages da dahil edilir.
+    // Verilen ï¿½ehir adï¿½na gï¿½re otelleri getirir.
+    // Liste ekranï¿½nda kapak gï¿½rseli iï¿½in HotelImages da dahil edilir.
     public async Task<IEnumerable<Hotel>> GetByCityAsync(string city)
     {
         return await _context.Hotels
             .Include(x => x.HotelImages)
-            .Where(x => x.City.ToLower() == city.ToLower())
+            .Include(x => x.City)
+            .Where(x => x.City.Name.ToLower() == city.ToLower())
             .AsNoTracking()
             .ToListAsync();
     }
@@ -54,16 +57,17 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return await _context.Hotels
             .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking()
             .ToListAsync();
     }
 
-    // Aktif otellerin bulunduðu þehirleri tekil olarak getirir.
+    // Aktif otellerin bulunduï¿½u ï¿½ehirleri tekil olarak getirir.
     public async Task<List<string>> GetActiveCitiesAsync()
     {
         return await _context.Hotels
             .Where(x => x.IsActive)
-            .Select(x => x.City)
+            .Select(x => x.City.Name)
             .Distinct()
             .OrderBy(x => x)
             .ToListAsync();
@@ -82,8 +86,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         return await _context.Hotels
             .AsNoTracking()
-            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
-            .Select(x => x.City.Trim())
+            .Where(x => x.IsActive && x.City.Name != null && x.City.Name.Trim() != "")
+            .Select(x => x.City.Name.Trim())
             .Distinct()
             .CountAsync();
     }
@@ -92,8 +96,8 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     public async Task<List<CityCardDto>> GetFeaturedCityStatsAsync(int count)
     {
         return await _context.Hotels
-            .Where(x => x.IsActive && x.City != null && x.City.Trim() != "")
-            .GroupBy(x => x.City.Trim())
+            .Where(x => x.IsActive && x.City.Name != null && x.City.Name.Trim() != "")
+            .GroupBy(x => x.City.Name.Trim())
             .Select(g => new
             {
                 Name = g.Key,
@@ -112,29 +116,35 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
     }
 
-    // Aktif oteller için temel IQueryable sorgusu oluþturur.
+    // Aktif oteller iï¿½in temel IQueryable sorgusu oluï¿½turur.
     public IQueryable<Hotel> Query()
     {
         return _context.Hotels
             .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsNoTracking();
     }
 
-    // Admin otel listesi için filtreleme, sýralama ve sayfalama yapar.
-    // Geriye hem ilgili sayfadaki veriyi hem de toplam kayýt sayýsýný döndürür.
-    public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
+    // Admin otel listesi iï¿½in filtreleme, sï¿½ralama ve sayfalama yapar.
+    // Geriye hem ilgili sayfadaki veriyi hem de toplam kayï¿½t sayï¿½sï¿½nï¿½ dï¿½ndï¿½rï¿½r.
+    public async Task<(List<Hotel> Data, int TotalCount)> GetPagedFilteredAsync(string? city, byte? star, bool? isActive, int? hotelId, string? sortBy, string? sortOrder, int page, int pageSize)
     {
+        // Admin paneli aktif ve pasif otelleri yonetebildigi icin taban sorgu
+        // tum otelleri kapsar; aktiflik yalnizca isActive filtresi geldiginde uygulanir.
         var query = _context.Hotels
-            .Where(x => x.IsActive)
             .Include(x => x.HotelImages)
+            .Include(x => x.City)
             .AsQueryable();
 
         if (isActive.HasValue)
             query = query.Where(x => x.IsActive == isActive.Value);
 
         if (!string.IsNullOrEmpty(city))
-            query = query.Where(x => x.City.ToLower() == city.ToLower());
+            query = query.Where(x => x.City.Name.ToLower() == city.ToLower());
+
+        if (hotelId.HasValue)
+            query = query.Where(x => x.Id == hotelId.Value);
 
         if (star.HasValue)
             query = query.Where(x => x.StarRating == star);
@@ -161,11 +171,11 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
         return (data, totalCount);
     }
 
-    // Arama kriterlerine göre müsait otelleri sayfalý olarak getirir.
-    // Önce stored procedure ile müsait odalar bulunur, sonra bu oteller filtrelenir.
+    // Arama kriterlerine gï¿½re mï¿½sait otelleri sayfalï¿½ olarak getirir.
+    // ï¿½nce stored procedure ile mï¿½sait odalar bulunur, sonra bu oteller filtrelenir.
     public async Task<(List<HotelListDto> Data, int TotalCount)> SearchAvailableHotelsPagedAsync(string city, DateTime checkIn, DateTime checkOut, int guestCount, byte? starRating, decimal? minRating, int page, int pageSize)
     {
-        // Stored procedure ile müsait oda bilgileri alýnýr.
+        // Stored procedure ile mï¿½sait oda bilgileri alï¿½nï¿½r.
         var availableRooms = await _context.Database
         .SqlQueryRaw<AvailableRoomDto>(
             "EXEC sp_SearchAvailableRooms @HotelId = @HotelId, @City = @City, @CheckInDate = @CheckInDate, @CheckOutDate = @CheckOutDate, @GuestCount = @GuestCount",
@@ -176,7 +186,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             new SqlParameter("@GuestCount", guestCount))
         .ToListAsync();
 
-        // Müsait odalara sahip otel Id deðerleri tekilleþtirilir.
+        // Mï¿½sait odalara sahip otel Id deï¿½erleri tekilleï¿½tirilir.
         var availableHotelIds = availableRooms
             .Select(x => x.HotelId)
             .Distinct()
@@ -202,7 +212,7 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             {
                 Id = h.Id,
                 Name = h.Name,
-                City = h.City,
+                City = h.City.Name,
                 Country = h.Country,
                 StarRating = h.StarRating,
                 AvgRating = h.AvgRating,
@@ -218,29 +228,30 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
     }
 
 
-    // Navbar aramasýndan gelen ifadeyi otel adý ve þehir alanlarýnda arar.
-    // Yalnýzca aktif otelleri getirir ve sonucu sayfalý olarak döndürür.
+    // Navbar aramasï¿½ndan gelen ifadeyi otel adï¿½ ve ï¿½ehir alanlarï¿½nda arar.
+    // Yalnï¿½zca aktif otelleri getirir ve sonucu sayfalï¿½ olarak dï¿½ndï¿½rï¿½r.
     public async Task<(List<Hotel> Data, int TotalCount)> SearchCatalogPagedAsync(
         string searchTerm,
         int page,
         int pageSize)
     {
-        // Kullanýcýnýn girdiði baþtaki ve sondaki boþluklarý temizler.
+        // Kullanï¿½cï¿½nï¿½n girdiï¿½i baï¿½taki ve sondaki boï¿½luklarï¿½ temizler.
         var term = searchTerm.Trim();
 
-        // Otel kartlarýnda kullanýlacak görsel ve oda bilgilerini dahil eder.
+        // Otel kartlarï¿½nda kullanï¿½lacak gï¿½rsel ve oda bilgilerini dahil eder.
         var query = _context.Hotels
             .AsNoTracking()
             .Include(h => h.HotelImages)
             .Include(h => h.HotelRooms)
+            .Include(h => h.City)
             .Where(h => h.IsActive &&
             (EF.Functions.Like(h.Name, $"%{term}%") ||
-             EF.Functions.Like(h.City, $"%{term}%")));
+             EF.Functions.Like(h.City.Name, $"%{term}%")));
 
-        // Sayfalama yapýlmadan önce toplam sonuç sayýsýný hesaplar.
+        // Sayfalama yapï¿½lmadan ï¿½nce toplam sonuï¿½ sayï¿½sï¿½nï¿½ hesaplar.
         var totalCount = await query.CountAsync();
 
-        //Ýstenen sayfadaki otelleri alfabetik sýrayla getirir.
+        //ï¿½stenen sayfadaki otelleri alfabetik sï¿½rayla getirir.
         var hotels = await query
                         .OrderBy(h => h.Name)
             .Skip((page - 1) * pageSize)
@@ -248,5 +259,32 @@ public class HotelRepository : Repository<Hotel>, IHotelRepository
             .ToListAsync();
 
         return (hotels, totalCount);
+    }
+
+    // Otele ait (odalari uzerinden) herhangi bir rezervasyon var mi kontrol eder.
+    public async Task<bool> HasReservationsAsync(int hotelId)
+    {
+        return await _context.Reservations
+            .AnyAsync(r => r.HotelRoom.HotelId == hotelId);
+    }
+
+    // Oteli ve bagli tum alt kayitlarini bagimlilik sirasina gore kalici siler.
+    // XACT_ABORT ON + transaction: herhangi bir adim hata verirse tum silme geri alinir.
+    // Cagiran (service) once rezervasyon kontrolu yapar; burada rezervasyon silinmez.
+    public async Task HardDeleteAsync(int hotelId)
+    {
+        const string sql = @"
+SET XACT_ABORT ON;
+BEGIN TRAN;
+    DELETE FROM HotelRoomAmenities WHERE HotelRoomId IN (SELECT Id FROM HotelRooms WHERE HotelId = {0});
+    DELETE FROM RoomImages         WHERE HotelRoomId IN (SELECT Id FROM HotelRooms WHERE HotelId = {0});
+    DELETE FROM HotelRooms         WHERE HotelId = {0};
+    DELETE FROM HotelAmenities     WHERE HotelId = {0};
+    DELETE FROM HotelImages        WHERE HotelId = {0};
+    DELETE FROM Reviews            WHERE HotelId = {0};
+    DELETE FROM Hotels             WHERE Id = {0};
+COMMIT;";
+
+        await _context.Database.ExecuteSqlRawAsync(sql, hotelId);
     }
 }

@@ -48,7 +48,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.User)
                 .Include(x => x.Hotel)
-                .Where(x => x.HotelId == hotelId)
+                .Where(x => x.HotelId == hotelId && x.IsApproved)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
         }
@@ -63,6 +63,7 @@ namespace HotelApp.Infrastructure.Repositories
             return await _dbSet
                 .Include(x => x.User)
                 .Include(x => x.Hotel)
+                .Where(x => x.IsApproved)
                 .OrderByDescending(x => x.Rating)
                 .ThenByDescending(x => x.CreatedAt)
                 .Take(count)
@@ -115,6 +116,17 @@ namespace HotelApp.Infrastructure.Repositories
                 .ToListAsync();
 
             return (items, totalCount);
+        }
+
+        /// <summary>
+        /// Admin onay islemi icin yorumu kullanici ve otel bilgileriyle birlikte getirir.
+        /// </summary>
+        public async Task<Review?> GetForApprovalAsync(int id)
+        {
+            return await _dbSet
+                .Include(x => x.User)
+                .Include(x => x.Hotel)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
     }

@@ -51,6 +51,12 @@ public class AuthController : Controller
             ViewBag.SuccessMessage = successMessage;
         }
 
+        // Oturum sona erme gibi bilgilendirme mesajlarini view'e tasi (orn. 401 sonrasi).
+        if (TempData["InfoMessage"] is string infoMessage)
+        {
+            ViewBag.InfoMessage = infoMessage;
+        }
+
         // Form modeline hero istatistikleri de eklenir; sayilar API endpointinden gelir.
         return View(new LoginViewModel
         {

@@ -59,5 +59,12 @@ namespace HotelApp.Domain.Services
         /// <param name="pageSize">Sayfa basina getirilecek kayit sayisi.</param>
         /// <returns>Sayfalanmis yorum DTO sonucunu doner.</returns>
         Task<PagedResponseDto<ReviewDto>> GetAllReviewsAsync(int page, int pageSize);
+
+        /// <summary>
+        /// Admin tarafindan belirtilen yorumu yayina alir.
+        /// </summary>
+        /// <param name="id">Onaylanacak yorumun Id degeri.</param>
+        /// <returns>Onaylanan yorum DTO nesnesini doner.</returns>
+        Task<ReviewDto> ApproveReviewAsync(int id);
     }
 }

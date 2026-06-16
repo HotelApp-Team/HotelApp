@@ -10,15 +10,6 @@
     if (totalPages < 1) totalPages = 1;
 }
 
-@functions {
-    // Puana gore yildiz dizisi olusturur (1-5 arasi). View'da metin olarak yazdirilir.
-    string RenderStars(byte rating)
-    {
-        var clamped = rating < 1 ? 1 : (rating > 5 ? 5 : rating);
-        return new string('★', clamped) + new string('☆', 5 - clamped);
-    }
-}
-
 <div class="container-fluid py-4">
 
     <div class="d-flex align-items-center mb-4">
@@ -57,6 +48,7 @@
                                 <th>Puan</th>
                                 <th>Yorum</th>
                                 <th>Tarih</th>
+                                <th>Durum</th>
                                 <th class="text-end">İşlem</th>
                             </tr>
                         </thead>
@@ -67,7 +59,12 @@
                                     <td class="fw-semibold">@review.UserName</td>
                                     <td>@review.HotelName</td>
                                     <td>
-                                        <span class="text-warning">@RenderStars(review.Rating)</span>
+                                        <span class="text-warning">
+                                            @for (var i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </span>
                                         <small class="text-muted ms-1">(@review.Rating)</small>
                                     </td>
                                     <td class="small" style="max-width: 360px;">
@@ -81,7 +78,31 @@
                                         }
                                     </td>
                                     <td class="small text-nowrap">@review.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (review.IsApproved)
+                                        {
+                                            <span class="review-status-pill review-status-approved">
+                                                <i class="bi bi-check-circle-fill"></i> Yayında
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="review-status-pill review-status-pending">
+                                                <i class="bi bi-hourglass-split"></i> Onay Bekliyor
+                                            </span>
+                                        }
+                                    </td>
                                     <td class="text-end">
+                                        @if (!review.IsApproved)
+                                        {
+                                            <form asp-controller="AdminReviews" asp-action="Approve" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@review.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle"></i> Onayla
+                                                </button>
+                                            </form>
+                                        }
                                         <form asp-controller="AdminReviews" asp-action="Delete" method="post" class="d-inline"
                                               onsubmit="return confirm('Bu yorumu silmek istediğinize emin misiniz?');">
                                             @Html.AntiForgeryToken()

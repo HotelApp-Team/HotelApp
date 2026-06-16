@@ -13,7 +13,7 @@ public partial class Hotel
 
     public string Address { get; set; } = null!;
 
-    public string City { get; set; } = null!;
+    public int CityId { get; set; }
 
     public string Country { get; set; } = null!;
 
@@ -34,6 +34,8 @@ public partial class Hotel
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public virtual City City { get; set; } = null!;
 
     public virtual ICollection<HotelImage> HotelImages { get; set; } = new List<HotelImage>();
 

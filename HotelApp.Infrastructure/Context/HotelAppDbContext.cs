@@ -14,6 +14,8 @@ public partial class HotelAppDbContext : DbContext
 
     public virtual DbSet<Amenity> Amenities { get; set; }
 
+    public virtual DbSet<City> Cities { get; set; }
+
     public virtual DbSet<Hotel> Hotels { get; set; }
 
     public virtual DbSet<HotelImage> HotelImages { get; set; }
@@ -56,15 +58,23 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<City>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Cities");
+
+            entity.HasIndex(e => e.Name, "UQ_Cities_Name").IsUnique();
+
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<Hotel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Hotels__3214EC079DF3CACE");
 
-            entity.HasIndex(e => e.City, "IX_Hotels_City");
+            entity.HasIndex(e => e.CityId, "IX_Hotels_CityId");
 
             entity.Property(e => e.Address).HasMaxLength(500);
             entity.Property(e => e.AvgRating).HasColumnType("decimal(3, 1)");
-            entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.Country)
                 .HasMaxLength(100)
                 .HasDefaultValue("Turkiye");
@@ -76,6 +86,11 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.Longitude).HasColumnType("decimal(9, 6)");
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Phone).HasMaxLength(20);
+
+            entity.HasOne(d => d.City).WithMany(p => p.Hotels)
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Hotels_Cities");
 
             entity.HasMany(d => d.Amenities).WithMany(p => p.Hotels)
                 .UsingEntity<Dictionary<string, object>>(
@@ -235,6 +250,7 @@ public partial class HotelAppDbContext : DbContext
 
             entity.Property(e => e.Comment).HasMaxLength(1000);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsApproved).HasDefaultValue(false);
 
             entity.HasOne(d => d.Hotel).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.HotelId)
@@ -362,6 +378,7 @@ public partial class HotelAppDbContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.HotelName).HasMaxLength(200);
             entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.MainImageUrl).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.RoomTypeName).HasMaxLength(100);

@@ -19,6 +19,7 @@ public interface IUnitOfWork : IDisposable
     IRoomAmenityRepository RoomAmenityRepository { get; }
     IAdminRepository AdminRepository { get; }
     IRoomImageRepository RoomImageRepository { get; }
+    ICityRepository CityRepository { get; }
 
     // Yapılan değişiklikleri veritabanına kaydeder.
     Task<int> SaveChangesAsync();

@@ -219,7 +219,7 @@ public class RealApiCrudIntegrationTests
             Name = name,
             Description = "API integration test hotel",
             Address = "API Test Address",
-            City = "API City",
+            CityId = 1,
             Country = "Turkiye",
             Phone = "02121112233",
             Email = "api-hotel@test.com",

@@ -53,6 +53,11 @@
                     <div class="alert alert-success">@ViewBag.SuccessMessage</div>
                 }
 
+                @if (ViewBag.InfoMessage != null)
+                {
+                    <div class="alert alert-warning">@ViewBag.InfoMessage</div>
+                }
+
                 <form asp-action="Login" asp-controller="Auth" method="post" class="auth-form">
                     @* Form sahteciligine karsi guvenlik anahtari (CSRF korumasi). *@
                     @Html.AntiForgeryToken()

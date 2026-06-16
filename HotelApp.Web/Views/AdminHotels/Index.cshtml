@@ -12,6 +12,21 @@
 
 <div class="container-fluid py-4">
 
+    @if (TempData["SuccessMessage"] is string okMsg)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @okMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errMsg)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">
             <i class="bi bi-building text-primary me-2"></i>
@@ -31,14 +46,30 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
+            <div class="d-flex flex-wrap align-items-end gap-3">
+                <div style="flex: 1 1 180px; min-width: 160px;">
                     <label class="form-label small text-muted">Şehir</label>
-                    <input asp-for="City" class="form-control" placeholder="Şehir adı" />
+                    <select asp-for="City" class="form-select admin-filter-select" data-searchable="true">
+                        <option value="">Tümü</option>
+                        @foreach (var cityOption in Model.CityOptions)
+                        {
+                            <option value="@cityOption">@cityOption</option>
+                        }
+                    </select>
                 </div>
-                <div class="col-md-2">
+                <div style="flex: 1 1 200px; min-width: 180px;">
+                    <label class="form-label small text-muted">Otel</label>
+                    <select asp-for="HotelId" class="form-select admin-filter-select" data-searchable="true">
+                        <option value="">Tümü</option>
+                        @foreach (var hotelOption in Model.HotelOptions)
+                        {
+                            <option value="@hotelOption.Id" data-city="@hotelOption.City">@hotelOption.Name</option>
+                        }
+                    </select>
+                </div>
+                <div style="width: 110px;">
                     <label class="form-label small text-muted">Yıldız</label>
-                    <select asp-for="StarRating" class="form-select">
+                    <select asp-for="StarRating" class="form-select admin-filter-select">
                         <option value="">Tümü</option>
                         @for (byte i = 1; i <= 5; i++)
                         {
@@ -46,32 +77,32 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div style="width: 110px;">
                     <label class="form-label small text-muted">Durum</label>
-                    <select asp-for="IsActive" class="form-select">
+                    <select asp-for="IsActive" class="form-select admin-filter-select">
                         <option value="">Hepsi</option>
                         <option value="true">Aktif</option>
                         <option value="false">Pasif</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div style="width: 130px;">
                     <label class="form-label small text-muted">Sıralama</label>
-                    <select asp-for="SortBy" class="form-select">
+                    <select asp-for="SortBy" class="form-select admin-filter-select">
                         <option value="name">Ada göre</option>
                         <option value="city">Şehre göre</option>
                         <option value="star">Yıldıza göre</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div style="width: 110px;">
                     <label class="form-label small text-muted">Sıra</label>
-                    <select asp-for="SortOrder" class="form-select">
+                    <select asp-for="SortOrder" class="form-select admin-filter-select">
                         <option value="asc">Artan</option>
                         <option value="desc">Azalan</option>
                     </select>
                 </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-funnel"></i>
+                <div class="ms-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-1"></i>Filtrele
                     </button>
                 </div>
             </div>
@@ -176,6 +207,7 @@
                                        asp-controller="AdminHotels"
                                        asp-action="Index"
                                        asp-route-city="@Model.City"
+                                       asp-route-hotelId="@Model.HotelId"
                                        asp-route-starRating="@Model.StarRating"
                                        asp-route-isActive="@Model.IsActive"
                                        asp-route-sortBy="@Model.SortBy"
@@ -190,6 +222,7 @@
                                        asp-controller="AdminHotels"
                                        asp-action="Index"
                                        asp-route-city="@Model.City"
+                                       asp-route-hotelId="@Model.HotelId"
                                        asp-route-starRating="@Model.StarRating"
                                        asp-route-isActive="@Model.IsActive"
                                        asp-route-sortBy="@Model.SortBy"
@@ -216,3 +249,60 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script>
+        // Sehir secimine gore otel dropdown'ini daraltir.
+        // Tom Select ornekleri site.js icinde DOMContentLoaded sirasinda olusturulur;
+        // bu blok daha sonra calistigi icin ornekler hazir olur.
+        document.addEventListener('DOMContentLoaded', function () {
+            var citySelect = document.getElementById('City');
+            var hotelSelect = document.getElementById('HotelId');
+            if (!citySelect || !hotelSelect) return;
+
+            var cityTs = citySelect.tomselect;
+            var hotelTs = hotelSelect.tomselect;
+            if (!cityTs || !hotelTs) return;
+
+            // Tum otel secenekleri (deger, ad, sehir) baslangicta DOM'dan toplanir.
+            var allHotels = Array.prototype.map.call(hotelSelect.options, function (o) {
+                return { value: o.value, text: o.text, city: o.getAttribute('data-city') || '' };
+            }).filter(function (o) { return o.value !== ''; });
+
+            function refreshHotels() {
+                var city = (cityTs.getValue() || '').toLowerCase();
+                var selected = hotelTs.getValue();
+
+                // Onceki secimi sessizce kaldir ki clearOptions tum secenekleri silebilsin
+                // (Tom Select secili kalan secenegi silmez, bu da sirayi bozardi).
+                hotelTs.clear(true);
+                hotelTs.clearOptions();
+
+                var matches = allHotels.filter(function (h) {
+                    return !city || h.city.toLowerCase() === city;
+                });
+
+                // $order'i acikca veriyoruz. DIKKAT: Tom Select "opt.$order || ++order"
+                // kullandigi icin 0 (falsy) yok sayilir; bu yuzden 1'den basliyoruz ki
+                // "Tümü" (en kucuk $order) her zaman listenin en ustunde kalir.
+                var opts = [{ value: '', text: 'Tümü', $order: 1 }];
+                matches.forEach(function (h, i) {
+                    opts.push({ value: h.value, text: h.text, $order: i + 2 });
+                });
+                hotelTs.addOptions(opts);
+
+                // Secili otel artik listede yoksa "Tümü"ye don.
+                var stillValid = !selected || matches.some(function (h) { return h.value === selected; });
+                hotelTs.setValue(stillValid ? selected : '', true);
+                hotelTs.refreshOptions(false);
+            }
+
+            cityTs.on('change', refreshHotels);
+
+            // Sayfa ilk acildiginda secili sehir varsa otel listesini ona gore daralt.
+            if (cityTs.getValue()) {
+                refreshHotels();
+            }
+        });
+    </script>
+}

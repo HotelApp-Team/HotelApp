@@ -16,7 +16,7 @@ public class ApiControllerTests
     {
         var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
-        var result = await controller.GetAll(city: null, star: null, isActive: null, page: 0);
+        var result = await controller.GetAll(city: null, star: null, isActive: null, hotelId: null, page: 0);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -26,7 +26,7 @@ public class ApiControllerTests
     {
         var controller = new HotelsController(new FakeHotelService(), new FakeLoggerService());
 
-        var result = await controller.GetAll(city: null, star: null, isActive: null, pageSize: 101);
+        var result = await controller.GetAll(city: null, star: null, isActive: null, hotelId: null, pageSize: 101);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -418,8 +418,10 @@ internal class FakeHotelService : IHotelService
         return Task.FromResult(SearchResult);
     }
 
-    public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, string? sortBy, string? sortOrder, int page, int pageSize)
+    public Task<PagedResponseDto<HotelListDto>> GetAllFilteredAsync(string? city, byte? star, bool? isActive, int? hotelId, string? sortBy, string? sortOrder, int page, int pageSize)
     => Task.FromResult(FilteredHotels);
+
+    public Task<HotelFilterOptionsDto> GetFilterOptionsAsync() => Task.FromResult(new HotelFilterOptionsDto());
 
     public Task<PagedResponseDto<HotelListDto>> SearchCatalogAsync(
     string searchTerm,

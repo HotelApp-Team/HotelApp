@@ -1,4 +1,5 @@
 using HotelApp.Web.Filters;
+using HotelApp.Web.Helpers;
 using HotelApp.Web.Models;
 using HotelApp.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,19 @@ public class ProfileController : Controller
         // API'den giriş yapan kullanıcının profil bilgilerini çeker.
         var response = await _apiService.GetAsync<UserResponse>("auth/profile");
 
-        // API cevabı başarısızsa veya veri boşsa kullanıcıyı ana sayfaya yönlendirir.
+        // Oturum API tarafinda artik gecerli degilse (401): tokeni yerel olarak temizleyip
+        // kullaniciyi giris sayfasina yonlendir. Token imzasi hala gecerli olabilecegi icin
+        // hem session hem Beni Hatirla cookie'si temizlenir; aksi halde navbar girisli gorunup
+        // bu sayfa surekli anasayfaya atardi.
+        if (!response.Success && response.StatusCode == 401)
+        {
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete(SessionAuthExtensions.RememberMeCookieName);
+            TempData["InfoMessage"] = "Oturumunuz sona erdi. Lütfen tekrar giriş yapın.";
+            return RedirectToAction("Login", "Auth");
+        }
+
+        // Diger hatalarda veya veri bossa kullanıcıyı ana sayfaya yönlendirir.
         if (!response.Success || response.Data == null)
         {
             TempData["ErrorMessage"] = response.Message;
