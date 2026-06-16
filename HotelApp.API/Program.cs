@@ -74,6 +74,7 @@ builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 builder.Services.AddScoped<IHotelRoomService, HotelRoomService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomViewService, RoomViewService>();
+builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IAdminService, AdminService>();

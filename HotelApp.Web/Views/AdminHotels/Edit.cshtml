@@ -15,6 +15,9 @@
 
 <link rel="stylesheet" href="~/css/admin-hotel.css" asp-append-version="true" />
 
+@* AJAX kaydetme: kayit/guncelleme sonrasi bu kok yeniden cizilir, sayfa yeniden yuklenmez. *@
+<div id="hpEditRoot">
+
 @* ===== Sayfa Basligi ===== *@
 <div class="hp-page-head">
     <div class="hp-breadcrumb">
@@ -34,7 +37,7 @@
             {
                 <div class="hp-meta-line">
                     <span><i class="bi bi-hash"></i> #@Model.Id</span>
-                    <span><i class="bi bi-geo-alt"></i> @Model.City, @Model.Country</span>
+                    <span><i class="bi bi-geo-alt"></i> @Model.CityName, @Model.Country</span>
                     <span><i class="bi bi-star-fill" style="color:#F59E0B"></i> @Model.StarRating yıldız</span>
                     @if (Model.IsActive)
                     {
@@ -70,14 +73,37 @@
     <div class="alert alert-danger">@errorMessage</div>
 }
 
-@* ===== Section tabs (sadece edit modda) ===== *@
+@* ===== Adim adim (wizard) stepper — sadece edit modda ===== *@
 @if (isEdit)
 {
-    <div class="hp-section-tabs">
-        <a href="#section-general" class="hp-tab active"><i class="bi bi-info-circle"></i> Genel Bilgiler</a>
-        <a href="#section-images" class="hp-tab"><i class="bi bi-images"></i> Görseller <span class="hp-tab-count">@Model.Images.Count</span></a>
-        <a href="#section-rooms" class="hp-tab"><i class="bi bi-door-open"></i> Odalar &amp; Fiyat <span class="hp-tab-count">@Model.Rooms.Count</span></a>
-        <a href="#section-amenities" class="hp-tab"><i class="bi bi-stars"></i> Otel Olanakları <span class="hp-tab-count">@Model.AllAmenities.Count(x => x.IsAssigned)</span></a>
+    <div class="hp-wizard-steps" id="hpWizardSteps" data-hotel-id="@Model.Id">
+        <button type="button" class="hp-wstep" data-step-target="general">
+            <span class="hp-wstep-num">1</span>
+            <span class="hp-wstep-text">
+                <span class="hp-wstep-label"><i class="bi bi-info-circle me-1"></i>Genel Bilgiler</span>
+            </span>
+        </button>
+        <button type="button" class="hp-wstep" data-step-target="images">
+            <span class="hp-wstep-num">2</span>
+            <span class="hp-wstep-text">
+                <span class="hp-wstep-label"><i class="bi bi-images me-1"></i>Görseller</span>
+                <span class="hp-wstep-badge">@Model.Images.Count görsel</span>
+            </span>
+        </button>
+        <button type="button" class="hp-wstep" data-step-target="amenities">
+            <span class="hp-wstep-num">3</span>
+            <span class="hp-wstep-text">
+                <span class="hp-wstep-label"><i class="bi bi-stars me-1"></i>Olanaklar</span>
+                <span class="hp-wstep-badge">@Model.AllAmenities.Count(x => x.IsAssigned) seçili</span>
+            </span>
+        </button>
+        <button type="button" class="hp-wstep" data-step-target="rooms">
+            <span class="hp-wstep-num">4</span>
+            <span class="hp-wstep-text">
+                <span class="hp-wstep-label"><i class="bi bi-door-open me-1"></i>Odalar &amp; Fiyat</span>
+                <span class="hp-wstep-badge">@Model.Rooms.Count oda tipi</span>
+            </span>
+        </button>
     </div>
 }
 
@@ -89,6 +115,7 @@
         @* ============================================================
            BOLUM 1: TEMEL BILGILER (Ana form — Create / Edit)
            ============================================================ *@
+        <div class="hp-step-panel" data-step="general">
         <form id="section-general"
               method="post"
               asp-controller="AdminHotels"
@@ -116,7 +143,7 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label asp-for="StarRating" class="form-label">Yıldız</label>
+                            <label asp-for="StarRating" class="form-label d-block">Yıldız</label>
                             <div class="hp-star-pick" data-target="StarRating">
                                 @for (byte i = 1; i <= 5; i++)
                                 {
@@ -153,14 +180,25 @@
                 <div class="hp-card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="City" class="form-label">Şehir</label>
-                            <input asp-for="City" class="form-control" />
-                            <span asp-validation-for="City" class="text-danger"></span>
+                            <label asp-for="Country" class="form-label">Ülke</label>
+                            <select asp-for="Country" class="form-select admin-filter-select">
+                                @foreach (var country in Model.CountryOptions)
+                                {
+                                    <option value="@country">@country</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Country" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Country" class="form-label">Ülke</label>
-                            <input asp-for="Country" class="form-control" />
-                            <span asp-validation-for="Country" class="text-danger"></span>
+                            <label asp-for="CityId" class="form-label">Şehir</label>
+                            <select asp-for="CityId" class="form-select admin-filter-select" data-searchable="true">
+                                <option value="">Seçiniz</option>
+                                @foreach (var city in Model.CityOptions)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CityId" class="text-danger"></span>
                         </div>
                         <div class="col-12">
                             <label asp-for="Address" class="form-label">Adres</label>
@@ -206,7 +244,8 @@
                             <label asp-for="Phone" class="form-label">Telefon</label>
                             <div class="hp-affix">
                                 <span class="hp-affix-left"><i class="bi bi-telephone"></i></span>
-                                <input asp-for="Phone" class="form-control hp-has-left" placeholder="+90 242 000 00 00" />
+                                <input asp-for="Phone" class="form-control hp-has-left" placeholder="+90 242 000 00 00"
+                                       inputmode="tel" pattern="[0-9+\-\s()]*" data-phone-input />
                             </div>
                             <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
@@ -260,6 +299,7 @@
                 </div>
             </div>
         </form>
+        </div>@* /step-panel general *@
 
         @* ============================================================
            Asagidaki bolumler sadece edit modda (Id > 0) gosterilir.
@@ -278,6 +318,7 @@
             @* ============================================================
                BOLUM 2: GORSELLER
                ============================================================ *@
+            <div class="hp-step-panel" data-step="images">
             <div id="section-images" class="hp-card">
                 <div class="hp-card-head">
                     <div class="hp-card-icon"><i class="bi bi-images"></i></div>
@@ -409,9 +450,12 @@
                 </div>
             </div>
 
+            </div>@* /step-panel images *@
+
             @* ============================================================
                BOLUM 3: ODALAR & FIYAT  (+ oda olanaklari)
                ============================================================ *@
+            <div class="hp-step-panel" data-step="rooms">
             <div id="section-rooms" class="hp-card">
                 <div class="hp-card-head">
                     <div class="hp-card-icon"><i class="bi bi-door-open"></i></div>
@@ -459,14 +503,14 @@
                             <div class="col-md-2">
                                 <label class="form-label">Gecelik Fiyat</label>
                                 <div class="hp-affix">
-                                    <input name="PricePerNight" type="number" step="0.01" min="0.01" class="form-control hp-has-right" required />
+                                    <input name="PricePerNight" type="text" inputmode="decimal" class="form-control hp-has-right js-money" placeholder="0,00" required />
                                     <span class="hp-affix-right">₺</span>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Ek Misafir</label>
                                 <div class="hp-affix">
-                                    <input name="ExtraGuestPricePerNight" type="number" step="0.01" min="0" class="form-control hp-has-right" required />
+                                    <input name="ExtraGuestPricePerNight" type="text" inputmode="decimal" class="form-control hp-has-right js-money" placeholder="0,00" required />
                                     <span class="hp-affix-right">₺</span>
                                 </div>
                             </div>
@@ -487,8 +531,9 @@
                     {
                         @foreach (var room in Model.Rooms.OrderBy(x => x.RoomTypeName))
                         {
-                            <div class="hp-room-card">
-                                <div class="hp-room-head">
+                            <div class="hp-room-card" data-room-id="@room.Id">
+                                <div class="hp-room-head hp-room-toggle">
+                                    <i class="bi bi-chevron-down hp-room-caret"></i>
                                     <div class="hp-room-icon @(room.IsActive ? "" : "passive")">
                                         <i class="bi @(room.IsActive ? "bi-door-open" : "bi-door-closed")"></i>
                                     </div>
@@ -524,6 +569,14 @@
                                     </div>
                                 </div>
 
+                                <div class="hp-room-body">
+                                    <div class="hp-room-subtabs">
+                                        <button type="button" class="hp-room-subtab" data-subtab="info"><i class="bi bi-sliders me-1"></i>Bilgiler &amp; Fiyat</button>
+                                        <button type="button" class="hp-room-subtab" data-subtab="amenities"><i class="bi bi-ui-checks-grid me-1"></i>Olanaklar <span class="hp-subtab-badge">@room.RoomAmenities.Count</span></button>
+                                        <button type="button" class="hp-room-subtab" data-subtab="images"><i class="bi bi-images me-1"></i>Görseller <span class="hp-subtab-badge">@room.Images.Count</span></button>
+                                    </div>
+
+                                    <div class="hp-room-subpanel" data-subpanel="info">
                                 @* ---- Oda guncelleme formu ---- *@
                                 <form asp-controller="AdminHotels"
                                       asp-action="UpdateRoom"
@@ -576,9 +629,9 @@
                                             <label class="form-label">Gecelik Fiyat</label>
                                             <div class="hp-affix">
                                                 <input name="PricePerNight"
-                                                       value="@room.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                                       type="number" step="0.01" min="0.01"
-                                                       class="form-control form-control-sm hp-has-right" required />
+                                                       value="@room.PricePerNight.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))"
+                                                       type="text" inputmode="decimal"
+                                                       class="form-control form-control-sm hp-has-right js-money" required />
                                                 <span class="hp-affix-right">₺</span>
                                             </div>
                                         </div>
@@ -586,13 +639,13 @@
                                             <label class="form-label">Ek Misafir</label>
                                             <div class="hp-affix">
                                                 <input name="ExtraGuestPricePerNight"
-                                                       value="@room.ExtraGuestPricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                                       type="number" step="0.01" min="0"
-                                                       class="form-control form-control-sm hp-has-right" required />
+                                                       value="@room.ExtraGuestPricePerNight.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))"
+                                                       type="text" inputmode="decimal"
+                                                       class="form-control form-control-sm hp-has-right js-money" required />
                                                 <span class="hp-affix-right">₺</span>
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
+                                        <div class="col-md-2">
                                             <label class="form-label">Toplam</label>
                                             <input name="TotalRooms"
                                                    value="@room.TotalRooms"
@@ -614,15 +667,17 @@
                                                 }
                                             </select>
                                         </div>
-                                        <div class="col-md-1">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning w-100" title="Kaydet">
-                                                <i class="bi bi-check2"></i>
-                                            </button>
-                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="bi bi-check2-circle me-1"></i>Bilgileri Kaydet
+                                        </button>
                                     </div>
                                 </form>
+                                    </div>@* /subpanel info *@
 
-                                @* ---- Oda olanaklari (chip seclim) ---- *@
+                                    <div class="hp-room-subpanel" data-subpanel="amenities">
+                                @* ---- Oda olanaklari (otel olanaklari ile ayni tasarim) ---- *@
                                 @if (Model.AllRoomAmenities.Any())
                                 {
                                     <div class="hp-room-amenities">
@@ -631,11 +686,6 @@
                                                 <i class="bi bi-ui-checks-grid"></i>
                                                 Oda Olanakları · @room.RoomAmenities.Count seçili
                                             </span>
-                                            <button type="submit"
-                                                    form="room-amenities-@room.Id"
-                                                    class="btn btn-sm btn-outline-success">
-                                                <i class="bi bi-check2-all me-1"></i>Güncelle
-                                            </button>
                                         </div>
                                         <form id="room-amenities-@room.Id"
                                               asp-controller="AdminHotels"
@@ -662,9 +712,40 @@
                                                 </label>
                                             }
                                         </form>
+
+                                        <div class="mt-3 d-flex justify-content-end">
+                                            <button type="submit"
+                                                    form="room-amenities-@room.Id"
+                                                    class="btn btn-outline-success">
+                                                <i class="bi bi-check2-all me-1"></i>Olanakları Güncelle
+                                            </button>
+                                        </div>
+
+                                        @if (room.RoomAmenities.Any())
+                                        {
+                                            <div class="hp-removable">
+                                                <div class="hp-removable-title">
+                                                    <i class="bi bi-bookmark-check"></i> Atanmış Oda Olanakları — tek tek kaldırmak için tıklayın
+                                                </div>
+                                                <div class="hp-removable-list">
+                                                    @foreach (var roomAmenity in room.RoomAmenities.OrderBy(x => x.Name))
+                                                    {
+                                                        <button type="button"
+                                                                class="hp-removable-chip js-room-amenity-remove"
+                                                                data-form="room-amenities-@room.Id"
+                                                                data-checkbox="ra-@(room.Id)-@(roomAmenity.Id)">
+                                                            @roomAmenity.Name
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
                                     </div>
                                 }
+                                    </div>@* /subpanel amenities *@
 
+                                    <div class="hp-room-subpanel" data-subpanel="images">
                                 @* ---- Oda gorselleri (RoomImages ozelligi - Sevde) ---- *@
                                 <div class="hp-room-images">
                                     <div class="hp-ra-head">
@@ -742,7 +823,6 @@
                                                                    class="form-control form-control-sm" />
                                                         </div>
                                                         <div class="col-md-2">
-                                                            <input type="hidden" name="IsMain" value="false" />
                                                             <div class="form-check">
                                                                 <input name="IsMain"
                                                                        type="checkbox"
@@ -751,6 +831,9 @@
                                                                        checked="@image.IsMain" />
                                                                 <label class="form-check-label">Ana</label>
                                                             </div>
+                                                            @* Checkbox isaretli degilken "false" gonderilsin diye gizli input
+                                                               checkbox'tan SONRA gelmeli; boylece isaretliyken ilk deger "true" olur. *@
+                                                            <input type="hidden" name="IsMain" value="false" />
                                                         </div>
                                                         <div class="col-md-2">
                                                             <button type="submit" class="btn btn-sm btn-warning">
@@ -782,6 +865,8 @@
                                         </div>
                                     }
                                 </div>
+                                    </div>@* /subpanel images *@
+                                </div>@* /hp-room-body *@
                             </div>
                         }
                     }
@@ -796,9 +881,12 @@
                 </div>
             </div>
 
+            </div>@* /step-panel rooms *@
+
             @* ============================================================
                BOLUM 4: OTEL OLANAKLARI
                ============================================================ *@
+            <div class="hp-step-panel" data-step="amenities">
             <div id="section-amenities" class="hp-card">
                 <div class="hp-card-head">
                     <div class="hp-card-icon"><i class="bi bi-stars"></i></div>
@@ -876,6 +964,21 @@
                     }
                 </div>
             </div>
+            </div>@* /step-panel amenities *@
+
+            @* ===== Wizard navigasyon (Onceki / Sonraki) ===== *@
+            <div class="hp-wizard-nav">
+                <button type="button" id="hpWizPrev" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Önceki
+                </button>
+                <span class="hp-wiz-indicator" id="hpWizIndicator">Adım 1 / 4</span>
+                <button type="button" id="hpWizNext" class="btn btn-primary">
+                    Sonraki<i class="bi bi-arrow-right ms-1"></i>
+                </button>
+                <a asp-controller="AdminHotels" asp-action="Index" id="hpWizFinish" class="btn btn-success" style="display:none;">
+                    <i class="bi bi-check2-circle me-1"></i>Bitir
+                </a>
+            </div>
         }
 
     </div>
@@ -894,10 +997,10 @@
                         <span class="hp-step-num">2</span> Görseller
                     </div>
                     <div class="hp-step locked">
-                        <span class="hp-step-num">3</span> Odalar &amp; fiyatlar
+                        <span class="hp-step-num">3</span> Olanaklar
                     </div>
                     <div class="hp-step locked">
-                        <span class="hp-step-num">4</span> Olanaklar
+                            <span class="hp-step-num">4</span> Odalar &amp; fiyatlar
                     </div>
                 </div>
                 <p class="hp-help mt-3">
@@ -951,6 +1054,7 @@
                       asp-action="Delete"
                       asp-route-id="@Model.Id"
                       method="post"
+                      data-no-ajax="true"
                       onsubmit="return confirm('Bu oteli silmek istediğinize emin misiniz?');">
                     <button type="submit" class="btn btn-sm hp-btn-danger w-100">
                         <i class="bi bi-trash me-1"></i>Oteli Sil
@@ -960,6 +1064,8 @@
         }
     </aside>
 </div>
+
+</div>@* /#hpEditRoot *@
 
 @* Oda gorseli buyutme modali (RoomImages ozelligi - Sevde) *@
 <div class="modal fade" id="roomImageModal" tabindex="-1">
@@ -978,48 +1084,240 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // ===== Yildiz secici =====
-        document.querySelectorAll('.hp-star-pick').forEach(function (group) {
-            var target = group.getAttribute('data-target');
-            var input = document.querySelector('input[name="' + target + '"]');
-            var stars = group.querySelectorAll('.hp-star');
-            stars.forEach(function (s, idx) {
-                s.addEventListener('click', function () {
-                    var val = parseInt(s.getAttribute('data-value'), 10);
-                    if (input) input.value = val;
-                    stars.forEach(function (st, i) {
-                        var on = i < val;
-                        st.classList.toggle('on', on);
-                        var icon = st.querySelector('i');
-                        if (icon) icon.className = 'bi ' + (on ? 'bi-star-fill' : 'bi-star');
-                    });
-                });
-            });
-        });
+        // Otel duzenleme sayfasi etkilesimleri. Tum olay dinleyicileri "delegasyon" ile
+        // document uzerine baglanir; boylece AJAX ile #hpEditRoot icerigi degistiginde
+        // dinleyicileri tekrar baglamaya gerek kalmaz.
+        (function () {
+            var ROOT_ID = 'hpEditRoot';
+            var order = ['general', 'images', 'amenities', 'rooms'];
 
-        // ===== Smooth scroll for section tabs =====
-        document.querySelectorAll('.hp-section-tabs .hp-tab').forEach(function (tab) {
-            tab.addEventListener('click', function (e) {
-                var href = tab.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    var el = document.querySelector(href);
-                    if (el) {
-                        e.preventDefault();
-                        document.querySelectorAll('.hp-section-tabs .hp-tab').forEach(function (t) {
-                            t.classList.remove('active');
+            function root() { return document.getElementById(ROOT_ID); }
+            function stepper() { return document.getElementById('hpWizardSteps'); }
+            function isEditMode() { return !!stepper(); }
+            function hotelKey() { var s = stepper(); return s ? (s.getAttribute('data-hotel-id') || '0') : '0'; }
+            function storeKey() { return 'hpWizardStep:' + hotelKey(); }
+            function panel(k) { return document.querySelector('.hp-step-panel[data-step="' + k + '"]'); }
+            function stepBtn(k) { var s = stepper(); return s ? s.querySelector('.hp-wstep[data-step-target="' + k + '"]') : null; }
+
+            // ---- Wizard: adim goster ----
+            function showStep(key, userInitiated) {
+                if (!stepper()) return;
+                if (order.indexOf(key) === -1) key = 'general';
+                order.forEach(function (k) {
+                    var p = panel(k), b = stepBtn(k);
+                    if (p) p.classList.toggle('active', k === key);
+                    if (b) b.classList.toggle('active', k === key);
+                });
+                var idx = order.indexOf(key);
+                var prevBtn = document.getElementById('hpWizPrev');
+                var nextBtn = document.getElementById('hpWizNext');
+                var finishBtn = document.getElementById('hpWizFinish');
+                var indicator = document.getElementById('hpWizIndicator');
+                if (prevBtn) prevBtn.disabled = (idx === 0);
+                var last = (idx === order.length - 1);
+                if (nextBtn) nextBtn.style.display = last ? 'none' : '';
+                if (finishBtn) finishBtn.style.display = last ? '' : 'none';
+                if (indicator) indicator.textContent = 'Adım ' + (idx + 1) + ' / ' + order.length;
+                try { sessionStorage.setItem(storeKey(), key); } catch (e) { }
+                if (history.replaceState) { history.replaceState(null, '', '#step-' + key); } else { location.hash = 'step-' + key; }
+                if (userInitiated) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            }
+
+            function currentStep() {
+                for (var i = 0; i < order.length; i++) {
+                    var p = panel(order[i]);
+                    if (p && p.classList.contains('active')) return order[i];
+                }
+                return 'general';
+            }
+
+            // Saklanan/hash'teki adimi uygular (ilk yukleme ve AJAX swap sonrasi).
+            function applyWizardStep() {
+                if (!stepper()) return;
+                var main = document.querySelector('.hp-main');
+                if (main) main.classList.add('hp-wizard-on');
+                var fromHash = (location.hash || '').replace('#step-', '');
+                var fromStore = '';
+                try { fromStore = sessionStorage.getItem(storeKey()) || ''; } catch (e) { }
+                var initial = order.indexOf(fromHash) !== -1 ? fromHash
+                    : (order.indexOf(fromStore) !== -1 ? fromStore : 'general');
+                showStep(initial, false);
+            }
+
+            // ---- Oda akordeon + alt sekme ----
+            var ROOM_TABS = ['info', 'amenities', 'images'];
+            function roomKey() { return 'hpRoomOpen:' + hotelKey(); }
+            function roomTabKey(id) { return 'hpRoomTab:' + hotelKey() + ':' + id; }
+            function storedSubtab(id) {
+                var t = ''; try { t = sessionStorage.getItem(roomTabKey(id)) || ''; } catch (e) { }
+                return ROOM_TABS.indexOf(t) !== -1 ? t : 'info';
+            }
+            function setRoomSubtab(card, tab, persist) {
+                if (ROOM_TABS.indexOf(tab) === -1) tab = 'info';
+                card.querySelectorAll('.hp-room-subtab').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-subtab') === tab); });
+                card.querySelectorAll('.hp-room-subpanel').forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-subpanel') === tab); });
+                if (persist) { try { sessionStorage.setItem(roomTabKey(card.getAttribute('data-room-id')), tab); } catch (e) { } }
+            }
+            function openRoom(card) {
+                document.querySelectorAll('.hp-room-card.open').forEach(function (c) { if (c !== card) c.classList.remove('open'); });
+                card.classList.add('open');
+                try { sessionStorage.setItem(roomKey(), card.getAttribute('data-room-id')); } catch (e) { }
+                setRoomSubtab(card, storedSubtab(card.getAttribute('data-room-id')), false);
+            }
+            function closeRoom(card) {
+                card.classList.remove('open');
+                try { if (sessionStorage.getItem(roomKey()) === card.getAttribute('data-room-id')) sessionStorage.removeItem(roomKey()); } catch (e) { }
+            }
+            // Saklanan acik oda + aktif alt sekme durumunu uygular (ilk yukleme ve AJAX swap sonrasi).
+            function applyRoomAccordion() {
+                var openId = ''; try { openId = sessionStorage.getItem(roomKey()) || ''; } catch (e) { }
+                document.querySelectorAll('.hp-room-card').forEach(function (card) {
+                    var id = card.getAttribute('data-room-id');
+                    setRoomSubtab(card, storedSubtab(id), false);
+                    card.classList.toggle('open', id === openId);
+                });
+            }
+
+            // ---- Fiyat (tr-TR) bicimleme ----
+            function formatMoneyTR(raw) {
+                var s = (raw || '').replace(/[^\d,]/g, '');
+                var c = s.indexOf(',');
+                var intPart, decPart = '', hasComma = c >= 0;
+                if (hasComma) { intPart = s.slice(0, c).replace(/\D/g, ''); decPart = s.slice(c + 1).replace(/\D/g, '').slice(0, 2); }
+                else { intPart = s.replace(/\D/g, ''); }
+                intPart = intPart.replace(/^0+(?=\d)/, '');
+                if (intPart === '') intPart = '0';
+                var grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return hasComma ? grouped + ',' + decPart : grouped;
+            }
+            function moneyToInvariant(v) { return (v || '').replace(/\./g, '').replace(',', '.'); }
+
+            // ---- AJAX: donen Edit HTML'inden #hpEditRoot'u yerinde degistir ----
+            function swapRoot(html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                var newRoot = doc.getElementById(ROOT_ID), curRoot = root();
+                if (!newRoot || !curRoot) { window.location.reload(); return; }
+                curRoot.innerHTML = newRoot.innerHTML;
+                if (window.initAdminFilterSelects) window.initAdminFilterSelects(curRoot);
+                applyWizardStep();
+                applyRoomAccordion();
+            }
+
+            // ===== Delegasyon: tiklamalar =====
+            document.addEventListener('click', function (e) {
+                // Yildiz secici
+                var star = e.target.closest('.hp-star');
+                if (star) {
+                    var group = star.closest('.hp-star-pick');
+                    if (group) {
+                        var input = document.querySelector('input[name="' + group.getAttribute('data-target') + '"]');
+                        var val = parseInt(star.getAttribute('data-value'), 10);
+                        if (input) input.value = val;
+                        group.querySelectorAll('.hp-star').forEach(function (st, i) {
+                            var on = i < val;
+                            st.classList.toggle('on', on);
+                            var icon = st.querySelector('i');
+                            if (icon) icon.className = 'bi ' + (on ? 'bi-star-fill' : 'bi-star');
                         });
-                        tab.classList.add('active');
-                        window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+                    }
+                    return;
+                }
+                // Wizard adim butonlari
+                var ws = e.target.closest('.hp-wstep');
+                if (ws) { showStep(ws.getAttribute('data-step-target'), true); return; }
+                if (e.target.closest('#hpWizPrev')) { var i = order.indexOf(currentStep()); if (i > 0) showStep(order[i - 1], true); return; }
+                if (e.target.closest('#hpWizNext')) { var j = order.indexOf(currentStep()); if (j < order.length - 1) showStep(order[j + 1], true); return; }
+                // Oda olanagi kaldir: ilgili checkbox'i kaldir ve formu gonder
+                var rmChip = e.target.closest('.js-room-amenity-remove');
+                if (rmChip) {
+                    var cb = document.getElementById(rmChip.getAttribute('data-checkbox'));
+                    if (cb) cb.checked = false;
+                    var f = document.getElementById(rmChip.getAttribute('data-form'));
+                    if (f) { if (typeof f.requestSubmit === 'function') f.requestSubmit(); else f.submit(); }
+                    return;
+                }
+                // Oda gorseli buyutme modali
+                var thumb = e.target.closest('.admin-room-thumb');
+                if (thumb) {
+                    var t = document.getElementById('roomImageModalImg');
+                    if (t) t.src = thumb.dataset.imageUrl;
+                    return;
+                }
+                // Oda alt sekme degistir
+                var rsub = e.target.closest('.hp-room-subtab');
+                if (rsub) {
+                    var rc = rsub.closest('.hp-room-card');
+                    if (rc) setRoomSubtab(rc, rsub.getAttribute('data-subtab'), true);
+                    return;
+                }
+                // Oda kart basligi: akordeon ac/kapa (basliktaki buton/form/link/secim disinda)
+                var rtoggle = e.target.closest('.hp-room-toggle');
+                if (rtoggle && !e.target.closest('button, a, form, input, select, label')) {
+                    var card2 = rtoggle.closest('.hp-room-card');
+                    if (card2) { card2.classList.contains('open') ? closeRoom(card2) : openRoom(card2); }
+                }
+            });
+
+            // ===== Delegasyon: input (fiyat + telefon) =====
+            document.addEventListener('input', function (e) {
+                var el = e.target;
+                if (!el || !el.classList) return;
+                if (el.classList.contains('js-money')) {
+                    var f = formatMoneyTR(el.value);
+                    if (f !== el.value) { el.value = f; try { el.setSelectionRange(el.value.length, el.value.length); } catch (x) { } }
+                    return;
+                }
+                if (el.hasAttribute && el.hasAttribute('data-phone-input')) {
+                    var cleaned = el.value.replace(/[^0-9+\-\s()]/g, '');
+                    if (cleaned !== el.value) {
+                        var pos = el.selectionStart - (el.value.length - cleaned.length);
+                        el.value = cleaned;
+                        try { el.setSelectionRange(pos, pos); } catch (x2) { }
                     }
                 }
             });
-        });
 
-        // ===== Oda gorseli buyutme modali (RoomImages - Sevde) =====
-        document.querySelectorAll('.admin-room-thumb').forEach(function (img) {
-            img.addEventListener('click', function () {
-                document.getElementById('roomImageModalImg').src = this.dataset.imageUrl;
+            // ===== Delegasyon: oda gorsellerinde "Ana" tek-secim (radyo gibi) =====
+            // Bir odanin gorsellerinde birden fazla "Ana" isaretlenemesin; biri
+            // isaretlenince ayni odadaki diger "Ana" kutulari otomatik kalkar.
+            document.addEventListener('change', function (e) {
+                var el = e.target;
+                if (!el || el.type !== 'checkbox' || el.name !== 'IsMain' || !el.checked) return;
+                var box = el.closest('.hp-room-images');
+                if (!box) return;
+                box.querySelectorAll('input[type="checkbox"][name="IsMain"]').forEach(function (cb) {
+                    if (cb !== el) cb.checked = false;
+                });
             });
-        });
+
+            // ===== Delegasyon: form submit (fiyat normalize + AJAX) =====
+            document.addEventListener('submit', function (e) {
+                var form = e.target;
+                if (!form || form.tagName !== 'FORM') return;
+                var r = root();
+                if (!r || !r.contains(form)) return;       // sadece duzenleme kokundeki formlar
+                if (e.defaultPrevented) return;            // client validation engellediyse dokunma
+
+                // Gorunen tr-TR fiyatlari server'in bekledigi invariant ("1500.99") forma cevir.
+                form.querySelectorAll('.js-money').forEach(function (m) { m.value = moneyToInvariant(m.value); });
+
+                // AJAX yalniz edit modunda ve data-no-ajax olmayan formlarda.
+                if (!isEditMode() || form.hasAttribute('data-no-ajax')) return;
+
+                e.preventDefault();
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                })
+                    .then(function (resp) { return resp.text(); })
+                    .then(function (html) { swapRoot(html); })
+                    .catch(function () { form.submit(); }); // hata olursa normal gonderim
+            });
+
+            // İlk yukleme: edit modunda dogru adimi ve oda akordeon durumunu uygula.
+            if (isEditMode()) { applyWizardStep(); applyRoomAccordion(); }
+        })();
     </script>
 }

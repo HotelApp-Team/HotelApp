@@ -1031,3 +1031,203 @@
     .hp-room-head .status-pill.passive .status-dot {
         background: #DC2626;
     }
+
+/* ============================================================
+   WIZARD (adim adim otel duzenleme)
+   ============================================================ */
+.hp-wizard-steps {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.hp-wstep {
+    flex: 1 1 0;
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    padding: 12px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    box-shadow: var(--admin-shadow);
+}
+
+    .hp-wstep:hover {
+        border-color: var(--primary);
+    }
+
+    .hp-wstep.active {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+    }
+
+.hp-wstep-num {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--admin-bg);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.hp-wstep.active .hp-wstep-num {
+    background: var(--primary);
+    color: #FFF;
+}
+
+.hp-wstep-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+}
+
+.hp-wstep-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.hp-wstep.active .hp-wstep-label {
+    color: var(--primary);
+}
+
+.hp-wstep-badge {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+/* Wizard aktifken yalniz secili panel gosterilir. */
+.hp-wizard-on .hp-step-panel {
+    display: none;
+}
+
+    .hp-wizard-on .hp-step-panel.active {
+        display: block;
+    }
+
+.hp-wizard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow);
+}
+
+.hp-wiz-indicator {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ============================================================
+   ODA AKORDEON + ALT SEKME
+   ============================================================ */
+.hp-room-toggle {
+    cursor: pointer;
+}
+
+.hp-room-caret {
+    color: var(--text-secondary);
+    transition: transform 0.15s;
+    flex-shrink: 0;
+}
+
+/* Kapali oda: govde gizli, baslik alt boslugu yok, caret saga bakar. */
+.hp-room-card:not(.open) .hp-room-body {
+    display: none;
+}
+
+.hp-room-card:not(.open) .hp-room-head {
+    margin-bottom: 0;
+}
+
+.hp-room-card:not(.open) .hp-room-caret {
+    transform: rotate(-90deg);
+}
+
+.hp-room-subtabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+
+.hp-room-subtab {
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .hp-room-subtab:hover {
+        color: var(--text-main);
+    }
+
+    .hp-room-subtab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
+
+.hp-subtab-badge {
+    background: var(--admin-bg);
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+}
+
+.hp-room-subtab.active .hp-subtab-badge {
+    background: var(--primary);
+    color: #FFF;
+}
+
+.hp-room-subpanel {
+    display: none;
+}
+
+    .hp-room-subpanel.active {
+        display: block;
+    }
+
+/* Alt sekme icindeyken ust ayraclar gereksiz (sekme bari zaten ayiriyor). */
+.hp-room-subpanel .hp-room-form {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.hp-room-subpanel .hp-room-amenities {
+    border-top: 0;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.hp-room-subpanel .hp-room-images {
+    margin-top: 0;
+}

@@ -157,6 +157,26 @@ GO
 ALTER TABLE [dbo].[HotelRooms]  WITH CHECK ADD CHECK  (([PricePerNight]>=(0)))
 GO
 
+-- Tablo: dbo.Cities (sehir lookup)
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Cities](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](100) COLLATE Turkish_CI_AS NOT NULL,
+PRIMARY KEY CLUSTERED
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_Cities_Name] ON [dbo].[Cities]
+(
+	[Name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+
 -- Tablo: dbo.Hotels
 SET ANSI_NULLS ON
 GO
@@ -167,7 +187,7 @@ CREATE TABLE [dbo].[Hotels](
 	[Name] [nvarchar](200) COLLATE Turkish_CI_AS NOT NULL,
 	[Description] [nvarchar](2000) COLLATE Turkish_CI_AS NULL,
 	[Address] [nvarchar](500) COLLATE Turkish_CI_AS NOT NULL,
-	[City] [nvarchar](100) COLLATE Turkish_CI_AS NOT NULL,
+	[CityId] [int] NOT NULL,
 	[Country] [nvarchar](100) COLLATE Turkish_CI_AS NOT NULL,
 	[Phone] [nvarchar](20) COLLATE Turkish_CI_AS NOT NULL,
 	[Email] [nvarchar](200) COLLATE Turkish_CI_AS NULL,
@@ -188,9 +208,9 @@ GO
 SET ANSI_PADDING ON
 
 GO
-CREATE NONCLUSTERED INDEX [IX_Hotels_City] ON [dbo].[Hotels]
+CREATE NONCLUSTERED INDEX [IX_Hotels_CityId] ON [dbo].[Hotels]
 (
-	[City] ASC
+	[CityId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[Hotels] ADD  DEFAULT ('Turkiye') FOR [Country]
@@ -200,6 +220,11 @@ GO
 ALTER TABLE [dbo].[Hotels] ADD  DEFAULT (getdate()) FOR [CreatedAt]
 GO
 ALTER TABLE [dbo].[Hotels]  WITH CHECK ADD CHECK  (([StarRating]>=(1) AND [StarRating]<=(5)))
+GO
+ALTER TABLE [dbo].[Hotels]  WITH CHECK ADD  CONSTRAINT [FK_Hotels_Cities] FOREIGN KEY([CityId])
+REFERENCES [dbo].[Cities] ([Id])
+GO
+ALTER TABLE [dbo].[Hotels] CHECK CONSTRAINT [FK_Hotels_Cities]
 GO
 
 -- Tablo: dbo.Logs
@@ -316,6 +341,8 @@ CREATE TABLE [dbo].[Reviews](
 	[Rating] [tinyint] NOT NULL,
 	[Comment] [nvarchar](1000) COLLATE Turkish_CI_AS NULL,
 	[CreatedAt] [datetime2](7) NOT NULL,
+	[IsApproved] [bit] NOT NULL,
+	[ApprovedAt] [datetime2](7) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -334,6 +361,8 @@ CREATE NONCLUSTERED INDEX [IX_Reviews_HotelId] ON [dbo].[Reviews]
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[Reviews] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Reviews] ADD  DEFAULT ((0)) FOR [IsApproved]
 GO
 ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD CHECK  (([Rating]>=(1) AND [Rating]<=(5)))
 GO
@@ -641,19 +670,20 @@ GO
 --- VIEW: Otelin ad�, �ehir , y�ld�z, ortalama puan, yorum say�s�
 --=====================================================================
 
-CREATE VIEW vw_HotelSummary AS 
+CREATE VIEW vw_HotelSummary AS
 SELECT
 h.Id,
 h.Name,
-h.City,
+c.Name AS City,
 h.StarRating,
 ISNULL(AVG(CAST(r.Rating AS DECIMAL(3,1))),0) AS AvgRating,
 COUNT(r.Id) AS ReviewCount,
 (SELECT MIN(hr.PricePerNight) FROM HotelRooms hr WHERE hr.HotelId= h.Id AND hr.IsActive = 1) AS MinPrice,
 h.IsActive
 FROM Hotels h
+INNER JOIN Cities c ON c.Id = h.CityId
 LEFT JOIN Reviews r ON r.HotelId = h.Id
-GROUP BY h.Id, h.Name, h.City, h.StarRating, h.IsActive;
+GROUP BY h.Id, h.Name, c.Name, h.StarRating, h.IsActive;
 
 GO
 
@@ -679,7 +709,8 @@ SELECT
     u.Email,
     h.Id AS HotelId,
     h.Name AS HotelName,
-    h.City,
+    hi.ImageUrl AS MainImageUrl,
+    c.Name AS City,
     h.Country,
     rt.Id AS RoomTypeId,
     rt.Name AS RoomTypeName,
@@ -689,7 +720,14 @@ FROM Reservations r
 INNER JOIN Users u ON r.UserId = u.Id
 INNER JOIN HotelRooms hr ON r.HotelRoomId = hr.Id
 INNER JOIN Hotels h ON hr.HotelId = h.Id
-INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id;
+INNER JOIN Cities c ON c.Id = h.CityId
+INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id
+OUTER APPLY (
+    SELECT TOP (1) himg.ImageUrl
+    FROM HotelImages himg
+    WHERE himg.HotelId = h.Id
+    ORDER BY himg.IsMain DESC, himg.DisplayOrder, himg.Id
+) hi;
 GO
 
 -- View: dbo.vw_RoomDetails
@@ -702,7 +740,7 @@ SELECT
     hr.Id AS HotelRoomId,
     h.Id AS HotelId,
     h.Name AS HotelName,
-    h.City,
+    c.Name AS City,
     rt.Name AS RoomTypeName,
     rt.MaxGuests,
     hr.PricePerNight,
@@ -714,6 +752,7 @@ SELECT
     rv.Icon AS RoomViewIcon
 FROM HotelRooms hr
 INNER JOIN Hotels h ON h.Id = hr.HotelId
+INNER JOIN Cities c ON c.Id = h.CityId
 INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
 LEFT JOIN RoomViews rv ON rv.Id = hr.RoomViewId
 WHERE hr.IsActive = 1 AND h.IsActive = 1;
@@ -934,9 +973,10 @@ SELECT DISTINCT HotelId FROM deleted;
 --- Ortalama puan� g��ncelleme
 UPDATE h
 SET h.AvgRating = ISNULL(
-(SELECT AVG(CAST(R.Rating AS DECIMAL(3,1)))
+(SELECT AVG(CAST(r.Rating AS DECIMAL(3,1)))
 FROM Reviews r
-WHERE r.HotelId = h.Id), 0)
+WHERE r.HotelId = h.Id
+  AND r.IsApproved = 1), 0)
 FROM Hotels h
 INNER JOIN @AffectedHotels ah ON ah.HotelId = h.Id;
 END;

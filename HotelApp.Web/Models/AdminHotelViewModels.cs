@@ -7,6 +7,7 @@ namespace HotelApp.Web.Models;
 public class AdminHotelListPageViewModel
 {
     public string? City { get; set; }
+    public int? HotelId { get; set; }
     public byte? StarRating { get; set; }
     public bool? IsActive { get; set; }
     public string SortBy { get; set; } = "name";
@@ -16,6 +17,25 @@ public class AdminHotelListPageViewModel
 
     public int TotalCount { get; set; }
     public List<HotelCardViewModel> Hotels { get; set; } = new();
+
+    // Sehir ve otel dropdownlarini besleyen filtre secenekleri.
+    public List<string> CityOptions { get; set; } = new();
+    public List<HotelFilterOptionItemViewModel> HotelOptions { get; set; } = new();
+}
+
+// Admin otel listesi filtrelerinde sehir ve otel dropdownlarini besleyen secenekler.
+public class HotelFilterOptionsViewModel
+{
+    public List<string> Cities { get; set; } = new();
+    public List<HotelFilterOptionItemViewModel> Hotels { get; set; } = new();
+}
+
+// Otel dropdown'inda gosterilecek tek bir otelin ozet bilgisi.
+public class HotelFilterOptionItemViewModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
 }
 
 // Admin otel oluşturma ve düzenleme formunda kullanılan ana view modeldir.
@@ -33,8 +53,11 @@ public class AdminHotelFormViewModel
     [Required(ErrorMessage = "Adres zorunludur.")]
     public string Address { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Şehir bilgisi zorunludur.")]
-    public string City { get; set; } = string.Empty;
+    [Range(1, int.MaxValue, ErrorMessage = "Şehir bilgisi zorunludur.")]
+    public int CityId { get; set; }
+
+    // Sadece gosterim icin (baslik/meta satiri). Forma post edilmez.
+    public string? CityName { get; set; }
 
     [Required(ErrorMessage = "Ülke bilgisi zorunludur.")]
     public string Country { get; set; } = string.Empty;
@@ -60,6 +83,17 @@ public class AdminHotelFormViewModel
     public List<RoomViewAdminViewModel> RoomViews { get; set; } = new();
     public List<AdminHotelRoomViewModel> Rooms { get; set; } = new();
     public List<RoomAmenityViewModel> AllRoomAmenities { get; set; } = new();
+
+    // Sehir ve ulke dropdownlarini besleyen secenekler.
+    public List<CityOptionViewModel> CityOptions { get; set; } = new();
+    public List<string> CountryOptions { get; set; } = new();
+}
+
+// Sehir dropdown'i icin lookup ogesi (API'deki /api/cities cevabini karsilar).
+public class CityOptionViewModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 // Admin panelinde otel veya oda görseli ekleme/güncelleme formlarında kullanılır.

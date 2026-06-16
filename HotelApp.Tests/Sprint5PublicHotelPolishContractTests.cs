@@ -284,6 +284,13 @@ public class Sprint5PublicHotelPolishContractTests
             if (line.Contains($"INSERT INTO {tableName}", StringComparison.OrdinalIgnoreCase)
                 || line.Contains($"INSERT [dbo].[{tableName}]", StringComparison.OrdinalIgnoreCase))
             {
+                // SSMS export formatinda her INSERT ve VALUES ayni satirda bulunabilir.
+                if (line.Contains(" VALUES ", StringComparison.OrdinalIgnoreCase))
+                {
+                    count++;
+                    continue;
+                }
+
                 inTargetInsert = true;
                 continue;
             }

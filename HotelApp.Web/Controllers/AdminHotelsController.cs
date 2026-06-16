@@ -25,6 +25,7 @@ public class AdminHotelsController : Controller
     // Kullanıcının seçtiği filtreler query string olarak API'ye gönderilir.
     public async Task<IActionResult> Index(
         string? city,
+        int? hotelId,
         byte? starRating,
         bool? isActive,
         string sortBy = "name",
@@ -33,6 +34,7 @@ public class AdminHotelsController : Controller
         int pageSize = 10)
     {
         var query = $"hotels?city={Uri.EscapeDataString(city ?? string.Empty)}" +
+            $"&hotelId={hotelId}" +
             $"&star={starRating}" +
             $"&isActive={isActive}" +
             $"&sortBy={Uri.EscapeDataString(sortBy)}" +
@@ -41,9 +43,13 @@ public class AdminHotelsController : Controller
 
         var response = await _apiService.GetAsync<PagedHotelListResponse>(query);
 
+        // Sehir ve otel dropdownlari icin filtre secenekleri (aktif + pasif tum oteller).
+        var optionsResponse = await _apiService.GetAsync<HotelFilterOptionsViewModel>("hotels/filter-options");
+
         var model = new AdminHotelListPageViewModel
         {
             City = city,
+            HotelId = hotelId,
             StarRating = starRating,
             IsActive = isActive,
             SortBy = sortBy,
@@ -51,7 +57,9 @@ public class AdminHotelsController : Controller
             Page = page,
             PageSize = pageSize,
             Hotels = response.Success ? response.Data?.Data ?? new() : new(),
-            TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0
+            TotalCount = response.Success ? response.Data?.TotalCount ?? 0 : 0,
+            CityOptions = optionsResponse.Success ? optionsResponse.Data?.Cities ?? new() : new(),
+            HotelOptions = optionsResponse.Success ? optionsResponse.Data?.Hotels ?? new() : new()
         };
 
         if (!response.Success)
@@ -88,7 +96,7 @@ public class AdminHotelsController : Controller
             model.Name,
             model.Description,
             model.Address,
-            model.City,
+            model.CityId,
             model.Country,
             model.Phone,
             model.Email,
@@ -107,7 +115,8 @@ public class AdminHotelsController : Controller
         }
 
         TempData["SuccessMessage"] = "Otel oluşturuldu. Şimdi olanak, görsel ve oda ekleyebilirsiniz.";
-        return RedirectToAction(nameof(Edit), new { id = response.Data.Id });
+        // Olusturulduktan sonra wizard'in 2. adimina (Gorseller) gec.
+        return RedirectToAction(nameof(Edit), "AdminHotels", new { id = response.Data.Id }, "step-images");
     }
 
     [HttpGet("Edit/{id}")]
@@ -144,7 +153,7 @@ public class AdminHotelsController : Controller
             model.Name,
             model.Description,
             model.Address,
-            model.City,
+            model.CityId,
             model.Country,
             model.Phone,
             model.Email,
@@ -534,7 +543,8 @@ public class AdminHotelsController : Controller
             Name = hotel.Name,
             Description = hotel.Description,
             Address = hotel.Address,
-            City = hotel.City,
+            CityId = hotel.CityId,
+            CityName = hotel.City,
             Country = hotel.Country,
             Phone = hotel.Phone,
             Email = hotel.Email,
@@ -554,6 +564,15 @@ public class AdminHotelsController : Controller
     // Olanaklar, oda olanakları, oda tipleri, manzaralar, odalar ve görseller burada hazırlanır.
     private async Task LoadFormDependenciesAsync(AdminHotelFormViewModel model, int hotelId = 0)
     {
+        // Sehir dropdown'i: iller artik DB'deki Cities tablosundan gelir.
+        var cityResponse = await _apiService.GetAsync<List<CityOptionViewModel>>("cities");
+        model.CityOptions = cityResponse.Success
+            ? cityResponse.Data ?? new List<CityOptionViewModel>()
+            : new List<CityOptionViewModel>();
+
+        // Ulke dropdown'i: uygulama Turkiye odakli oldugu icin tek secenek.
+        model.CountryOptions = new List<string> { "Türkiye" };
+
         var amenityResponse = await _apiService.GetAsync<List<AmenityViewModel>>("amenities");
 
         model.AllAmenities = amenityResponse.Success

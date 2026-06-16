@@ -61,5 +61,18 @@ namespace HotelApp.Web.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // Admin yorumunu onaylayarak otel detayi ve anasayfa vitrininde yayina alir.
+        [HttpPost("approve")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var response = await _apiService.PutAsync($"admin/reviews/{id}/approve", new { });
+
+            TempData[response.Success ? "Success" : "Error"] =
+                response.Success ? "Yorum onaylandi ve yayina alindi." : response.Message;
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

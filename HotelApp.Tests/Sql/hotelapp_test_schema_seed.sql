@@ -19,12 +19,18 @@ GO
 USE [$(DatabaseName)];
 GO
 
+CREATE TABLE Cities (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL UNIQUE
+);
+GO
+
 CREATE TABLE Hotels (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(200) NOT NULL,
     Description NVARCHAR(2000),
     Address NVARCHAR(500) NOT NULL,
-    City NVARCHAR(100) NOT NULL,
+    CityId INT NOT NULL,
     Country NVARCHAR(100) NOT NULL DEFAULT 'Turkiye',
     Phone NVARCHAR(20) NOT NULL,
     Email NVARCHAR(200),
@@ -34,7 +40,8 @@ CREATE TABLE Hotels (
     StarRating TINYINT NOT NULL CHECK (StarRating BETWEEN 1 AND 5),
     IsActive BIT NOT NULL DEFAULT 1,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 NULL
+    UpdatedAt DATETIME2 NULL,
+    CONSTRAINT FK_Hotels_Cities FOREIGN KEY (CityId) REFERENCES Cities(Id)
 );
 GO
 
@@ -167,6 +174,8 @@ CREATE TABLE Reviews (
     Rating TINYINT NOT NULL CHECK (Rating BETWEEN 1 AND 5),
     Comment NVARCHAR(1000),
     CreatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
+    IsApproved BIT NOT NULL DEFAULT 0,
+    ApprovedAt DATETIME2 NULL,
     CONSTRAINT UQ_Reviews_UserHotel UNIQUE (UserId, HotelId),
     CONSTRAINT FK_Reviews_Hotels FOREIGN KEY(HotelId) REFERENCES Hotels(Id),
     CONSTRAINT FK_Reviews_Users FOREIGN KEY(UserId) REFERENCES Users(Id)
@@ -228,7 +237,7 @@ CREATE TABLE Logs (
 );
 GO
 
-CREATE INDEX IX_Hotels_City ON Hotels(City);
+CREATE INDEX IX_Hotels_CityId ON Hotels(CityId);
 CREATE INDEX IX_HotelRooms_HotelId ON HotelRooms(HotelId);
 CREATE INDEX IX_HotelRooms_RoomTypeId ON HotelRooms(RoomTypeId);
 CREATE INDEX IX_HotelRooms_RoomViewId ON HotelRooms(RoomViewId);
@@ -248,15 +257,16 @@ CREATE VIEW vw_HotelSummary AS
 SELECT
     h.Id,
     h.Name,
-    h.City,
+    c.Name AS City,
     h.StarRating,
     ISNULL(AVG(CAST(r.Rating AS DECIMAL(3,1))), 0) AS AvgRating,
     COUNT(r.Id) AS ReviewCount,
     (SELECT MIN(hr.PricePerNight) FROM HotelRooms hr WHERE hr.HotelId = h.Id AND hr.IsActive = 1) AS MinPrice,
     h.IsActive
 FROM Hotels h
+INNER JOIN Cities c ON c.Id = h.CityId
 LEFT JOIN Reviews r ON r.HotelId = h.Id
-GROUP BY h.Id, h.Name, h.City, h.StarRating, h.IsActive;
+GROUP BY h.Id, h.Name, c.Name, h.StarRating, h.IsActive;
 GO
 
 CREATE VIEW vw_RoomDetails AS
@@ -264,7 +274,7 @@ SELECT
     hr.Id AS HotelRoomId,
     h.Id AS HotelId,
     h.Name AS HotelName,
-    h.City,
+    c.Name AS City,
     rt.Name AS RoomTypeName,
     rt.MaxGuests,
     hr.PricePerNight,
@@ -277,6 +287,7 @@ SELECT
     rv.Icon AS RoomViewIcon
 FROM HotelRooms hr
 INNER JOIN Hotels h ON h.Id = hr.HotelId
+INNER JOIN Cities c ON c.Id = h.CityId
 INNER JOIN RoomTypes rt ON rt.Id = hr.RoomTypeId
 LEFT JOIN RoomViews rv ON rv.Id = hr.RoomViewId
 WHERE hr.IsActive = 1 AND h.IsActive = 1;
@@ -298,7 +309,7 @@ SELECT
     u.Email,
     h.Id AS HotelId,
     h.Name AS HotelName,
-    h.City,
+    c.Name AS City,
     h.Country,
     rt.Id AS RoomTypeId,
     rt.Name AS RoomTypeName,
@@ -308,7 +319,14 @@ FROM Reservations r
 INNER JOIN Users u ON r.UserId = u.Id
 INNER JOIN HotelRooms hr ON r.HotelRoomId = hr.Id
 INNER JOIN Hotels h ON hr.HotelId = h.Id
-INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id;
+INNER JOIN Cities c ON c.Id = h.CityId
+INNER JOIN RoomTypes rt ON hr.RoomTypeId = rt.Id
+OUTER APPLY (
+    SELECT TOP (1) himg.ImageUrl
+    FROM HotelImages himg
+    WHERE himg.HotelId = h.Id
+    ORDER BY himg.IsMain DESC, himg.DisplayOrder, himg.Id
+) hi;
 GO
 
 CREATE OR ALTER PROCEDURE sp_SearchAvailableRooms
@@ -491,16 +509,21 @@ BEGIN
         SELECT AVG(CAST(r.Rating AS DECIMAL(3,1)))
         FROM Reviews r
         WHERE r.HotelId = h.Id
+          AND r.IsApproved = 1
     ), 0)
     FROM Hotels h
     INNER JOIN @AffectedHotels ah ON ah.HotelId = h.Id;
 END;
 GO
 
-INSERT INTO Hotels (Name, Description, Address, City, Country, StarRating, Phone, Email)
+INSERT INTO Cities (Name)
+VALUES ('Istanbul'), ('Antalya');
+GO
+
+INSERT INTO Hotels (Name, Description, Address, CityId, Country, StarRating, Phone, Email)
 VALUES
-('CI Istanbul Hotel', 'Test hotel in Istanbul', 'Test Address 1', 'Istanbul', 'Turkiye', 5, '02120000001', 'istanbul@testhotel.com'),
-('CI Antalya Resort', 'Test resort in Antalya', 'Test Address 2', 'Antalya', 'Turkiye', 4, '02420000001', 'antalya@testhotel.com');
+('CI Istanbul Hotel', 'Test hotel in Istanbul', 'Test Address 1', (SELECT Id FROM Cities WHERE Name = 'Istanbul'), 'Turkiye', 5, '02120000001', 'istanbul@testhotel.com'),
+('CI Antalya Resort', 'Test resort in Antalya', 'Test Address 2', (SELECT Id FROM Cities WHERE Name = 'Antalya'), 'Turkiye', 4, '02420000001', 'antalya@testhotel.com');
 GO
 
 INSERT INTO RoomTypes (Name, Description, MaxGuests)

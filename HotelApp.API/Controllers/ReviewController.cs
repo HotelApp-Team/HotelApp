@@ -73,6 +73,20 @@ namespace HotelApp.API.Controllers
         }
 
         /// <summary>
+        /// Admin tarafindan bekleyen bir yorumu onaylayarak yayina alir.
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPut("~/api/admin/reviews/{id}/approve")]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var review = await _reviewService.ApproveReviewAsync(id);
+
+            await LogInfoAsync($"Yorum onaylandi: ReviewId={id}");
+
+            return Ok(review);
+        }
+
+        /// <summary>
         /// Giris yapmis kullanicinin kendi degerlendirmelerini getirir.
         /// </summary>
         /// <returns>Kullaniciya ait degerlendirme listesini doner.</returns>
